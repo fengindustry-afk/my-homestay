@@ -15,9 +15,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Serenity Homestay — Your Home Away From Home",
+  title: "Indah Morib Homestay — Your Home Away From Home",
   description:
-    "Experience luxurious homestay living in Malaysia. Beautifully designed rooms, world-class amenities, and unforgettable memories await you at Serenity Homestay.",
+    "Experience luxurious homestay living in Malaysia. Beautifully designed rooms, world-class amenities, and unforgettable memories await you at Indah Morib Homestay.",
   keywords:
     "homestay, Malaysia, vacation rental, luxury accommodation, holiday home",
 };

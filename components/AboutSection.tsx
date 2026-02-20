@@ -116,7 +116,7 @@ export default function AboutSection() {
                             Comfort
                         </h2>
                         <p className="section-description" style={{ marginBottom: 16 }}>
-                            Nestled in the heart of Malaysia, Serenity Homestay offers a
+                            Nestled in the heart of Malaysia, Indah Morib Homestay offers a
                             perfect blend of modern luxury and warm hospitality. Each room is
                             thoughtfully designed to provide you with an unforgettable
                             experience.

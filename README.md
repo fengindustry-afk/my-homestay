@@ -1,4 +1,4 @@
- # Serenity Homestay Website
+ # Indah Morib Homestay Website
 
 A premium, modern homestay booking website built with **Next.js 15**, **React 19**, and **Tailwind CSS v4**.
 
@@ -55,4 +55,4 @@ The project currently uses a placeholder checkout API at `/api/checkout`. To ena
 
 ---
 
-Built with ❤️ for Serenity Homestay.
+Built with ❤️ for Indah Morib Homestay.
