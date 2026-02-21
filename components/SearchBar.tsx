@@ -53,10 +53,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                         onChange={(e) => setRoomType(e.target.value)}
                     >
                         <option>All Types</option>
-                        <option>Deluxe Suite</option>
                         <option>Standard Room</option>
-                        <option>Family Room</option>
                         <option>Studio</option>
+                        <option>Family Room</option>
+                        <option>Deluxe Suite</option>
                         <option>Penthouse</option>
                     </select>
                 </div>

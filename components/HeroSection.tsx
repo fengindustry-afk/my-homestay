@@ -24,9 +24,7 @@ export default function HeroSection() {
                     Home
                 </h1>
                 <p className="hero-description animate-fade-up delay-200">
-                    Experience the beauty of Malaysian hospitality with our handpicked
-                    collection of stunning homestays. Comfort, luxury, and unforgettable
-                    memories await.
+                    Enjoy a cozy family setting where comfort, togetherness, and relaxation come naturally.
                 </p>
                 <div
                     className="animate-fade-up delay-300"

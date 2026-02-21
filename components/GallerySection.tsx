@@ -1,23 +1,23 @@
 const images = [
     {
-        src: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1200&q=80",
-        alt: "Luxurious pool villa",
+        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H3.jpg",
+        alt: "Homestay 3",
     },
     {
-        src: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&q=80",
-        alt: "Modern living area",
+        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H4.jpg",
+        alt: "Dewan",
     },
     {
-        src: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80",
-        alt: "Elegant bathroom",
+        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Event.jpg",
+        alt: "Event",
     },
     {
-        src: "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80",
-        alt: "Cozy bedroom",
+        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Wdding.jpg",
+        alt: "Wedding",
     },
     {
-        src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
-        alt: "Property exterior",
+        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Pool3.jpg",
+        alt: "Pool H3",
     },
 ];
 

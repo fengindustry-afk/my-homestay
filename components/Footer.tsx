@@ -26,9 +26,10 @@ export default function Footer() {
                             hospitality at its <a href="/finest-touch" style={{ textDecoration: "none", color: "inherit" }}>finest</a>.
                         </p>
                         <div className="footer-social">
-                            {["Fb", "Ig", "X", "Yt"].map((s) => (
-                                <a key={s} href="#" aria-label={s}>{s}</a>
-                            ))}
+                            <a href="https://facebook.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Facebook">Fb</a>
+                            <a href="https://instagram.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Ig</a>
+                            <a href="https://x.com/indahmorib" target="_blank" rel="noopener noreferrer" aria-label="X">X</a>
+                            <a href="https://youtube.com/@indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="YouTube">Yt</a>
                         </div>
                     </div>
 
@@ -43,7 +44,7 @@ export default function Footer() {
                     {/* Room Types */}
                     <div>
                         <h4 className="footer-title">Room Types</h4>
-                        {["Deluxe Suite", "Standard Room", "Family Room", "Studio Loft", "Penthouse"].map((r) => (
+                        {["Standard Room", "Studio", "Family Room", "Deluxe Suite", "Penthouse"].map((r) => (
                             <a key={r} href="#rooms" className="footer-link">{r}</a>
                         ))}
                     </div>

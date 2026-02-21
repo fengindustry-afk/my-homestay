@@ -28,7 +28,7 @@ export default function AboutSection() {
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
             ),
-            number: "4.9",
+            number: "4.5",
             label: "Average Rating",
         },
         {
@@ -62,8 +62,8 @@ export default function AboutSection() {
                             }}
                         >
                             <img
-                                src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80"
-                                alt="Luxurious homestay room"
+                                src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Langit.jpg"
+                                alt="Langit"
                                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
                         </div>
@@ -81,8 +81,8 @@ export default function AboutSection() {
                             }}
                         >
                             <img
-                                src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80"
-                                alt="Homestay pool area"
+                                src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H5.jpg"
+                                alt="Homestay 5"
                                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
                         </div>
