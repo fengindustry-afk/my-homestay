@@ -1,4 +1,8 @@
+"use client";
+import React, { useState } from "react";
+
 export default function AboutSection() {
+    const [showCert, setShowCert] = useState(false);
     const stats = [
         {
             icon: (
@@ -86,6 +90,8 @@ export default function AboutSection() {
                                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             />
                         </div>
+
+
                         {/* Floating accent card */}
                         <div
                             style={{
@@ -194,6 +200,47 @@ export default function AboutSection() {
                                 <path d="M5 12h14M12 5l7 7-7 7" />
                             </svg>
                         </a>
+
+                        <div className="mt-12 flex flex-col gap-4">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Recognitions & Standards</p>
+                            <div className="flex flex-wrap gap-4">
+                                {/* TCC Badge Item */}
+                                <div
+                                    onClick={() => setShowCert(true)}
+                                    className="group cursor-pointer flex items-center gap-3 bg-white p-2 pr-4 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-all hover:shadow-md"
+                                >
+                                    <div className="h-12 w-12 bg-[var(--surface)] rounded-lg flex items-center justify-center overflow-hidden border border-[var(--border)] group-hover:bg-[var(--accent-light)] transition-colors">
+                                        <img
+                                            src="/TCC Badge.png"
+                                            alt="TCC Badge"
+                                            className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://placehold.co/40x40?text=TCC';
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-black text-[var(--primary)] leading-tight">TCC Compliant</span>
+                                        <span className="text-[9px] font-bold text-[var(--accent-dark)] uppercase tracking-wider">Verified 2026</span>
+                                    </div>
+                                </div>
+
+                                {/* Placeholder for future badge */}
+                                <div className="hidden sm:flex items-center gap-3 bg-gray-50/50 p-2 pr-4 rounded-xl border border-dashed border-gray-200 opacity-60">
+                                    <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-100">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                        </svg>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-bold text-gray-400 leading-tight">Coming Soon</span>
+                                        <span className="text-[9px] font-medium text-gray-300 uppercase tracking-wider">Next Standard</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -216,6 +263,87 @@ export default function AboutSection() {
                     ))}
                 </div>
             </div>
+
+            {/* Certificate Modal */}
+            {showCert && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        onClick={() => setShowCert(false)}
+                    />
+                    <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[90vh] flex flex-col">
+                        <button
+                            onClick={() => setShowCert(false)}
+                            className="absolute right-6 top-6 z-20 rounded-full bg-white/80 p-2 text-gray-500 hover:text-gray-800 shadow-md backdrop-blur-md transition-all hover:scale-110"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+
+                        <div className="flex-1 overflow-y-auto p-4 lg:p-10 no-scrollbar">
+                            <div className="border-8 border-[var(--accent-light)] rounded-2xl p-8 lg:p-12 text-center bg-white relative min-h-[600px] flex flex-col justify-center">
+                                {/* Background Seal Watermark */}
+                                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+                                    <svg width="400" height="400" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
+                                    </svg>
+                                </div>
+
+                                <div className="relative z-10">
+                                    <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-green-600 shadow-xl shadow-green-100/50">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                    </div>
+
+                                    <h3 className="text-sm font-black text-[var(--accent-dark)] uppercase tracking-[0.3em] mb-4">Official Certification</h3>
+                                    <h2 className="text-4xl font-serif text-[var(--primary)] italic mb-6">Certificate of Compliance</h2>
+
+                                    <div className="w-24 h-[2px] bg-[var(--accent)] mx-auto mb-8" />
+
+                                    <p className="text-lg text-[var(--text-muted)] leading-relaxed mb-8">
+                                        This is to certify that <span className="text-[var(--primary)] font-bold">Indah Morib Homestay</span> has successfully met all standards and requirements for
+                                    </p>
+
+                                    <div className="bg-[var(--surface)] inline-block px-10 py-5 rounded-2xl border-2 border-[var(--accent-light)] mb-8">
+                                        <h4 className="text-2xl font-black text-[var(--primary)] tracking-tight">TCC COMPLIANT 2026</h4>
+                                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-1">Trust, Corporate & Education Sector Standards</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-12 mt-12 border-t border-[var(--border)] pt-8">
+                                        <div className="text-left">
+                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Issue Date</p>
+                                            <p className="font-bold text-[var(--primary)]">January 15, 2026</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Verify ID</p>
+                                            <p className="font-bold text-[var(--primary)] font-mono">FI-TCC-2026-IMH</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-10">
+                                        <a
+                                            href="/TCC-Certificate.jpeg"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-[var(--accent)] transition-all shadow-lg shadow-black/5 hover:shadow-[var(--accent)]/20"
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                <polyline points="7 10 12 15 17 10" />
+                                                <line x1="12" y1="15" x2="12" y2="3" />
+                                            </svg>
+                                            View Official Document
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 }

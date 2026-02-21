@@ -102,6 +102,7 @@ export function BookingsPanel() {
         check_in: form.check_in,
         check_out: form.check_out,
         total_price: Number(form.total_price || 0),
+        payment_status: 'paid', // Default to paid for manual admin entries
       };
 
       const { error: insertError } = await supabase.from("bookings").insert(payload);
@@ -196,7 +197,8 @@ export function BookingsPanel() {
   const bookingsByDay = useMemo(() => {
     const map: Record<string, BookingRow[]> = {};
 
-    bookings.forEach((b) => {
+    // Only show 'paid' bookings on the calendar to avoid showing abandoned transactions
+    bookings.filter(b => b.payment_status === 'paid').forEach((b) => {
       if (!b.check_in || !b.check_out) return;
       const start = new Date(b.check_in);
       const end = new Date(b.check_out);
@@ -263,11 +265,10 @@ export function BookingsPanel() {
               return (
                 <div
                   key={key + String(inCurrentMonth)}
-                  className={`flex min-h-[4.75rem] flex-col rounded-lg border px-1.5 py-1 ${
-                    inCurrentMonth
-                      ? "border-[var(--border-subtle)] bg-[var(--surface)]"
-                      : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
-                  }`}
+                  className={`flex min-h-[4.75rem] flex-col rounded-lg border px-1.5 py-1 ${inCurrentMonth
+                    ? "border-[var(--border-subtle)] bg-[var(--surface)]"
+                    : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
+                    }`}
                 >
                   <div className="mb-1 flex items-center justify-between text-[10px]">
                     <span
@@ -418,7 +419,7 @@ export function BookingsPanel() {
             ) : (
               <ul className="space-y-1.5 text-[10px]">
                 {recentFive.map((b) => (
-                  <li key={b.id} className="flex items-start justify-between gap-2">
+                  <li key={b.id} className={`flex items-start justify-between gap-2 p-2 rounded-lg transition-colors ${b.payment_status !== 'paid' ? 'opacity-50 bg-gray-50' : 'bg-white'}`}>
                     <div>
                       <div className="font-medium text-[var(--text-strong)]">
                         {b.guest_name} · {getRoomTitle(b.room_id)}
