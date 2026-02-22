@@ -2,6 +2,7 @@ export type DashboardStats = {
   totalBookings: number;
   upcomingCheckIns: number;
   activeRooms: number;
+  bookings?: any[];
 };
 
 export type RoomSummary = {

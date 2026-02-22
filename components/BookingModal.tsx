@@ -475,10 +475,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
                             )}
 
+                            {/* Moved Unit Selection to Top */}
                             {units.length > 1 && (
-                                <div className="mb-10">
+                                <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
+                                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[var(--primary)] shadow-sm">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                                         </div>
                                         <div>
@@ -505,9 +506,9 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                         setCheckIn(null);
                                                         setCheckOut(null);
                                                     }}
-                                                    className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all ${isSelected
-                                                        ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
-                                                        : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                    className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all ${isSelected
+                                                        ? "border-[var(--accent)] bg-white text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                        : "border-transparent bg-white/50 text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
                                                         }`}
                                                 >
                                                     <span className="text-sm font-black uppercase tracking-tight">{u}</span>
@@ -596,11 +597,12 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <input
                                         type="time"
                                         required
+                                        min="15:00"
                                         value={checkInTime}
                                         onChange={(e) => setCheckInTime(e.target.value)}
                                         className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
                                     />
-                                    <span className="text-[10px] text-gray-500 mt-1 block">Default check-in is 3:00 PM</span>
+                                    <span className="text-[10px] text-gray-500 mt-1 block">Earliest check-in is 3:00 PM (15:00)</span>
                                 </div>
 
                                 <div className="group">

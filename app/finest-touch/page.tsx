@@ -14,6 +14,7 @@ const initialStats: DashboardStats = {
   totalBookings: 0,
   upcomingCheckIns: 0,
   activeRooms: 0,
+  bookings: [],
 };
 
 export default function FinestTouchPage() {
@@ -35,6 +36,7 @@ export default function FinestTouchPage() {
         const [
           { count: bookingsCount, error: bookingsError },
           { count: upcomingCount, error: upcomingError },
+          { data: bookingsData, error: bookingsDataError },
         ] = await Promise.all([
           supabase
             .from("bookings")
@@ -43,6 +45,10 @@ export default function FinestTouchPage() {
             .from("bookings")
             .select("*", { count: "exact", head: true })
             .gte("check_in", today),
+          supabase
+            .from("bookings")
+            .select("total_price, check_in, payment_status")
+            .eq("payment_status", "paid")
         ]);
 
         if (!bookingsError && typeof bookingsCount === "number") {
@@ -62,6 +68,7 @@ export default function FinestTouchPage() {
             upcomingCheckIns,
             activeRooms:
               roomsError || typeof roomsCount !== "number" ? 0 : roomsCount,
+            bookings: (bookingsData || []) as any[]
           });
         }
       } catch (error) {

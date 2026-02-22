@@ -42,10 +42,20 @@ const PALETTE = ["#DCE6FF", "#F9E1F3", "#FFE8D2", "#D9F3EB"];
 const toKey = (date: Date) => {
   try {
     if (isNaN(date.getTime())) return "invalid";
-    return date.toISOString().slice(0, 10);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
   } catch (e) {
     return "invalid";
   }
+};
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  if (!y || !m || !d) return dateStr;
+  return `${d}/${m}/${y}`;
 };
 
 export function BookingsPanel() {
@@ -58,6 +68,7 @@ export function BookingsPanel() {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDayBookings, setSelectedDayBookings] = useState<{ date: Date, bookings: BookingRow[] } | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
 
   const todayKey = useMemo(() => toKey(new Date()), []);
 
@@ -457,7 +468,7 @@ export function BookingsPanel() {
       const end = new Date(b.check_out);
 
       const cursor = new Date(start);
-      while (cursor <= end) {
+      while (cursor <= end) { // Reverted to <= to include checkout day as requested
         const key = toKey(cursor);
         if (key !== "invalid") {
           if (!map[key]) map[key] = [];
@@ -466,12 +477,31 @@ export function BookingsPanel() {
         cursor.setDate(cursor.getDate() + 1);
         if (cursor.getFullYear() > 2100) break; // Infinite loop protection
       }
+      // Special case for 1rd day bookings if check-in = check-out (though unlikely)
+      if (b.check_in === b.check_out) {
+        const key = b.check_in;
+        if (!map[key]) map[key] = [];
+        map[key].push(b);
+      }
     });
 
     return map;
   }, [bookings]);
 
-  const recentFive = bookings.slice(0, 5);
+  const filteredBookings = useMemo(() => {
+    if (!search.trim()) return bookings;
+    const s = search.toLowerCase();
+    return bookings.filter(b =>
+      b.guest_name?.toLowerCase().includes(s) ||
+      b.guest_email?.toLowerCase().includes(s) ||
+      b.check_in?.includes(s) ||
+      b.check_out?.includes(s) ||
+      getRoomTitle(b.room_id).toLowerCase().includes(s) ||
+      b.unit_name?.toLowerCase().includes(s)
+    );
+  }, [bookings, search]);
+
+  const recentFive = filteredBookings.slice(0, 10); // Show more if searching
 
   return (
     <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-4 shadow-sm">
@@ -768,9 +798,10 @@ export function BookingsPanel() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
-                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Time In</span>
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Time In (Min 15:00)</span>
                   <input
                     type="time"
+                    min="15:00"
                     className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.check_in_time}
                     onChange={(e) => handleChange("check_in_time", e.target.value)}
@@ -870,9 +901,23 @@ export function BookingsPanel() {
           </div>
 
           <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <h3 className="text-sm font-bold text-[var(--text-strong)] uppercase tracking-widest">Recent Bookings</h3>
-              {loading && <span className="text-xs text-[var(--text-muted)] animate-pulse">Loading…</span>}
+            <div className="mb-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-[var(--text-strong)] uppercase tracking-widest">Recent Bookings</h3>
+                {loading && <span className="text-xs text-[var(--text-muted)] animate-pulse">Loading…</span>}
+              </div>
+              <div className="relative group">
+                <input
+                  type="text"
+                  placeholder="Search name, date, room..."
+                  className="w-full rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-2.5 text-xs font-medium focus:border-[var(--primary)] outline-none transition-all"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--primary)] pointer-events-none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+              </div>
             </div>
 
             {recentFive.length === 0 && !loading ? (
@@ -891,7 +936,7 @@ export function BookingsPanel() {
                         {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
                       </div>
                       <div className="text-[var(--text-muted)] mt-1 font-medium">
-                        {b.check_in} – {b.check_out}
+                        {formatDate(b.check_in)} – {formatDate(b.check_out)}
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -935,7 +980,7 @@ export function BookingsPanel() {
           <div className="relative w-full max-w-lg rounded-2xl bg-[var(--surface)] p-6 shadow-2xl z-10 animate-scale-in">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[var(--text-strong)]">
-                Bookings for {selectedDayBookings.date.toLocaleDateString()}
+                Bookings for {formatDate(toKey(selectedDayBookings.date))}
               </h3>
               <button onClick={() => setSelectedDayBookings(null)} className="text-[var(--text-muted)] hover:text-[var(--text-strong)]">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -943,33 +988,40 @@ export function BookingsPanel() {
             </div>
 
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-              {selectedDayBookings.bookings.map(b => (
-                <div key={b.id} className={`rounded-xl border border-[var(--border-subtle)] p-4 shadow-sm bg-[var(--surface-elevated)] transition-all ${b.payment_status === 'pending' ? 'opacity-60 grayscale-[0.3]' : ''}`}>
-                  <div className="flex justify-between items-start mb-3">
-                    <span className="font-bold text-sm text-[var(--text-strong)]">{getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}</span>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold ${b.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                        {b.payment_status}
-                      </span>
-                      <button
-                        onClick={() => handleEdit(b)}
-                        className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
-                        Edit
-                      </button>
+              {selectedDayBookings.bookings.map(b => {
+                const colorIndex = (b.room_id || 0) % PALETTE.length;
+                const bg = PALETTE[colorIndex];
+                return (
+                  <div key={b.id}
+                    className={`rounded-xl border border-[var(--border-subtle)] p-4 shadow-sm transition-all ${b.payment_status === 'pending' ? 'opacity-60 grayscale-[0.3]' : ''}`}
+                    style={{ backgroundColor: bg }}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="font-bold text-sm text-[var(--text-strong)]">{getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}</span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold bg-white/40 shadow-sm text-gray-700`}>
+                          {b.payment_status}
+                        </span>
+                        <button
+                          onClick={() => handleEdit(b)}
+                          className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-sm space-y-2 text-[var(--text-muted)]">
+                      <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Guest:</span> <span>{b.guest_name}</span></p>
+                      <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Phone:</span> <span>{b.guest_email}</span></p>
+                      <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">IC:</span> <span>{b.ic_number || 'N/A'}</span></p>
+                      <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Package:</span> <span>{b.package_name || 'Standard Package'}</span></p>
+                      <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Stay:</span> <span>{formatDate(b.check_in)} – {formatDate(b.check_out)}</span></p>
+                      <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Price:</span> <span>RM {b.total_price}</span></p>
                     </div>
                   </div>
-                  <div className="text-sm space-y-2 text-[var(--text-muted)]">
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Guest:</span> <span>{b.guest_name}</span></p>
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Phone:</span> <span>{b.guest_email}</span></p>
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">IC:</span> <span>{b.ic_number || 'N/A'}</span></p>
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Package:</span> <span>{b.package_name || 'Standard Package'}</span></p>
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Stay:</span> <span>{b.check_in} – {b.check_out}</span></p>
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Price:</span> <span>RM {b.total_price}</span></p>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
