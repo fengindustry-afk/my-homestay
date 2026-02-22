@@ -193,23 +193,53 @@ export function BookingsPanel() {
         if (found) updates.room_id = String(found.id);
       }
       if (key.includes('tarikh')) {
-        const dates = val.split(/to|until|-|–/i); // Added en-dash handle
         let checkInVal = "";
         let checkOutVal = "";
 
-        if (dates.length >= 2) {
-          checkInVal = dates[0].trim();
-          checkOutVal = dates[1].trim();
+        // Handle shorthand pattern like "22-24/3/2026"
+        const shorthandMatch = val.match(/^(\d{1,2})\s*[-–]\s*(\d{1,2})([/.-].+)$/);
+        if (shorthandMatch) {
+          const dayStart = shorthandMatch[1];
+          const dayEnd = shorthandMatch[2];
+          const tail = shorthandMatch[3]; // e.g. "/3/2026"
+          checkInVal = `${dayStart}${tail}`;
+          checkOutVal = `${dayEnd}${tail}`;
         } else {
-          checkInVal = val.trim();
+          const dates = val.split(/to|until|(?<!\d)[-–]|[-–](?!\d)|(?<=\d)[-–](?=\d)|(?<=\d)[-–](?=\d)/i);
+          // The regex above is tricky. Let's simplify.
+          const rangeParts = val.split(/to|until/i);
+          if (rangeParts.length >= 2) {
+            checkInVal = rangeParts[0].trim();
+            checkOutVal = rangeParts[1].trim();
+          } else {
+            // Try splitting by dash but only if it's acting as a separator between full dates or days
+            const dashParts = val.split(/[-–]/);
+            if (dashParts.length >= 2) {
+              checkInVal = dashParts[0].trim();
+              checkOutVal = dashParts[1].trim();
+
+              // If checkIn is just a day and checkOut has month/year
+              if (!checkInVal.includes('/') && !checkInVal.includes('-') && (checkOutVal.includes('/') || checkOutVal.includes('-'))) {
+                const parts = checkOutVal.split(/[/-]/);
+                if (parts.length === 3) {
+                  checkInVal = `${checkInVal}/${parts[1]}/${parts[2]}`;
+                }
+              }
+            } else {
+              checkInVal = val.trim();
+            }
+          }
         }
 
         // Attempt to normalize DD/MM/YYYY to YYYY-MM-DD
         const normalizeDate = (d: string) => {
+          if (!d) return "";
           const parts = d.split(/[/-]/);
           if (parts.length === 3) {
+            let year = parts[2];
+            if (year.length === 2) year = `20${year}`;
             if (parts[0].length === 4) return d; // Already YYYY-MM-DD
-            if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // DD/MM/YYYY
+            return `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // DD/MM/YYYY
           }
           return d;
         };
@@ -554,7 +584,7 @@ export function BookingsPanel() {
                 </div>
                 <p className="text-[10px] text-[var(--text-muted)] mb-3 leading-tight font-medium">
                   Paste the details from WhatsApp (Tarikh, Nama Penuh, No. Ic, No. Tel, Jenis homestay) to auto-fill the form!
-                  <br /><span className="opacity-70">Example: Tarikh: 22/02/2026, Nama Penuh: John, No. Ic: 000000000000, No. Tel: 0123456789</span>
+                  <br /><span className="opacity-70">Example: Tarikh: 22-24/3/2026, Nama Penuh: John, No. Ic: 000000000000, No. Tel: 0123456789</span>
                 </p>
                 <textarea
                   className="w-full rounded-xl border-2 border-[var(--border-subtle)] bg-white px-3 py-2 text-xs font-medium outline-none transition-all focus:border-[var(--primary)] min-h-[80px]"
