@@ -26,6 +26,7 @@ export type BookingRow = {
   units_count?: number | null;
   payment_status: string | null;
   unit_name?: string | null;
+  ic_number?: string | null;
   created_at: string;
 };
 

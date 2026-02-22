@@ -21,6 +21,7 @@ interface BookingModalProps {
 export default function BookingModal({ isOpen, onClose, room }: BookingModalProps) {
     const [phone, setPhone] = useState("");
     const [name, setName] = useState("");
+    const [icNumber, setIcNumber] = useState("");
     const [checkInTime, setCheckInTime] = useState("15:00");
     const [checkOutTime, setCheckOutTime] = useState("12:00");
     const [loading, setLoading] = useState(false);
@@ -264,6 +265,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     title: room.title,
                     guestPhone: phone,
                     guestName: name,
+                    icNumber: icNumber,
                     checkIn: checkInFormatted,
                     checkOut: checkOutFormatted,
                     checkInTime,
@@ -566,7 +568,19 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
 
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Phone Number</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">IC Number</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                        placeholder="e.g. 123456-78-9012"
+                                        value={icNumber}
+                                        onChange={(e) => setIcNumber(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">WhatsApp Number</label>
                                     <input
                                         type="tel"
                                         required

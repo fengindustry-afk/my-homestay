@@ -8,7 +8,7 @@ const supabase = createClient(
 
 export async function POST(req: Request) {
   try {
-    const { listingId, price, title, guestPhone, guestName, checkIn, checkOut, unitName, packageName, checkInTime, checkOutTime, unitsCount } = await req.json();
+    const { listingId, price, title, guestPhone, guestName, icNumber, checkIn, checkOut, unitName, packageName, checkInTime, checkOutTime, unitsCount } = await req.json();
 
     if (!listingId || !price || !guestPhone || !guestName || !checkIn || !checkOut) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
         room_id: listingId,
         guest_name: guestName,
         guest_email: guestPhone, // Maps to guest_email column since guest_phone does not exist
+        ic_number: icNumber,
         check_in: checkIn,
         check_out: checkOut,
         total_price: price,

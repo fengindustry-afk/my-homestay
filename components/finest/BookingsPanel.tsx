@@ -15,6 +15,7 @@ type BookingFormState = {
   check_out_time: string;
   package_name: string;
   units_count: string;
+  ic_number: string;
   price_mode: "default" | "promo";
   total_price: string;
 };
@@ -30,6 +31,7 @@ const emptyForm: BookingFormState = {
   check_out_time: "12:00",
   package_name: "Basic Package",
   units_count: "1",
+  ic_number: "",
   price_mode: "default",
   total_price: "",
 };
@@ -65,7 +67,7 @@ export function BookingsPanel() {
           supabase
             .from("bookings")
             .select(
-              "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
+              "id,room_id,unit_name,guest_name,guest_email,ic_number,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
             )
             .order("check_in", { ascending: true }),
         ]);
@@ -161,6 +163,48 @@ export function BookingsPanel() {
     }
   }, [form.check_in, form.check_out]);
 
+  const [wsText, setWsText] = useState("");
+
+  const handleWhatsAppParse = () => {
+    if (!wsText.trim()) return;
+    const lines = wsText.split('\n');
+
+    const updates: Partial<BookingFormState> = {};
+
+    lines.forEach(line => {
+      const part = line.includes(':') ? line.split(':') : line.split('=');
+      if (part.length < 2) return;
+
+      const key = part[0].trim().toLowerCase();
+      const val = part.slice(1).join(':').trim(); // Join back in case of time in val
+
+      if (key.includes('nama penuh')) updates.guest_name = val;
+      if (key.includes('no. ic')) updates.ic_number = val;
+      if (key.includes('no. tel')) updates.guest_email = val;
+      if (key.includes('jenis homestay')) {
+        const found = rooms.find(r => r.title.toLowerCase().includes(val.toLowerCase()));
+        if (found) updates.room_id = String(found.id);
+      }
+      if (key.includes('tarikh')) {
+        const dates = val.split(/to|until|-/i);
+        if (dates.length >= 2) {
+          updates.check_in = dates[0].trim();
+          updates.check_out = dates[1].trim();
+        } else {
+          updates.check_in = val.trim();
+        }
+      }
+    });
+
+    if (Object.keys(updates).length > 0) {
+      setForm(prev => ({ ...prev, ...updates }));
+      setWsText("");
+      alert("Details translated and filled!");
+    } else {
+      alert("Could not find any matching fields in the pasted text.");
+    }
+  };
+
   const handleAdminUnitToggle = (unit: string) => {
     const currentUnits = form.unit_name ? form.unit_name.split(", ").filter(Boolean) : [];
     let newUnits;
@@ -192,6 +236,7 @@ export function BookingsPanel() {
         unit_name: form.unit_name || null,
         guest_name: form.guest_name,
         guest_email: form.guest_email,
+        ic_number: form.ic_number,
         check_in: form.check_in,
         check_out: form.check_out,
         package_name: `${form.package_name || 'Standard Package'} (In: ${form.check_in_time}, Out: ${form.check_out_time})`,
@@ -250,6 +295,7 @@ export function BookingsPanel() {
       unit_name: booking.unit_name || "",
       guest_name: booking.guest_name || "",
       guest_email: booking.guest_email || "",
+      ic_number: booking.ic_number || "",
       check_in: booking.check_in || "",
       check_out: booking.check_out || "",
       check_in_time: checkInTime,
@@ -454,10 +500,39 @@ export function BookingsPanel() {
 
         <div className="space-y-6">
           <div id="booking-form" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-[var(--text-strong)]">{editingId ? "Edit booking" : "Create a booking"}</h3>
-            <p className="mt-1 text-xs text-[var(--text-muted)]">
-              {editingId ? "Update existing reservation details." : "Record phone, WhatsApp or walk‑in reservations manually."}
-            </p>
+            <div className="mb-6 space-y-3">
+              <h2 className="text-xl font-black text-[var(--text-strong)] uppercase tracking-tight">{editingId ? "Edit booking" : "Create a booking"}</h2>
+
+              {/* WhatsApp Autocomplete Section */}
+              <div className="rounded-2xl border-2 border-dashed border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4 transition-all hover:border-[var(--primary)]/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.433 5.628 1.433h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-[var(--primary)]">WhatsApp Autocomplete</span>
+                </div>
+                <p className="text-[10px] text-[var(--text-muted)] mb-3 leading-tight font-medium">
+                  Paste the details from WhatsApp (Tarikh, Nama Penuh, No. Ic, No. Tel, Jenis homestay) to auto-fill the form!
+                </p>
+                <textarea
+                  className="w-full rounded-xl border-2 border-[var(--border-subtle)] bg-white px-3 py-2 text-xs font-medium outline-none transition-all focus:border-[var(--primary)] min-h-[80px]"
+                  placeholder="Paste WhatsApp message here..."
+                  value={wsText}
+                  onChange={(e) => setWsText(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={handleWhatsAppParse}
+                  className="mt-2 w-full py-2.5 rounded-xl bg-[var(--primary)] text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all active:scale-95"
+                >
+                  Translate & Auto-Fill
+                </button>
+              </div>
+
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
+                {editingId ? "Update existing reservation details." : "Record phone, WhatsApp or walk‑in reservations manually."}
+              </p>
+            </div>
 
             <form onSubmit={handleSave} className="mt-5 grid gap-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
@@ -576,6 +651,17 @@ export function BookingsPanel() {
                   value={form.guest_email}
                   onChange={(e) => handleChange("guest_email", e.target.value)}
                   placeholder="+60123456789"
+                  required
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">IC Number</span>
+                <input
+                  className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
+                  value={form.ic_number}
+                  onChange={(e) => handleChange("ic_number", e.target.value)}
+                  placeholder="e.g. 123456-78-9012"
                   required
                 />
               </label>
@@ -805,6 +891,7 @@ export function BookingsPanel() {
                   <div className="text-sm space-y-2 text-[var(--text-muted)]">
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Guest:</span> <span>{b.guest_name}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Phone:</span> <span>{b.guest_email}</span></p>
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">IC:</span> <span>{b.ic_number || 'N/A'}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Package:</span> <span>{b.package_name || 'Standard Package'}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Stay:</span> <span>{b.check_in} – {b.check_out}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Price:</span> <span>RM {b.total_price}</span></p>
