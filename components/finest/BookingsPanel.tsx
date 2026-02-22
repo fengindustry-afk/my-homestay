@@ -28,7 +28,7 @@ const emptyForm: BookingFormState = {
   check_out: "",
   check_in_time: "15:00",
   check_out_time: "12:00",
-  package_name: "Room Only",
+  package_name: "Basic Package",
   units_count: "1",
   price_mode: "default",
   total_price: "",
@@ -48,6 +48,9 @@ export function BookingsPanel() {
   const [form, setForm] = useState<BookingFormState>(emptyForm);
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDayBookings, setSelectedDayBookings] = useState<{ date: Date, bookings: BookingRow[] } | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const todayKey = useMemo(() => toKey(new Date()), []);
 
   useEffect(() => {
     let isMounted = true;
@@ -64,7 +67,6 @@ export function BookingsPanel() {
             .select(
               "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
             )
-            .neq('payment_status', 'pending')
             .order("check_in", { ascending: true }),
         ]);
 
@@ -104,16 +106,7 @@ export function BookingsPanel() {
     const room = rooms.find(r => r.id === roomIdNum);
     if (!room) return;
 
-    let basePrice = room.price || 0;
-    const title = room.title.toLowerCase();
-    if (title.includes("homestay 2")) {
-      if (form.package_name.includes("Lower")) basePrice = 350;
-      else if (form.package_name.includes("Upper")) basePrice = 300;
-    } else if (form.package_name === "Basic Package") {
-      basePrice = room.basic_price || basePrice;
-    } else if (form.package_name === "Full Package") {
-      basePrice = room.full_price || basePrice;
-    }
+    const roomTitle = room.title.toLowerCase();
 
     let nights = 1;
     if (form.check_in && form.check_out) {
@@ -124,6 +117,21 @@ export function BookingsPanel() {
       nights = diffDays > 0 ? diffDays : 1;
     }
 
+    let subtotal = 0;
+    if (roomTitle.includes("homestay 2")) {
+      const selected = form.unit_name.split(", ").filter(Boolean);
+      selected.forEach((u) => {
+        if (u.includes("1") || u.includes("2")) subtotal += 350; // Lower Floor units
+        else if (u.includes("3") || u.includes("4")) subtotal += 300; // Upper Floor units
+      });
+      if (selected.length === 0) subtotal = Number(room.price || 0); // Fallback if no units selected
+    } else {
+      let basePrice = Number(room.price || 0);
+      if (form.package_name === "Basic Package" && room.basic_price) basePrice = Number(room.basic_price);
+      if (form.package_name === "Full Package" && room.full_price) basePrice = Number(room.full_price);
+      subtotal = basePrice * Number(form.units_count || 1);
+    }
+
     // Late check-out calculation
     const [hours, mins] = form.check_out_time.split(":").map(Number);
     let extraHours = 0;
@@ -131,39 +139,46 @@ export function BookingsPanel() {
       extraHours = hours - 12 + (mins > 0 ? 1 : 0);
     }
 
-    const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
+    const isHomestay3or5 = roomTitle.includes("homestay 3") || roomTitle.includes("homestay 5");
     const lateFeeRate = isHomestay3or5 ? 20 : 10;
     const totalLateFee = extraHours * lateFeeRate;
 
-    const units = Number(form.units_count) || 1;
-    const computed = (basePrice * units * nights) + totalLateFee;
+    const computed = (subtotal * nights) + totalLateFee;
 
     if (String(computed) !== form.total_price) {
       setForm(prev => ({ ...prev, total_price: String(computed) }));
     }
-  }, [form.room_id, form.package_name, form.units_count, form.check_in, form.check_out, form.check_in_time, form.check_out_time, form.price_mode, rooms]);
+  }, [form.room_id, form.package_name, form.units_count, form.check_in, form.check_out, form.check_in_time, form.check_out_time, form.price_mode, rooms, form.unit_name]);
 
-  // Sync unit when package changes (Homestay 2)
+  // Ensure check-out is after check-in
   useEffect(() => {
-    const room = rooms.find(r => r.id === Number(form.room_id));
-    if (room?.title.toLowerCase().includes("homestay 2")) {
-      const possibleUnits: string[] = [];
-      if (form.package_name.includes("Unit 1")) possibleUnits.push("Unit 1 (Left)");
-      else if (form.package_name.includes("Unit 2")) possibleUnits.push("Unit 2 (Right)");
-      else if (form.package_name.includes("Unit 3")) possibleUnits.push("Unit 3 (Left)");
-      else if (form.package_name.includes("Unit 4")) possibleUnits.push("Unit 4 (Right)");
-
-      if (possibleUnits.length === 1 && form.unit_name !== possibleUnits[0]) {
-        setForm(prev => ({ ...prev, unit_name: possibleUnits[0] }));
+    if (form.check_in && form.check_out) {
+      if (form.check_out <= form.check_in) {
+        const nextDay = new Date(form.check_in);
+        nextDay.setDate(nextDay.getDate() + 1);
+        setForm(prev => ({ ...prev, check_out: toKey(nextDay) }));
       }
     }
-  }, [form.package_name, form.room_id, rooms]);
+  }, [form.check_in, form.check_out]);
+
+  const handleAdminUnitToggle = (unit: string) => {
+    const currentUnits = form.unit_name ? form.unit_name.split(", ").filter(Boolean) : [];
+    let newUnits;
+    if (currentUnits.includes(unit)) {
+      newUnits = currentUnits.filter(u => u !== unit);
+    } else {
+      newUnits = [...currentUnits, unit];
+    }
+    const unitName = newUnits.join(", ");
+    const unitsCount = String(newUnits.length || 1);
+    setForm(prev => ({ ...prev, unit_name: unitName, units_count: unitsCount }));
+  };
 
   const handleChange = (field: keyof BookingFormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.room_id || !form.guest_name || !form.guest_email || !form.check_in || !form.check_out) {
       alert("Please fill in all required fields.");
@@ -179,26 +194,34 @@ export function BookingsPanel() {
         guest_email: form.guest_email,
         check_in: form.check_in,
         check_out: form.check_out,
-        package_name: `${form.package_name || 'Room Only'} (In: ${form.check_in_time}, Out: ${form.check_out_time})`,
+        package_name: `${form.package_name || 'Standard Package'} (In: ${form.check_in_time}, Out: ${form.check_out_time})`,
         units_count: Number(form.units_count || 1),
         total_price: Number(form.total_price || 0),
         payment_status: 'paid', // Default to paid for manual admin entries
       };
 
-      const { error: insertError } = await supabase.from("bookings").insert(payload);
-      if (insertError) {
-        alert(`Could not create booking: ${insertError.message}`);
-        return;
+      if (editingId) {
+        const { error: updateError } = await supabase.from("bookings").update(payload).eq("id", editingId);
+        if (updateError) {
+          alert(`Could not update booking: ${updateError.message}`);
+          return;
+        }
+      } else {
+        const { error: insertError } = await supabase.from("bookings").insert(payload);
+        if (insertError) {
+          alert(`Could not create booking: ${insertError.message}`);
+          return;
+        }
       }
 
       setForm(emptyForm);
+      setEditingId(null);
 
       const refreshed = await supabase
         .from("bookings")
         .select(
           "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
         )
-        .neq('payment_status', 'pending')
         .order("check_in", { ascending: true });
       if (!refreshed.error) {
         setBookings((refreshed.data || []) as BookingRow[]);
@@ -206,6 +229,40 @@ export function BookingsPanel() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEdit = (booking: BookingRow) => {
+    // Extract time from package_name if possible: "Standard Package (In: 15:00, Out: 12:00)"
+    let checkInTime = "15:00";
+    let checkOutTime = "12:00";
+    let purePackageName = booking.package_name || "Standard Package";
+
+    const timeRegex = /\(In: ([\d:]+), Out: ([\d:]+)\)/;
+    const match = booking.package_name?.match(timeRegex);
+    if (match && booking.package_name) {
+      checkInTime = match[1];
+      checkOutTime = match[2];
+      purePackageName = booking.package_name.split(" (In:")[0];
+    }
+
+    setForm({
+      room_id: String(booking.room_id),
+      unit_name: booking.unit_name || "",
+      guest_name: booking.guest_name || "",
+      guest_email: booking.guest_email || "",
+      check_in: booking.check_in || "",
+      check_out: booking.check_out || "",
+      check_in_time: checkInTime,
+      check_out_time: checkOutTime,
+      package_name: purePackageName,
+      units_count: String(booking.units_count || 1),
+      price_mode: "promo", // Default to promo for edits manually
+      total_price: String(booking.total_price || 0),
+    });
+    setEditingId(booking.id);
+    setSelectedDayBookings(null); // Close modal if open
+    // Scroll to form
+    document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleStatusChange = async (id: number, payment_status: string) => {
@@ -278,8 +335,9 @@ export function BookingsPanel() {
   const bookingsByDay = useMemo(() => {
     const map: Record<string, BookingRow[]> = {};
 
-    // Only show 'paid' bookings on the calendar to avoid showing abandoned transactions
-    bookings.filter(b => b.payment_status === 'paid').forEach((b) => {
+    // Show 'paid' and 'pending' bookings on the calendar
+    // 'pending' will be visually dimmed
+    bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'pending').forEach((b) => {
       if (!b.check_in || !b.check_out) return;
       const start = new Date(b.check_in);
       const end = new Date(b.check_out);
@@ -307,21 +365,21 @@ export function BookingsPanel() {
             A monthly view that uses soft colours to show busy days and gaps so you can quickly spot vacancies.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
           <button
             type="button"
             onClick={() => setMonthOffset((v) => v - 1)}
-            className="rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1 hover:bg-[color-mix(in_srgb,var(--surface)_80%,white_20%)]"
+            className="rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--surface)_80%,white_20%)]"
           >
             ←
           </button>
-          <span className="min-w-[7rem] text-center font-semibold text-[var(--text-strong)]">
+          <span className="min-w-[8rem] text-center font-semibold text-[var(--text-strong)] text-base">
             {monthLabel}
           </span>
           <button
             type="button"
             onClick={() => setMonthOffset((v) => v + 1)}
-            className="rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1 hover:bg-[color-mix(in_srgb,var(--surface)_80%,white_20%)]"
+            className="rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--surface)_80%,white_20%)]"
           >
             →
           </button>
@@ -329,59 +387,61 @@ export function BookingsPanel() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2.1fr)_minmax(0,1.4fr)]">
-        <div className="space-y-2">
-          <div className="grid grid-cols-7 gap-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+        <div className="space-y-4">
+          <div className="grid grid-cols-7 gap-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
             {DAY_LABELS.map((label) => (
               <div key={label} className="px-2 py-1 text-center">
                 {label}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1 text-xs">
+          <div className="grid grid-cols-7 gap-2 text-sm">
             {calendarCells.map(({ date, inCurrentMonth }) => {
               const key = toKey(date);
               const dayBookings = bookingsByDay[key] || [];
-              const isToday = key === toKey(new Date());
+              const isToday = key === todayKey;
+              const isPast = key < todayKey;
 
               return (
                 <div
                   key={key + String(inCurrentMonth)}
                   onClick={() => dayBookings.length > 0 && setSelectedDayBookings({ date, bookings: dayBookings })}
-                  className={`flex min-h-[4.75rem] flex-col rounded-lg border px-1.5 py-1 ${inCurrentMonth
+                  className={`flex min-h-[5.5rem] flex-col rounded-xl border px-2 py-2 ${inCurrentMonth
                     ? "border-[var(--border-subtle)] bg-[var(--surface)]"
                     : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
-                    } ${dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] transition-colors' : ''}`}
+                    } ${dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] shadow-sm transition-all hover:-translate-y-0.5' : ''} ${isPast ? 'opacity-30 grayscale-[0.8] pointer-events-none bg-[var(--surface-dark)]' : ''}`}
                 >
-                  <div className="mb-1 flex items-center justify-between text-[10px]">
+                  <div className="mb-2 flex items-center justify-between text-[11px]">
                     <span
                       className={
-                        isToday ? "rounded-full bg-[var(--primary)] px-1.5 py-0.5 text-[10px] text-white" : ""
+                        isToday ? "rounded-full bg-[var(--primary)] px-2 py-1 text-[11px] text-white font-bold" : "font-medium"
                       }
                     >
                       {date.getDate()}
                     </span>
                     {dayBookings.length > 0 && (
-                      <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent_88%)] px-1.5 py-0.5 text-[9px] text-[var(--primary)]">
+                      <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent_88%)] px-2 py-0.5 text-[10px] font-bold text-[var(--primary)] uppercase tracking-tight">
                         {dayBookings.length} stay{dayBookings.length > 1 ? "s" : ""}
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col gap-1">
+                  <div className="flex flex-1 flex-col gap-1.5">
                     {dayBookings.slice(0, 2).map((b) => {
                       const colorIndex = (b.room_id || 0) % PALETTE.length;
                       const bg = PALETTE[colorIndex];
+                      const isPending = b.payment_status === 'pending';
                       return (
                         <div
                           key={b.id}
-                          className="truncate rounded-md px-1.5 py-0.5 text-[9px] font-medium text-[var(--text-strong)] shadow-sm"
+                          className={`truncate rounded-md px-2 py-1 text-[10px] font-semibold text-[var(--text-strong)] shadow-sm ${isPending ? 'opacity-40 grayscale-[0.5]' : ''}`}
                           style={{ backgroundColor: bg }}
                         >
-                          {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`} · {b.guest_name}
+                          {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
                         </div>
                       );
                     })}
                     {dayBookings.length > 2 && (
-                      <span className="text-[9px] text-[var(--text-muted)]">
+                      <span className="text-[10px] font-medium text-[var(--text-muted)] pl-1">
                         +{dayBookings.length - 2} more
                       </span>
                     )}
@@ -392,19 +452,19 @@ export function BookingsPanel() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3">
-            <h3 className="text-xs font-semibold text-[var(--text-strong)]">Create a booking</h3>
-            <p className="mt-1 text-[10px] text-[var(--text-muted)]">
-              Record phone, WhatsApp or walk‑in reservations and see them appear directly on the calendar.
+        <div className="space-y-6">
+          <div id="booking-form" className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-[var(--text-strong)]">{editingId ? "Edit booking" : "Create a booking"}</h3>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              {editingId ? "Update existing reservation details." : "Record phone, WhatsApp or walk‑in reservations manually."}
             </p>
 
-            <form onSubmit={handleCreate} className="mt-3 grid gap-2 text-[10px]">
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Room</span>
+            <form onSubmit={handleSave} className="mt-5 grid gap-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Room</span>
                   <select
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary)]/10 outline-none transition-all"
                     value={form.room_id}
                     onChange={(e) => {
                       handleChange("room_id", e.target.value);
@@ -421,50 +481,98 @@ export function BookingsPanel() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Unit (if any)</span>
-                  <select
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
-                    value={form.unit_name}
-                    onChange={(e) => handleChange("unit_name", e.target.value)}
-                  >
-                    <option value="">No unit</option>
-                    {(() => {
-                      const roomTitle = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
-                      const pkg = form.package_name;
-                      if (roomTitle.includes("homestay 2")) {
-                        if (pkg.includes("Unit 1")) return <option value="Unit 1 (Left)">Unit 1 (Left)</option>;
-                        if (pkg.includes("Unit 2")) return <option value="Unit 2 (Right)">Unit 2 (Right)</option>;
-                        if (pkg.includes("Unit 3")) return <option value="Unit 3 (Left)">Unit 3 (Left)</option>;
-                        if (pkg.includes("Unit 4")) return <option value="Unit 4 (Right)">Unit 4 (Right)</option>;
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Unit (if any)</span>
+                  {(() => {
+                    const roomTitle = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
+                    const isMultiUnit = roomTitle.includes("homestay 2") || roomTitle.includes("homestay 4") || roomTitle.includes("homestay 6");
 
-                        if (pkg.includes("Lower")) return ["Unit 1 (Left)", "Unit 2 (Right)"].map(u => <option key={u} value={u}>{u}</option>);
-                        if (pkg.includes("Upper")) return ["Unit 3 (Left)", "Unit 4 (Right)"].map(u => <option key={u} value={u}>{u}</option>);
-                        return ["Unit 1 (Left)", "Unit 2 (Right)", "Unit 3 (Left)", "Unit 4 (Right)"].map(u => <option key={u} value={u}>{u}</option>);
+                    if (isMultiUnit) {
+                      const selected = form.unit_name.split(", ").filter(Boolean);
+                      if (roomTitle.includes("homestay 2")) {
+                        const lower = ["Unit 1 (Left)", "Unit 2 (Right)"];
+                        const upper = ["Unit 3 (Left)", "Unit 4 (Right)"];
+                        return (
+                          <div className="space-y-4 py-2">
+                            <div>
+                              <p className="text-[10px] font-black uppercase text-[var(--primary)] mb-2 opacity-60">Lower Floor (RM350)</p>
+                              <div className="flex flex-wrap gap-2">
+                                {lower.map(u => (
+                                  <button key={u} type="button" onClick={() => handleAdminUnitToggle(u)}
+                                    className={`px-4 py-2.5 rounded-xl border-2 text-[11px] font-black uppercase tracking-tight transition-all ${selected.includes(u)
+                                      ? "bg-[var(--primary)] border-[var(--primary)] text-white shadow-lg translate-y-[-1px]"
+                                      : "bg-[var(--surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--primary)]"}`}
+                                  > {u} </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase text-[var(--primary)] mb-2 opacity-60">Upper Floor (RM300)</p>
+                              <div className="flex flex-wrap gap-2">
+                                {upper.map(u => (
+                                  <button key={u} type="button" onClick={() => handleAdminUnitToggle(u)}
+                                    className={`px-4 py-2.5 rounded-xl border-2 text-[11px] font-black uppercase tracking-tight transition-all ${selected.includes(u)
+                                      ? "bg-[var(--primary)] border-[var(--primary)] text-white shadow-lg translate-y-[-1px]"
+                                      : "bg-[var(--surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--primary)]"}`}
+                                  > {u} </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
                       }
-                      if (roomTitle.includes("homestay 4")) return ["Unit Right", "Unit Left"].map(u => <option key={u} value={u}>{u}</option>);
-                      if (roomTitle.includes("homestay 6")) return ["Unit Right", "Unit Left", "Main Unit"].map(u => <option key={u} value={u}>{u}</option>);
-                      return null;
-                    })()}
-                  </select>
+
+                      let allUnits: string[] = [];
+                      if (roomTitle.includes("homestay 4")) allUnits = ["Unit Right", "Unit Left"];
+                      else if (roomTitle.includes("homestay 6")) allUnits = ["Unit Right", "Unit Left", "Main Unit"];
+
+                      return (
+                        <div className="flex flex-wrap gap-2 py-2">
+                          {allUnits.map(u => (
+                            <button
+                              key={u}
+                              type="button"
+                              onClick={() => handleAdminUnitToggle(u)}
+                              className={`px-4 py-2.5 rounded-xl border-2 text-[11px] font-black uppercase tracking-tight transition-all ${selected.includes(u)
+                                ? "bg-[var(--primary)] border-[var(--primary)] text-white shadow-lg translate-y-[-2px]"
+                                : "bg-[var(--surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--primary)] hover:bg-white"
+                                }`}
+                            >
+                              {u}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    }
+                    return (
+                      <select
+                        className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
+                        value={form.unit_name}
+                        onChange={(e) => handleChange("unit_name", e.target.value)}
+                      >
+                        <option value="">No unit</option>
+                      </select>
+                    );
+                  })()}
                 </label>
               </div>
 
-              <label className="flex flex-col gap-1">
-                <span className="font-medium text-[var(--text-muted)]">Guest name</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Guest Name</span>
                 <input
-                  className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                  className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                   value={form.guest_name}
                   onChange={(e) => handleChange("guest_name", e.target.value)}
+                  placeholder="e.g. John Doe"
                   required
                 />
               </label>
 
-              <label className="flex flex-col gap-1">
-                <span className="font-medium text-[var(--text-muted)]">Guest phone</span>
+              <label className="flex flex-col gap-1.5">
+                <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Guest Phone</span>
                 <input
                   type="tel"
-                  className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                  className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                   value={form.guest_email}
                   onChange={(e) => handleChange("guest_email", e.target.value)}
                   placeholder="+60123456789"
@@ -472,44 +580,50 @@ export function BookingsPanel() {
                 />
               </label>
 
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Check-in</span>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Check-in</span>
                   <input
                     type="date"
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    min={todayKey}
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.check_in}
                     onChange={(e) => handleChange("check_in", e.target.value)}
                     required
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Check-out</span>
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Check-out</span>
                   <input
                     type="date"
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    min={form.check_in ? (() => {
+                      const d = new Date(form.check_in);
+                      d.setDate(d.getDate() + 1);
+                      return toKey(d);
+                    })() : todayKey}
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.check_out}
                     onChange={(e) => handleChange("check_out", e.target.value)}
                     required
                   />
                 </label>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Time In</span>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Time In</span>
                   <input
                     type="time"
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.check_in_time}
                     onChange={(e) => handleChange("check_in_time", e.target.value)}
                     required
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Time Out</span>
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Time Out</span>
                   <input
                     type="time"
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.check_out_time}
                     onChange={(e) => handleChange("check_out_time", e.target.value)}
                     required
@@ -517,30 +631,20 @@ export function BookingsPanel() {
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Package</span>
+              <div className="grid grid-cols-1">
+                <label className={`flex flex-col gap-1.5 ${rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase().includes("homestay 2") ? 'hidden' : ''}`}>
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Package</span>
                   <select
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.package_name}
                     onChange={(e) => handleChange("package_name", e.target.value)}
                   >
                     {(() => {
                       const room = rooms.find(r => r.id === Number(form.room_id));
                       const title = room?.title.toLowerCase() || "";
-                      if (title.includes("homestay 2")) {
-                        return (
-                          <>
-                            <option value="Lower Floor - Unit 1 (Left)">Lower Floor - Unit 1 (Left)</option>
-                            <option value="Lower Floor - Unit 2 (Right)">Lower Floor - Unit 2 (Right)</option>
-                            <option value="Upper Floor - Unit 3 (Left)">Upper Floor - Unit 3 (Left)</option>
-                            <option value="Upper Floor - Unit 4 (Right)">Upper Floor - Unit 4 (Right)</option>
-                          </>
-                        );
-                      }
+                      if (title.includes("homestay 2")) return null;
                       return (
                         <>
-                          <option value="Room Only">Room Only</option>
                           <option value="Basic Package">Basic Package</option>
                           <option value="Full Package">Full Package</option>
                         </>
@@ -548,24 +652,13 @@ export function BookingsPanel() {
                     })()}
                   </select>
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Units</span>
-                  <input
-                    type="number"
-                    min="1"
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
-                    value={form.units_count}
-                    onChange={(e) => handleChange("units_count", e.target.value)}
-                    required
-                  />
-                </label>
               </div>
 
-              <div className="grid grid-cols-[1fr_2fr] gap-2">
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">Price Mode</span>
+              <div className="grid grid-cols-[1.5fr_2fr] gap-3">
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Price Mode</span>
                   <select
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.price_mode}
                     onChange={(e) => handleChange("price_mode", e.target.value as "default" | "promo")}
                   >
@@ -573,76 +666,101 @@ export function BookingsPanel() {
                     <option value="promo">Promo / Custom</option>
                   </select>
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="font-medium text-[var(--text-muted)]">
-                    Total price (RM) {form.price_mode === "default" && "(Auto)"}
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">
+                    Total Price (RM) {form.price_mode === "default" && "(Auto)"}
                   </span>
                   <input
                     type="number"
                     min="0"
                     disabled={form.price_mode === "default"}
-                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1 disabled:opacity-50"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium disabled:opacity-50 focus:border-[var(--primary)] outline-none transition-all"
                     value={form.total_price}
                     onChange={(e) => handleChange("total_price", e.target.value)}
                   />
                 </label>
               </div>
 
-              <button
-                type="submit"
-                className="mt-1 inline-flex w-full items-center justify-center rounded-md bg-[var(--primary)] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm hover:opacity-90 disabled:opacity-60"
-                disabled={saving}
-              >
-                {saving ? "Saving…" : "Save booking"}
-              </button>
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="flex-1 inline-flex items-center justify-center rounded-2xl bg-[var(--primary)] px-4 py-5 text-sm font-black uppercase tracking-[0.2em] text-white shadow-xl hover:bg-[color-mix(in_srgb,var(--primary)_90%,black_10%)] transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-60"
+                  disabled={saving}
+                >
+                  {saving ? "Saving…" : editingId ? "Update Booking" : "Save Booking"}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(emptyForm);
+                      setEditingId(null);
+                    }}
+                    className="rounded-2xl border-2 border-[var(--border-subtle)] px-6 py-5 text-sm font-bold uppercase tracking-[0.1em] text-[var(--text-muted)] hover:bg-[var(--surface-elevated)] transition-all"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
 
               {error && (
-                <p className="mt-2 text-[10px] text-amber-500">
-                  {error} You can adjust policies later to unlock full bookings visibility.
+                <p className="mt-2 text-[10px] text-amber-500 font-medium">
+                  {error}
                 </p>
               )}
             </form>
           </div>
 
-          <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <h3 className="text-xs font-semibold text-[var(--text-strong)]">Recent bookings</h3>
-              {loading && <span className="text-[10px] text-[var(--text-muted)]">Loading…</span>}
+          <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h3 className="text-sm font-bold text-[var(--text-strong)] uppercase tracking-widest">Recent Bookings</h3>
+              {loading && <span className="text-xs text-[var(--text-muted)] animate-pulse">Loading…</span>}
             </div>
 
             {recentFive.length === 0 && !loading ? (
-              <p className="text-[10px] text-[var(--text-muted)]">
-                Bookings created here will appear in this list and be highlighted in the calendar.
+              <p className="text-xs text-[var(--text-muted)] italic">
+                No recent bookings found.
               </p>
             ) : (
-              <ul className="space-y-1.5 text-[10px]">
+              <ul className="space-y-3 text-xs">
                 {recentFive.map((b) => (
-                  <li key={b.id} className={`flex items-start justify-between gap-2 p-2 rounded-lg transition-colors ${b.payment_status !== 'paid' ? 'opacity-50 bg-gray-50' : 'bg-white'}`}>
-                    <div>
-                      <div className="font-medium text-[var(--text-strong)]">
-                        {b.guest_name} · {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`} {b.package_name && b.package_name !== "Room Only" && `[${b.package_name}]`}
+                  <li key={b.id} className={`flex items-start justify-between gap-3 p-3 rounded-xl border border-[var(--border-subtle)] transition-all hover:border-[var(--primary)] ${b.payment_status === 'pending' ? 'bg-[color-mix(in_srgb,var(--surface)_95%,black_5%)] opacity-70' : 'bg-[var(--surface-elevated)]'}`}>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-[var(--text-strong)] truncate">
+                        {b.guest_name}
                       </div>
-                      <div className="text-[var(--text-muted)]">
+                      <div className="text-[var(--text-muted)] text-[10px] mt-0.5">
+                        {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
+                      </div>
+                      <div className="text-[var(--text-muted)] mt-1 font-medium">
                         {b.check_in} – {b.check_out}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex flex-col items-end gap-2">
                       <select
-                        className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-1.5 py-0.5 text-[9px]"
+                        className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1 text-[10px] font-bold outline-none focus:border-[var(--primary)]"
                         value={b.payment_status || "pending"}
                         onChange={(e) => handleStatusChange(b.id, e.target.value)}
                       >
                         <option value="pending">Pending</option>
                         <option value="paid">Paid</option>
-                        <option value="failed">Failed</option>
                       </select>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(b.id)}
-                        className="text-[9px] text-[var(--danger,#ef4444)] hover:underline"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(b)}
+                          className="text-[10px] font-bold text-[var(--primary)] hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(b.id)}
+                          className="text-[10px] font-bold text-red-500 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -668,17 +786,26 @@ export function BookingsPanel() {
 
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
               {selectedDayBookings.bookings.map(b => (
-                <div key={b.id} className="rounded-xl border border-[var(--border-subtle)] p-4 shadow-sm bg-[var(--surface-elevated)]">
+                <div key={b.id} className={`rounded-xl border border-[var(--border-subtle)] p-4 shadow-sm bg-[var(--surface-elevated)] transition-all ${b.payment_status === 'pending' ? 'opacity-60 grayscale-[0.3]' : ''}`}>
                   <div className="flex justify-between items-start mb-3">
                     <span className="font-bold text-sm text-[var(--text-strong)]">{getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}</span>
-                    <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold ${b.payment_status === 'paid' ? 'bg-green-100 text-green-700' : b.payment_status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
-                      {b.payment_status}
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold ${b.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                        {b.payment_status}
+                      </span>
+                      <button
+                        onClick={() => handleEdit(b)}
+                        className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"></path></svg>
+                        Edit
+                      </button>
+                    </div>
                   </div>
                   <div className="text-sm space-y-2 text-[var(--text-muted)]">
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Guest:</span> <span>{b.guest_name}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Phone:</span> <span>{b.guest_email}</span></p>
-                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Package:</span> <span>{b.package_name || 'Room Only'}</span></p>
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Package:</span> <span>{b.package_name || 'Standard Package'}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Stay:</span> <span>{b.check_in} – {b.check_out}</span></p>
                     <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Price:</span> <span>RM {b.total_price}</span></p>
                   </div>

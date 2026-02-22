@@ -385,132 +385,129 @@ export function RoomsPanel() {
           Changes saved here update the cards, pricing and photos on your public rooms section.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-4 grid gap-3 md:grid-cols-3">
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Title</span>
+        <form onSubmit={handleSubmit} className="mt-4 grid gap-4 md:grid-cols-3">
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Title</span>
             <input
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.title}
               onChange={(e) => handleChange("title", e.target.value)}
               required
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Type</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Type</span>
             <input
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.type}
               onChange={(e) => handleChange("type", e.target.value)}
               required
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Location</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Location</span>
             <input
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.location}
               onChange={(e) => handleChange("location", e.target.value)}
               required
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Price per night (RM)</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Price per night (RM)</span>
             <input
               type="number"
               min="0"
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.price}
               onChange={(e) => handleChange("price", e.target.value)}
               required
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Basic Package Price (RM)</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Basic Package Price (RM)</span>
             <input
               type="number"
               min="0"
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.basic_price}
               onChange={(e) => handleChange("basic_price", e.target.value)}
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Full Package Price (RM)</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Full Package Price (RM)</span>
             <input
               type="number"
               min="0"
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.full_price}
               onChange={(e) => handleChange("full_price", e.target.value)}
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Badge (optional)</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Badge (optional)</span>
             <input
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.badge}
               onChange={(e) => handleChange("badge", e.target.value)}
               placeholder="Popular, Best Value, Exclusive…"
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Beds</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Beds</span>
             <input
               type="number"
               min="0"
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.beds}
               onChange={(e) => handleChange("beds", e.target.value)}
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Baths</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Baths</span>
             <input
               type="number"
               min="0"
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.baths}
               onChange={(e) => handleChange("baths", e.target.value)}
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Guests</span>
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Guests</span>
             <input
               type="number"
               min="1"
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.guests}
               onChange={(e) => handleChange("guests", e.target.value)}
             />
           </label>
 
-          <label className="md:col-span-3 flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">Cover photo</span>
-            <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <label className="md:col-span-3 flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Cover photo</span>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <input
                 type="file"
                 accept="image/*"
                 className="block w-full text-xs"
                 onChange={(e) => void onCoverSelected(e.target.files?.[0] || null)}
               />
-              <span className="text-[10px] text-[var(--text-muted)]">
-                {uploadingCover ? "Uploading…" : "Upload from device (Supabase Storage)"}
+              <span className="text-[10px] text-[var(--text-muted)] whitespace-nowrap">
+                {uploadingCover ? "Uploading…" : "Upload from device"}
               </span>
             </div>
-            <span className="mt-1 text-[10px] text-[var(--text-muted)]">
-              Or paste a URL below (optional).
-            </span>
             <input
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              className="mt-2 rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={form.image}
               onChange={(e) => handleChange("image", e.target.value)}
               placeholder="Paste an image URL or upload via Supabase Storage"
@@ -562,10 +559,10 @@ export function RoomsPanel() {
             )}
           </div>
 
-          <div className="md:col-span-3 flex items-center justify-between gap-3">
+          <div className="md:col-span-3 flex items-center justify-between gap-3 pt-4 border-t border-[var(--border-subtle)]">
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-md bg-[var(--primary)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm hover:opacity-90 disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-2xl bg-[var(--primary)] px-8 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl hover:opacity-90 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-60"
               disabled={saving}
             >
               {saving ? "Saving…" : "Save changes"}
@@ -574,7 +571,7 @@ export function RoomsPanel() {
               <button
                 type="button"
                 onClick={() => setForm(emptyRoom)}
-                className="text-[10px] text-[var(--text-muted)] hover:underline"
+                className="text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-strong)] hover:underline transition-all"
               >
                 Cancel editing
               </button>

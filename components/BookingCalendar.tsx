@@ -37,17 +37,11 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
     useEffect(() => {
         async function fetchBookings() {
             setLoading(true);
-            const query = supabase
+            const { data, error } = await supabase
                 .from("bookings")
-                .select("check_in, check_out")
+                .select("check_in, check_out, unit_name")
                 .eq("room_id", roomId)
                 .eq("payment_status", "paid");
-
-            if (unitName) {
-                query.eq("unit_name", unitName);
-            }
-
-            const { data, error } = await query;
 
             if (error) {
                 console.error("Error fetching bookings:", error);
@@ -55,8 +49,17 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
                 return;
             }
 
+            const requestedUnits = unitName ? unitName.split(", ").map(u => u.trim()) : [];
             const allBookedDays: Date[] = [];
+
             data?.forEach((booking: any) => {
+                // If specific units are requested, only mark as booked if this booking overlaps with any requested unit
+                if (requestedUnits.length > 0) {
+                    const bookingUnits = booking.unit_name ? booking.unit_name.split(", ").map((u: string) => u.trim()) : [];
+                    const hasOverlap = requestedUnits.some(ru => bookingUnits.includes(ru));
+                    if (!hasOverlap) return;
+                }
+
                 const start = parseISO(booking.check_in);
                 const end = parseISO(booking.check_out);
                 const days = eachDayOfInterval({ start, end });

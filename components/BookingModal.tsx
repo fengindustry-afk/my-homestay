@@ -34,6 +34,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     const [selectedUnit, setSelectedUnit] = useState<string>("");
     const [selectedPackage, setSelectedPackage] = useState<string>("");
+    const [unitsCount, setUnitsCount] = useState<number>(1);
     const [addOns, setAddOns] = useState({
         bbq: false,
         cradle: false,
@@ -68,8 +69,22 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         return [];
     }, [room, selectedPackage]);
 
+    const isHomestay2 = room?.title.toLowerCase().includes("homestay 2") || false;
+    const isMultiUnitRoom = useMemo(() => {
+        const title = room?.title.toLowerCase() || "";
+        return title.includes("homestay 2") || title.includes("homestay 4") || title.includes("homestay 6");
+    }, [room]);
+
     // Set default unit if available
     useEffect(() => {
+        if (isMultiUnitRoom) {
+            // For multi-unit rooms, we allow multiple. If none selected, default to first available
+            if (!selectedUnit && units.length > 0) {
+                setSelectedUnit(units[0]);
+            }
+            return;
+        }
+
         if (units.length === 1) {
             setSelectedUnit(units[0]);
         } else if (units.length > 0 && !units.includes(selectedUnit)) {
@@ -77,9 +92,25 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         } else if (units.length === 0) {
             setSelectedUnit("");
         }
-    }, [units, selectedUnit]);
+    }, [units, selectedUnit, isMultiUnitRoom]);
 
-    const isHomestay2 = room?.title.toLowerCase().includes("homestay 2") || false;
+    const handleUnitToggle = (unit: string) => {
+        const currentUnits = selectedUnit ? selectedUnit.split(", ").filter(Boolean) : [];
+        let newUnits;
+        if (currentUnits.includes(unit)) {
+            newUnits = currentUnits.filter(u => u !== unit);
+        } else {
+            newUnits = [...currentUnits, unit];
+        }
+        setSelectedUnit(newUnits.join(", "));
+    };
+
+    useEffect(() => {
+        if (isMultiUnitRoom) {
+            const count = selectedUnit ? selectedUnit.split(", ").filter(Boolean).length : 0;
+            setUnitsCount(count || 1);
+        }
+    }, [selectedUnit, isMultiUnitRoom]);
 
     const availablePackages = useMemo(() => {
         if (!room) return [];
@@ -135,24 +166,31 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     const totalPrice = useMemo(() => {
         if (!room) return 0;
-        let basePrice = room.price;
+
+        let subtotal = 0;
         if (isHomestay2) {
-            if (selectedPackage === "Upper Floor") basePrice = 300;
-            if (selectedPackage === "Lower Floor") basePrice = 350;
+            const selected = selectedUnit.split(", ").filter(Boolean);
+            selected.forEach(u => {
+                if (u.includes("1") || u.includes("2")) subtotal += 350;
+                else subtotal += 300;
+            });
+            if (selected.length === 0) subtotal = room.price; // Fallback
         } else {
+            let basePrice = room.price;
             if (selectedPackage === "Basic Package" && room.basic_price) {
                 basePrice = room.basic_price;
             } else if (selectedPackage === "Full Package" && room.full_price) {
                 basePrice = room.full_price;
             }
+            subtotal = basePrice * unitsCount;
         }
 
         const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
         const lateFeeRate = isHomestay3or5 ? 20 : 10;
         const totalLateFee = extraHours * lateFeeRate;
 
-        return ((nights || 1) * basePrice) + addOnsPrice + totalLateFee;
-    }, [nights, room, selectedPackage, addOnsPrice, isHomestay2, extraHours]);
+        return ((nights || 1) * subtotal) + addOnsPrice + totalLateFee;
+    }, [nights, room, selectedPackage, addOnsPrice, isHomestay2, extraHours, unitsCount, selectedUnit]);
 
     useEffect(() => {
         let isMounted = true;
@@ -212,7 +250,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             if (addOns.karaoke === "day") addonsList.push(`Karaoke ${addOns.karaokeDays}day`);
             const fullPackageName = isHomestay2 && addonsList.length > 0
                 ? `${selectedPackage} + ${addonsList.join(', ')}`
-                : selectedPackage;
+                : (selectedPackage || "Basic Package");
 
             const checkInFormatted = format(checkIn, "yyyy-MM-dd");
             const checkOutFormatted = format(checkOut, "yyyy-MM-dd");
@@ -232,6 +270,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     checkOutTime,
                     unitName: selectedUnit || null,
                     packageName: fullPackageName,
+                    unitsCount: unitsCount,
                 }),
             });
 
@@ -348,7 +387,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
                         <section className="mb-10">
 
-                            {availablePackages.length > 0 && (
+                            {availablePackages.length > 0 && !isHomestay2 && (
                                 <div className="mb-10">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
@@ -445,24 +484,48 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                             <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        {units.map((u) => (
-                                            <button
-                                                key={u}
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedUnit(u);
-                                                    setCheckIn(null);
-                                                    setCheckOut(null);
-                                                }}
-                                                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${selectedUnit === u
-                                                    ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
-                                                    : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
-                                                    }`}
-                                            >
-                                                <span className="text-sm font-bold">{u}</span>
-                                            </button>
-                                        ))}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {units.map((u) => {
+                                            const isSelected = isMultiUnitRoom
+                                                ? selectedUnit.split(", ").includes(u)
+                                                : selectedUnit === u;
+                                            const uPrice = (u.includes("1") || u.includes("2")) ? 350 : 300;
+                                            return (
+                                                <button
+                                                    key={u}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (isMultiUnitRoom) {
+                                                            handleUnitToggle(u);
+                                                        } else {
+                                                            setSelectedUnit(u);
+                                                        }
+                                                        setCheckIn(null);
+                                                        setCheckOut(null);
+                                                    }}
+                                                    className={`flex flex-col items-center justify-center p-5 rounded-3xl border-2 transition-all ${isSelected
+                                                        ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                        : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                        }`}
+                                                >
+                                                    <span className="text-sm font-black uppercase tracking-tight">{u}</span>
+                                                    {isHomestay2 && <span className="text-xs font-bold opacity-70 mt-1">RM{uPrice} / night</span>}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {isMultiUnitRoom && (
+                                <div className="mb-10 text-center">
+                                    <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
+                                        <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-black">
+                                            {unitsCount}
+                                        </div>
+                                        <p className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
+                                            {unitsCount} Unit{unitsCount > 1 ? 's' : ''} Selected
+                                        </p>
                                     </div>
                                 </div>
                             )}

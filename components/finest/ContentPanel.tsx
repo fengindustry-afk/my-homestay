@@ -92,11 +92,11 @@ export function ContentPanel() {
 
       <div className="mt-2 grid gap-3 md:grid-cols-2">
         {settings.map((row) => (
-          <label key={row.key} className="flex flex-col gap-1 text-xs">
-            <span className="font-medium text-[var(--text-muted)]">{row.key}</span>
+          <label key={row.key} className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">{row.key.replace(/_/g, ' ')}</span>
             <textarea
-              rows={2}
-              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              rows={3}
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
               value={row.value}
               onChange={(e) => handleChange(row.key, e.target.value)}
             />
@@ -108,7 +108,7 @@ export function ContentPanel() {
         <button
           type="button"
           onClick={handleSave}
-          className="inline-flex items-center justify-center rounded-md bg-[var(--primary)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm hover:opacity-90 disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-2xl bg-[var(--primary)] px-8 py-4 text-xs font-black uppercase tracking-[0.2em] text-white shadow-xl hover:opacity-90 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-60"
           disabled={saving}
         >
           {saving ? "Saving…" : "Save wording"}
