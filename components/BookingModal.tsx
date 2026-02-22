@@ -573,7 +573,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         type="text"
                                         required
                                         className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
-                                        placeholder="e.g. 123456-78-9012"
+                                        placeholder="000000000000"
                                         value={icNumber}
                                         onChange={(e) => setIcNumber(e.target.value)}
                                     />
@@ -587,7 +587,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
                                         className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
-                                        placeholder="e.g. +60123456789"
+                                        placeholder="0123456789"
                                     />
                                 </div>
 

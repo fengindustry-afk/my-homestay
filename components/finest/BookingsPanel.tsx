@@ -39,7 +39,14 @@ const emptyForm: BookingFormState = {
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const PALETTE = ["#DCE6FF", "#F9E1F3", "#FFE8D2", "#D9F3EB"];
 
-const toKey = (date: Date) => date.toISOString().slice(0, 10);
+const toKey = (date: Date) => {
+  try {
+    if (isNaN(date.getTime())) return "invalid";
+    return date.toISOString().slice(0, 10);
+  } catch (e) {
+    return "invalid";
+  }
+};
 
 export function BookingsPanel() {
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
@@ -186,12 +193,43 @@ export function BookingsPanel() {
         if (found) updates.room_id = String(found.id);
       }
       if (key.includes('tarikh')) {
-        const dates = val.split(/to|until|-/i);
+        const dates = val.split(/to|until|-|–/i); // Added en-dash handle
+        let checkInVal = "";
+        let checkOutVal = "";
+
         if (dates.length >= 2) {
-          updates.check_in = dates[0].trim();
-          updates.check_out = dates[1].trim();
+          checkInVal = dates[0].trim();
+          checkOutVal = dates[1].trim();
         } else {
-          updates.check_in = val.trim();
+          checkInVal = val.trim();
+        }
+
+        // Attempt to normalize DD/MM/YYYY to YYYY-MM-DD
+        const normalizeDate = (d: string) => {
+          const parts = d.split(/[/-]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) return d; // Already YYYY-MM-DD
+            if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // DD/MM/YYYY
+          }
+          return d;
+        };
+
+        const normalizedCheckIn = normalizeDate(checkInVal);
+        const normalizedCheckOut = checkOutVal ? normalizeDate(checkOutVal) : "";
+
+        // Validate dates
+        const isValidCheckIn = !isNaN(new Date(normalizedCheckIn).getTime());
+        const isValidCheckOut = !normalizedCheckOut || !isNaN(new Date(normalizedCheckOut).getTime());
+
+        if (isValidCheckIn) {
+          updates.check_in = normalizedCheckIn;
+        } else {
+          alert(`Warning: Could not parse check-in date "${checkInVal}". Please enter manually.`);
+        }
+        if (isValidCheckOut && normalizedCheckOut) {
+          updates.check_out = normalizedCheckOut;
+        } else if (normalizedCheckOut) {
+          alert(`Warning: Could not parse check-out date "${checkOutVal}". Please enter manually.`);
         }
       }
     });
@@ -391,9 +429,12 @@ export function BookingsPanel() {
       const cursor = new Date(start);
       while (cursor <= end) {
         const key = toKey(cursor);
-        if (!map[key]) map[key] = [];
-        map[key].push(b);
+        if (key !== "invalid") {
+          if (!map[key]) map[key] = [];
+          map[key].push(b);
+        }
         cursor.setDate(cursor.getDate() + 1);
+        if (cursor.getFullYear() > 2100) break; // Infinite loop protection
       }
     });
 
@@ -513,6 +554,7 @@ export function BookingsPanel() {
                 </div>
                 <p className="text-[10px] text-[var(--text-muted)] mb-3 leading-tight font-medium">
                   Paste the details from WhatsApp (Tarikh, Nama Penuh, No. Ic, No. Tel, Jenis homestay) to auto-fill the form!
+                  <br /><span className="opacity-70">Example: Tarikh: 22/02/2026, Nama Penuh: John, No. Ic: 000000000000, No. Tel: 0123456789</span>
                 </p>
                 <textarea
                   className="w-full rounded-xl border-2 border-[var(--border-subtle)] bg-white px-3 py-2 text-xs font-medium outline-none transition-all focus:border-[var(--primary)] min-h-[80px]"
@@ -650,7 +692,7 @@ export function BookingsPanel() {
                   className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                   value={form.guest_email}
                   onChange={(e) => handleChange("guest_email", e.target.value)}
-                  placeholder="+60123456789"
+                  placeholder="0123456789"
                   required
                 />
               </label>
@@ -661,7 +703,7 @@ export function BookingsPanel() {
                   className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                   value={form.ic_number}
                   onChange={(e) => handleChange("ic_number", e.target.value)}
-                  placeholder="e.g. 123456-78-9012"
+                  placeholder="000000000000"
                   required
                 />
               </label>
