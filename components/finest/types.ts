@@ -19,6 +19,7 @@ export type BookingRow = {
   check_out: string;
   total_price: number | null;
   payment_status: string | null;
+  unit_name?: string | null;
   created_at: string;
 };
 

@@ -28,12 +28,33 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
 
+    const [selectedUnit, setSelectedUnit] = useState<string>("");
+
     const cover = room?.image || "";
     const allPhotos = useMemo(() => {
         const list = [cover, ...photos].filter(Boolean);
         // de-duplicate
         return Array.from(new Set(list));
     }, [cover, photos]);
+
+    // Units mapping
+    const units = useMemo(() => {
+        if (!room) return [];
+        const title = room.title.toLowerCase();
+        if (title.includes("homestay 2")) return ["Unit 1", "Unit 2", "Unit 3", "Unit 4"];
+        if (title.includes("homestay 4")) return ["Unit Right", "Unit Left"];
+        if (title.includes("homestay 6")) return ["Unit Right", "Unit Left", "Main Unit"];
+        return [];
+    }, [room]);
+
+    // Set default unit if available
+    useEffect(() => {
+        if (units.length > 0 && !selectedUnit) {
+            setSelectedUnit(units[0]);
+        } else if (units.length === 0) {
+            setSelectedUnit("");
+        }
+    }, [units, selectedUnit]);
 
     const nights = useMemo(() => {
         if (checkIn && checkOut) {
@@ -85,6 +106,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const handlePay = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (units.length > 0 && !selectedUnit) {
+            setError("Please select a unit.");
+            return;
+        }
+
         if (!checkIn || !checkOut) {
             setError("Please select your stay dates on the calendar.");
             return;
@@ -105,6 +131,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     guestName: name,
                     checkIn: format(checkIn, "yyyy-MM-dd"),
                     checkOut: format(checkOut, "yyyy-MM-dd"),
+                    unitName: selectedUnit || null,
                 }),
             });
 
@@ -217,16 +244,49 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     {/* Right Side: Calendar & Form */}
                     <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
                         <section className="mb-10">
+                            {units.length > 0 && (
+                                <div className="mb-10">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-[var(--primary)]">Choose Unit</h3>
+                                            <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        {units.map((u) => (
+                                            <button
+                                                key={u}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedUnit(u);
+                                                    setCheckIn(null);
+                                                    setCheckOut(null);
+                                                }}
+                                                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${selectedUnit === u
+                                                    ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                    : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                    }`}
+                                            >
+                                                <span className="text-sm font-bold">{u}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="h-10 w-10 rounded-xl bg-[var(--accent-light)] flex items-center justify-center text-[var(--accent-dark)]">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-[var(--primary)]">Select Stay Dates</h3>
-                                    <p className="text-sm text-[var(--text-muted)]">Check availability and book your slots</p>
+                                    <p className="text-sm text-[var(--text-muted)]">Check availability for {selectedUnit || "this room"}</p>
                                 </div>
                             </div>
-                            <BookingCalendar roomId={room.id} onSelect={handleDateSelect} />
+                            <BookingCalendar roomId={room.id} unitName={selectedUnit} onSelect={handleDateSelect} />
                         </section>
 
                         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[var(--border)] to-transparent my-10" />
@@ -329,32 +389,34 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             </div>
 
             {/* Zoom Modal */}
-            {isZoomed && (
-                <div
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-90 p-4"
-                    onClick={() => setIsZoomed(false)}
-                >
-                    <button
+            {
+                isZoomed && (
+                    <div
+                        className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-90 p-4"
                         onClick={() => setIsZoomed(false)}
-                        className="absolute right-4 top-4 text-white hover:text-gray-300 z-10"
-                        aria-label="Close zoom"
                     >
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                    <img
-                        src={zoomedImage}
-                        alt="Zoomed view"
-                        className="max-w-full max-h-full object-contain cursor-zoom-out"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                    <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
-                        Click anywhere to close
-                    </p>
-                </div>
-            )}
-        </div>
+                        <button
+                            onClick={() => setIsZoomed(false)}
+                            className="absolute right-4 top-4 text-white hover:text-gray-300 z-10"
+                            aria-label="Close zoom"
+                        >
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                        <img
+                            src={zoomedImage}
+                            alt="Zoomed view"
+                            className="max-w-full max-h-full object-contain cursor-zoom-out"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
+                            Click anywhere to close
+                        </p>
+                    </div>
+                )
+            }
+        </div >
     );
 }

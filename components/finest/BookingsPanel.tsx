@@ -6,6 +6,7 @@ import type { RoomSummary, BookingRow } from "./types";
 
 type BookingFormState = {
   room_id: string;
+  unit_name: string;
   guest_name: string;
   guest_email: string;
   check_in: string;
@@ -15,6 +16,7 @@ type BookingFormState = {
 
 const emptyForm: BookingFormState = {
   room_id: "",
+  unit_name: "",
   guest_name: "",
   guest_email: "",
   check_in: "",
@@ -49,7 +51,7 @@ export function BookingsPanel() {
           supabase
             .from("bookings")
             .select(
-              "id,room_id,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at"
+              "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at"
             )
             .order("check_in", { ascending: true }),
         ]);
@@ -97,6 +99,7 @@ export function BookingsPanel() {
     try {
       const payload = {
         room_id: Number(form.room_id),
+        unit_name: form.unit_name || null,
         guest_name: form.guest_name,
         guest_email: form.guest_email,
         check_in: form.check_in,
@@ -116,7 +119,7 @@ export function BookingsPanel() {
       const refreshed = await supabase
         .from("bookings")
         .select(
-          "id,room_id,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at"
+          "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at"
         )
         .order("check_in", { ascending: true });
       if (!refreshed.error) {
@@ -294,7 +297,7 @@ export function BookingsPanel() {
                           className="truncate rounded-md px-1.5 py-0.5 text-[9px] font-medium text-[var(--text-strong)] shadow-sm"
                           style={{ backgroundColor: bg }}
                         >
-                          {getRoomTitle(b.room_id)} · {b.guest_name}
+                          {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`} · {b.guest_name}
                         </div>
                       );
                     })}
@@ -318,22 +321,45 @@ export function BookingsPanel() {
             </p>
 
             <form onSubmit={handleCreate} className="mt-3 grid gap-2 text-[10px]">
-              <label className="flex flex-col gap-1">
-                <span className="font-medium text-[var(--text-muted)]">Room</span>
-                <select
-                  className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
-                  value={form.room_id}
-                  onChange={(e) => handleChange("room_id", e.target.value)}
-                  required
-                >
-                  <option value="">Select room</option>
-                  {rooms.map((room) => (
-                    <option key={room.id} value={room.id}>
-                      {room.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Room</span>
+                  <select
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.room_id}
+                    onChange={(e) => {
+                      handleChange("room_id", e.target.value);
+                      handleChange("unit_name", ""); // Reset unit on room change
+                    }}
+                    required
+                  >
+                    <option value="">Select room</option>
+                    {rooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        {room.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Unit (if any)</span>
+                  <select
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.unit_name}
+                    onChange={(e) => handleChange("unit_name", e.target.value)}
+                  >
+                    <option value="">No unit</option>
+                    {(() => {
+                      const roomTitle = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
+                      if (roomTitle.includes("homestay 2")) return ["Unit 1", "Unit 2", "Unit 3", "Unit 4"].map(u => <option key={u} value={u}>{u}</option>);
+                      if (roomTitle.includes("homestay 4")) return ["Unit Right", "Unit Left"].map(u => <option key={u} value={u}>{u}</option>);
+                      if (roomTitle.includes("homestay 6")) return ["Unit Right", "Unit Left", "Main Unit"].map(u => <option key={u} value={u}>{u}</option>);
+                      return null;
+                    })()}
+                  </select>
+                </label>
+              </div>
 
               <label className="flex flex-col gap-1">
                 <span className="font-medium text-[var(--text-muted)]">Guest name</span>
@@ -422,7 +448,7 @@ export function BookingsPanel() {
                   <li key={b.id} className={`flex items-start justify-between gap-2 p-2 rounded-lg transition-colors ${b.payment_status !== 'paid' ? 'opacity-50 bg-gray-50' : 'bg-white'}`}>
                     <div>
                       <div className="font-medium text-[var(--text-strong)]">
-                        {b.guest_name} · {getRoomTitle(b.room_id)}
+                        {b.guest_name} · {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
                       </div>
                       <div className="text-[var(--text-muted)]">
                         {b.check_in} – {b.check_out}

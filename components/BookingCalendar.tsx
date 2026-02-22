@@ -21,10 +21,11 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface BookingCalendarProps {
     roomId: number;
+    unitName?: string;
     onSelect: (checkIn: Date | null, checkOut: Date | null) => void;
 }
 
-export default function BookingCalendar({ roomId, onSelect }: BookingCalendarProps) {
+export default function BookingCalendar({ roomId, unitName, onSelect }: BookingCalendarProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
@@ -36,11 +37,17 @@ export default function BookingCalendar({ roomId, onSelect }: BookingCalendarPro
     useEffect(() => {
         async function fetchBookings() {
             setLoading(true);
-            const { data, error } = await supabase
+            const query = supabase
                 .from("bookings")
                 .select("check_in, check_out")
                 .eq("room_id", roomId)
                 .eq("payment_status", "paid");
+
+            if (unitName) {
+                query.eq("unit_name", unitName);
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error("Error fetching bookings:", error);
@@ -68,7 +75,7 @@ export default function BookingCalendar({ roomId, onSelect }: BookingCalendarPro
         }
 
         fetchBookings();
-    }, [roomId]);
+    }, [roomId, unitName]);
 
     const handleDateClick = (day: Date) => {
         if (isDateBooked(day) || isPast(day) && !isSameDay(day, new Date())) return;
