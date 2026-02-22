@@ -9,6 +9,8 @@ export interface Room {
     type: string;
     location: string;
     price: number;
+    basic_price?: number;
+    full_price?: number;
     badge: string | null;
     beds: number;
     baths: number;
@@ -39,7 +41,7 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
 
             const { data, error } = await supabase
                 .from("rooms")
-                .select("id,title,type,location,price,badge,beds,baths,guests,image")
+                .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
                 .order("created_at", { ascending: false });
 
             if (!isMounted) return;

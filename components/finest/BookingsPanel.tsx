@@ -11,6 +11,11 @@ type BookingFormState = {
   guest_email: string;
   check_in: string;
   check_out: string;
+  check_in_time: string;
+  check_out_time: string;
+  package_name: string;
+  units_count: string;
+  price_mode: "default" | "promo";
   total_price: string;
 };
 
@@ -21,6 +26,11 @@ const emptyForm: BookingFormState = {
   guest_email: "",
   check_in: "",
   check_out: "",
+  check_in_time: "15:00",
+  check_out_time: "12:00",
+  package_name: "Room Only",
+  units_count: "1",
+  price_mode: "default",
   total_price: "",
 };
 
@@ -37,6 +47,7 @@ export function BookingsPanel() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<BookingFormState>(emptyForm);
   const [monthOffset, setMonthOffset] = useState(0);
+  const [selectedDayBookings, setSelectedDayBookings] = useState<{ date: Date, bookings: BookingRow[] } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -47,12 +58,13 @@ export function BookingsPanel() {
 
       try {
         const [roomsRes, bookingsRes] = await Promise.all([
-          supabase.from("rooms").select("id,title,price"),
+          supabase.from("rooms").select("id,title,price,basic_price,full_price"),
           supabase
             .from("bookings")
             .select(
-              "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at"
+              "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
             )
+            .neq('payment_status', 'pending')
             .order("check_in", { ascending: true }),
         ]);
 
@@ -84,6 +96,69 @@ export function BookingsPanel() {
     };
   }, []);
 
+  useEffect(() => {
+    // Auto-calculate price
+    if (form.price_mode !== "default") return;
+
+    const roomIdNum = Number(form.room_id);
+    const room = rooms.find(r => r.id === roomIdNum);
+    if (!room) return;
+
+    let basePrice = room.price || 0;
+    const title = room.title.toLowerCase();
+    if (title.includes("homestay 2")) {
+      if (form.package_name.includes("Lower")) basePrice = 350;
+      else if (form.package_name.includes("Upper")) basePrice = 300;
+    } else if (form.package_name === "Basic Package") {
+      basePrice = room.basic_price || basePrice;
+    } else if (form.package_name === "Full Package") {
+      basePrice = room.full_price || basePrice;
+    }
+
+    let nights = 1;
+    if (form.check_in && form.check_out) {
+      const start = new Date(form.check_in);
+      const end = new Date(form.check_out);
+      const diffTime = end.getTime() - start.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      nights = diffDays > 0 ? diffDays : 1;
+    }
+
+    // Late check-out calculation
+    const [hours, mins] = form.check_out_time.split(":").map(Number);
+    let extraHours = 0;
+    if (hours > 12 || (hours === 12 && mins > 0)) {
+      extraHours = hours - 12 + (mins > 0 ? 1 : 0);
+    }
+
+    const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
+    const lateFeeRate = isHomestay3or5 ? 20 : 10;
+    const totalLateFee = extraHours * lateFeeRate;
+
+    const units = Number(form.units_count) || 1;
+    const computed = (basePrice * units * nights) + totalLateFee;
+
+    if (String(computed) !== form.total_price) {
+      setForm(prev => ({ ...prev, total_price: String(computed) }));
+    }
+  }, [form.room_id, form.package_name, form.units_count, form.check_in, form.check_out, form.check_in_time, form.check_out_time, form.price_mode, rooms]);
+
+  // Sync unit when package changes (Homestay 2)
+  useEffect(() => {
+    const room = rooms.find(r => r.id === Number(form.room_id));
+    if (room?.title.toLowerCase().includes("homestay 2")) {
+      const possibleUnits: string[] = [];
+      if (form.package_name.includes("Unit 1")) possibleUnits.push("Unit 1 (Left)");
+      else if (form.package_name.includes("Unit 2")) possibleUnits.push("Unit 2 (Right)");
+      else if (form.package_name.includes("Unit 3")) possibleUnits.push("Unit 3 (Left)");
+      else if (form.package_name.includes("Unit 4")) possibleUnits.push("Unit 4 (Right)");
+
+      if (possibleUnits.length === 1 && form.unit_name !== possibleUnits[0]) {
+        setForm(prev => ({ ...prev, unit_name: possibleUnits[0] }));
+      }
+    }
+  }, [form.package_name, form.room_id, rooms]);
+
   const handleChange = (field: keyof BookingFormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -104,6 +179,8 @@ export function BookingsPanel() {
         guest_email: form.guest_email,
         check_in: form.check_in,
         check_out: form.check_out,
+        package_name: `${form.package_name || 'Room Only'} (In: ${form.check_in_time}, Out: ${form.check_out_time})`,
+        units_count: Number(form.units_count || 1),
         total_price: Number(form.total_price || 0),
         payment_status: 'paid', // Default to paid for manual admin entries
       };
@@ -119,8 +196,9 @@ export function BookingsPanel() {
       const refreshed = await supabase
         .from("bookings")
         .select(
-          "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at"
+          "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
         )
+        .neq('payment_status', 'pending')
         .order("check_in", { ascending: true });
       if (!refreshed.error) {
         setBookings((refreshed.data || []) as BookingRow[]);
@@ -207,7 +285,7 @@ export function BookingsPanel() {
       const end = new Date(b.check_out);
 
       const cursor = new Date(start);
-      while (cursor < end) {
+      while (cursor <= end) {
         const key = toKey(cursor);
         if (!map[key]) map[key] = [];
         map[key].push(b);
@@ -268,10 +346,11 @@ export function BookingsPanel() {
               return (
                 <div
                   key={key + String(inCurrentMonth)}
+                  onClick={() => dayBookings.length > 0 && setSelectedDayBookings({ date, bookings: dayBookings })}
                   className={`flex min-h-[4.75rem] flex-col rounded-lg border px-1.5 py-1 ${inCurrentMonth
                     ? "border-[var(--border-subtle)] bg-[var(--surface)]"
                     : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
-                    }`}
+                    } ${dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] transition-colors' : ''}`}
                 >
                   <div className="mb-1 flex items-center justify-between text-[10px]">
                     <span
@@ -352,7 +431,17 @@ export function BookingsPanel() {
                     <option value="">No unit</option>
                     {(() => {
                       const roomTitle = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
-                      if (roomTitle.includes("homestay 2")) return ["Unit 1", "Unit 2", "Unit 3", "Unit 4"].map(u => <option key={u} value={u}>{u}</option>);
+                      const pkg = form.package_name;
+                      if (roomTitle.includes("homestay 2")) {
+                        if (pkg.includes("Unit 1")) return <option value="Unit 1 (Left)">Unit 1 (Left)</option>;
+                        if (pkg.includes("Unit 2")) return <option value="Unit 2 (Right)">Unit 2 (Right)</option>;
+                        if (pkg.includes("Unit 3")) return <option value="Unit 3 (Left)">Unit 3 (Left)</option>;
+                        if (pkg.includes("Unit 4")) return <option value="Unit 4 (Right)">Unit 4 (Right)</option>;
+
+                        if (pkg.includes("Lower")) return ["Unit 1 (Left)", "Unit 2 (Right)"].map(u => <option key={u} value={u}>{u}</option>);
+                        if (pkg.includes("Upper")) return ["Unit 3 (Left)", "Unit 4 (Right)"].map(u => <option key={u} value={u}>{u}</option>);
+                        return ["Unit 1 (Left)", "Unit 2 (Right)", "Unit 3 (Left)", "Unit 4 (Right)"].map(u => <option key={u} value={u}>{u}</option>);
+                      }
                       if (roomTitle.includes("homestay 4")) return ["Unit Right", "Unit Left"].map(u => <option key={u} value={u}>{u}</option>);
                       if (roomTitle.includes("homestay 6")) return ["Unit Right", "Unit Left", "Main Unit"].map(u => <option key={u} value={u}>{u}</option>);
                       return null;
@@ -372,12 +461,13 @@ export function BookingsPanel() {
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="font-medium text-[var(--text-muted)]">Guest email</span>
+                <span className="font-medium text-[var(--text-muted)]">Guest phone</span>
                 <input
-                  type="email"
+                  type="tel"
                   className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
                   value={form.guest_email}
                   onChange={(e) => handleChange("guest_email", e.target.value)}
+                  placeholder="+60123456789"
                   required
                 />
               </label>
@@ -404,17 +494,99 @@ export function BookingsPanel() {
                   />
                 </label>
               </div>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Time In</span>
+                  <input
+                    type="time"
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.check_in_time}
+                    onChange={(e) => handleChange("check_in_time", e.target.value)}
+                    required
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Time Out</span>
+                  <input
+                    type="time"
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.check_out_time}
+                    onChange={(e) => handleChange("check_out_time", e.target.value)}
+                    required
+                  />
+                </label>
+              </div>
 
-              <label className="flex flex-col gap-1">
-                <span className="font-medium text-[var(--text-muted)]">Total price (RM)</span>
-                <input
-                  type="number"
-                  min="0"
-                  className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
-                  value={form.total_price}
-                  onChange={(e) => handleChange("total_price", e.target.value)}
-                />
-              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Package</span>
+                  <select
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.package_name}
+                    onChange={(e) => handleChange("package_name", e.target.value)}
+                  >
+                    {(() => {
+                      const room = rooms.find(r => r.id === Number(form.room_id));
+                      const title = room?.title.toLowerCase() || "";
+                      if (title.includes("homestay 2")) {
+                        return (
+                          <>
+                            <option value="Lower Floor - Unit 1 (Left)">Lower Floor - Unit 1 (Left)</option>
+                            <option value="Lower Floor - Unit 2 (Right)">Lower Floor - Unit 2 (Right)</option>
+                            <option value="Upper Floor - Unit 3 (Left)">Upper Floor - Unit 3 (Left)</option>
+                            <option value="Upper Floor - Unit 4 (Right)">Upper Floor - Unit 4 (Right)</option>
+                          </>
+                        );
+                      }
+                      return (
+                        <>
+                          <option value="Room Only">Room Only</option>
+                          <option value="Basic Package">Basic Package</option>
+                          <option value="Full Package">Full Package</option>
+                        </>
+                      );
+                    })()}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Units</span>
+                  <input
+                    type="number"
+                    min="1"
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.units_count}
+                    onChange={(e) => handleChange("units_count", e.target.value)}
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-[1fr_2fr] gap-2">
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">Price Mode</span>
+                  <select
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1"
+                    value={form.price_mode}
+                    onChange={(e) => handleChange("price_mode", e.target.value as "default" | "promo")}
+                  >
+                    <option value="default">Default Price</option>
+                    <option value="promo">Promo / Custom</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="font-medium text-[var(--text-muted)]">
+                    Total price (RM) {form.price_mode === "default" && "(Auto)"}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    disabled={form.price_mode === "default"}
+                    className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-2 py-1 disabled:opacity-50"
+                    value={form.total_price}
+                    onChange={(e) => handleChange("total_price", e.target.value)}
+                  />
+                </label>
+              </div>
 
               <button
                 type="submit"
@@ -448,7 +620,7 @@ export function BookingsPanel() {
                   <li key={b.id} className={`flex items-start justify-between gap-2 p-2 rounded-lg transition-colors ${b.payment_status !== 'paid' ? 'opacity-50 bg-gray-50' : 'bg-white'}`}>
                     <div>
                       <div className="font-medium text-[var(--text-strong)]">
-                        {b.guest_name} · {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
+                        {b.guest_name} · {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`} {b.package_name && b.package_name !== "Room Only" && `[${b.package_name}]`}
                       </div>
                       <div className="text-[var(--text-muted)]">
                         {b.check_in} – {b.check_out}
@@ -479,7 +651,43 @@ export function BookingsPanel() {
           </div>
         </div>
       </div>
+
+      {/* Bookings Modal Popup */}
+      {selectedDayBookings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedDayBookings(null)} />
+          <div className="relative w-full max-w-lg rounded-2xl bg-[var(--surface)] p-6 shadow-2xl z-10 animate-scale-in">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-[var(--text-strong)]">
+                Bookings for {selectedDayBookings.date.toLocaleDateString()}
+              </h3>
+              <button onClick={() => setSelectedDayBookings(null)} className="text-[var(--text-muted)] hover:text-[var(--text-strong)]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+              {selectedDayBookings.bookings.map(b => (
+                <div key={b.id} className="rounded-xl border border-[var(--border-subtle)] p-4 shadow-sm bg-[var(--surface-elevated)]">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="font-bold text-sm text-[var(--text-strong)]">{getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}</span>
+                    <span className={`text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-bold ${b.payment_status === 'paid' ? 'bg-green-100 text-green-700' : b.payment_status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                      {b.payment_status}
+                    </span>
+                  </div>
+                  <div className="text-sm space-y-2 text-[var(--text-muted)]">
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Guest:</span> <span>{b.guest_name}</span></p>
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Phone:</span> <span>{b.guest_email}</span></p>
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Package:</span> <span>{b.package_name || 'Room Only'}</span></p>
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Stay:</span> <span>{b.check_in} – {b.check_out}</span></p>
+                    <p className="flex justify-between"><span className="font-semibold text-[var(--text-strong)]">Price:</span> <span>RM {b.total_price}</span></p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
-

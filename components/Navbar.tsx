@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -69,6 +70,7 @@ export default function Navbar() {
 
                 {/* CTA + mobile toggle */}
                 <div className="flex items-center gap-4">
+                    <ThemeToggle />
                     <a
                         href="#rooms"
                         className="btn-primary hidden md:inline-flex"

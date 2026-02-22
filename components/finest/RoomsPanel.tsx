@@ -10,6 +10,8 @@ type RoomFormState = {
   type: string;
   location: string;
   price: string;
+  basic_price: string;
+  full_price: string;
   badge: string;
   beds: string;
   baths: string;
@@ -22,6 +24,8 @@ const emptyRoom: RoomFormState = {
   type: "",
   location: "",
   price: "",
+  basic_price: "",
+  full_price: "",
   badge: "",
   beds: "",
   baths: "",
@@ -50,7 +54,7 @@ export function RoomsPanel() {
       setLoading(true);
       const { data, error } = await supabase
         .from("rooms")
-        .select("id,title,type,location,price,badge,beds,baths,guests,image")
+        .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
         .order("created_at", { ascending: false });
       if (!error && isMounted) {
         setRooms((data || []) as RoomRow[]);
@@ -78,6 +82,8 @@ export function RoomsPanel() {
       type: room.type,
       location: room.location,
       price: String(room.price ?? ""),
+      basic_price: String(room.basic_price ?? ""),
+      full_price: String(room.full_price ?? ""),
       badge: room.badge ?? "",
       beds: String(room.beds ?? ""),
       baths: String(room.baths ?? ""),
@@ -159,7 +165,7 @@ export function RoomsPanel() {
 
         const refreshed = await supabase
           .from("rooms")
-          .select("id,title,type,location,price,badge,beds,baths,guests,image")
+          .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
           .order("created_at", { ascending: false });
         if (!refreshed.error) {
           setRooms((refreshed.data || []) as RoomRow[]);
@@ -243,6 +249,8 @@ export function RoomsPanel() {
       type: form.type,
       location: form.location,
       price: Number(form.price || 0),
+      basic_price: Number(form.basic_price || 0),
+      full_price: Number(form.full_price || 0),
       badge: form.badge || null,
       beds: Number(form.beds || 0),
       baths: Number(form.baths || 0),
@@ -264,7 +272,7 @@ export function RoomsPanel() {
 
     const refreshed = await supabase
       .from("rooms")
-      .select("id,title,type,location,price,badge,beds,baths,guests,image")
+      .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
       .order("created_at", { ascending: false });
 
     if (!refreshed.error) {
@@ -417,6 +425,28 @@ export function RoomsPanel() {
               value={form.price}
               onChange={(e) => handleChange("price", e.target.value)}
               required
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="font-medium text-[var(--text-muted)]">Basic Package Price (RM)</span>
+            <input
+              type="number"
+              min="0"
+              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              value={form.basic_price}
+              onChange={(e) => handleChange("basic_price", e.target.value)}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs">
+            <span className="font-medium text-[var(--text-muted)]">Full Package Price (RM)</span>
+            <input
+              type="number"
+              min="0"
+              className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1.5 text-xs"
+              value={form.full_price}
+              onChange={(e) => handleChange("full_price", e.target.value)}
             />
           </label>
 

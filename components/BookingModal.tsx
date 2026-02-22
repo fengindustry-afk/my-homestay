@@ -12,13 +12,17 @@ interface BookingModalProps {
         id: number;
         title: string;
         price: number;
+        basic_price?: number;
+        full_price?: number;
         image?: string;
     } | null;
 }
 
 export default function BookingModal({ isOpen, onClose, room }: BookingModalProps) {
-    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
     const [name, setName] = useState("");
+    const [checkInTime, setCheckInTime] = useState("15:00");
+    const [checkOutTime, setCheckOutTime] = useState("12:00");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [photos, setPhotos] = useState<string[]>([]);
@@ -29,6 +33,14 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const [checkOut, setCheckOut] = useState<Date | null>(null);
 
     const [selectedUnit, setSelectedUnit] = useState<string>("");
+    const [selectedPackage, setSelectedPackage] = useState<string>("");
+    const [addOns, setAddOns] = useState({
+        bbq: false,
+        cradle: false,
+        karaoke: "none",
+        karaokeHours: 1,
+        karaokeDays: 1,
+    });
 
     const cover = room?.image || "";
     const allPhotos = useMemo(() => {
@@ -41,20 +53,57 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const units = useMemo(() => {
         if (!room) return [];
         const title = room.title.toLowerCase();
-        if (title.includes("homestay 2")) return ["Unit 1", "Unit 2", "Unit 3", "Unit 4"];
+        if (title.includes("homestay 2")) {
+            if (selectedPackage.includes("Unit 1")) return ["Unit 1 (Left)"];
+            if (selectedPackage.includes("Unit 2")) return ["Unit 2 (Right)"];
+            if (selectedPackage.includes("Unit 3")) return ["Unit 3 (Left)"];
+            if (selectedPackage.includes("Unit 4")) return ["Unit 4 (Right)"];
+
+            if (selectedPackage.includes("Lower")) return ["Unit 1 (Left)", "Unit 2 (Right)"];
+            if (selectedPackage.includes("Upper")) return ["Unit 3 (Left)", "Unit 4 (Right)"];
+            return ["Unit 1 (Left)", "Unit 2 (Right)", "Unit 3 (Left)", "Unit 4 (Right)"];
+        }
         if (title.includes("homestay 4")) return ["Unit Right", "Unit Left"];
         if (title.includes("homestay 6")) return ["Unit Right", "Unit Left", "Main Unit"];
         return [];
-    }, [room]);
+    }, [room, selectedPackage]);
 
     // Set default unit if available
     useEffect(() => {
-        if (units.length > 0 && !selectedUnit) {
+        if (units.length === 1) {
+            setSelectedUnit(units[0]);
+        } else if (units.length > 0 && !units.includes(selectedUnit)) {
             setSelectedUnit(units[0]);
         } else if (units.length === 0) {
             setSelectedUnit("");
         }
     }, [units, selectedUnit]);
+
+    const isHomestay2 = room?.title.toLowerCase().includes("homestay 2") || false;
+
+    const availablePackages = useMemo(() => {
+        if (!room) return [];
+        if (isHomestay2) {
+            return [
+                { name: "Lower Floor - Unit 1 (Left)", price: 350 },
+                { name: "Lower Floor - Unit 2 (Right)", price: 350 },
+                { name: "Upper Floor - Unit 3 (Left)", price: 300 },
+                { name: "Upper Floor - Unit 4 (Right)", price: 300 },
+            ];
+        }
+        const pkgs = [];
+        if (room.basic_price) pkgs.push({ name: "Basic Package", price: room.basic_price });
+        if (room.full_price) pkgs.push({ name: "Full Package", price: room.full_price });
+        return pkgs;
+    }, [room, isHomestay2]);
+
+    useEffect(() => {
+        if (availablePackages.length > 0 && !selectedPackage) {
+            setSelectedPackage(availablePackages[0].name);
+        } else if (availablePackages.length === 0) {
+            setSelectedPackage("");
+        }
+    }, [availablePackages, selectedPackage]);
 
     const nights = useMemo(() => {
         if (checkIn && checkOut) {
@@ -64,10 +113,46 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         return 0;
     }, [checkIn, checkOut]);
 
+    const addOnsPrice = useMemo(() => {
+        if (!isHomestay2) return 0;
+        let total = 0;
+        if (addOns.bbq) total += 30;
+        if (addOns.cradle) total += 10;
+        if (addOns.karaoke === "hour") total += 25 * addOns.karaokeHours;
+        if (addOns.karaoke === "day") total += 150 * addOns.karaokeDays;
+        return total;
+    }, [isHomestay2, addOns]);
+
+    const extraHours = useMemo(() => {
+        if (!checkOutTime) return 0;
+        const [hours, mins] = checkOutTime.split(":").map(Number);
+        if (hours > 12 || (hours === 12 && mins > 0)) {
+            const extra = hours - 12 + (mins > 0 ? 1 : 0);
+            return extra > 0 ? extra : 0;
+        }
+        return 0;
+    }, [checkOutTime]);
+
     const totalPrice = useMemo(() => {
         if (!room) return 0;
-        return (nights || 1) * room.price;
-    }, [nights, room]);
+        let basePrice = room.price;
+        if (isHomestay2) {
+            if (selectedPackage === "Upper Floor") basePrice = 300;
+            if (selectedPackage === "Lower Floor") basePrice = 350;
+        } else {
+            if (selectedPackage === "Basic Package" && room.basic_price) {
+                basePrice = room.basic_price;
+            } else if (selectedPackage === "Full Package" && room.full_price) {
+                basePrice = room.full_price;
+            }
+        }
+
+        const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
+        const lateFeeRate = isHomestay3or5 ? 20 : 10;
+        const totalLateFee = extraHours * lateFeeRate;
+
+        return ((nights || 1) * basePrice) + addOnsPrice + totalLateFee;
+    }, [nights, room, selectedPackage, addOnsPrice, isHomestay2, extraHours]);
 
     useEffect(() => {
         let isMounted = true;
@@ -120,6 +205,18 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         setError("");
 
         try {
+            const addonsList = [];
+            if (addOns.bbq) addonsList.push("BBQ Pit");
+            if (addOns.cradle) addonsList.push("Cradle");
+            if (addOns.karaoke === "hour") addonsList.push(`Karaoke ${addOns.karaokeHours}hr`);
+            if (addOns.karaoke === "day") addonsList.push(`Karaoke ${addOns.karaokeDays}day`);
+            const fullPackageName = isHomestay2 && addonsList.length > 0
+                ? `${selectedPackage} + ${addonsList.join(', ')}`
+                : selectedPackage;
+
+            const checkInFormatted = format(checkIn, "yyyy-MM-dd");
+            const checkOutFormatted = format(checkOut, "yyyy-MM-dd");
+
             const res = await fetch("/api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -127,11 +224,14 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     listingId: room.id,
                     price: totalPrice,
                     title: room.title,
-                    guestEmail: email,
+                    guestPhone: phone,
                     guestName: name,
-                    checkIn: format(checkIn, "yyyy-MM-dd"),
-                    checkOut: format(checkOut, "yyyy-MM-dd"),
+                    checkIn: checkInFormatted,
+                    checkOut: checkOutFormatted,
+                    checkInTime,
+                    checkOutTime,
                     unitName: selectedUnit || null,
+                    packageName: fullPackageName,
                 }),
             });
 
@@ -220,8 +320,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between rounded-2xl bg-[var(--surface)] p-5 border border-[var(--border)] transition-all hover:shadow-inner">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Price per night</span>
-                                        <span className="text-lg font-bold text-[var(--primary)]">RM{room.price}</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Base Price</span>
+                                        <span className="text-lg font-bold text-[var(--primary)]">
+                                            RM{isHomestay2 ? (selectedPackage === "Upper Floor" ? 300 : selectedPackage === "Lower Floor" ? 350 : room.price) :
+                                                (selectedPackage === "Basic Package" ? room.basic_price : selectedPackage === "Full Package" ? room.full_price : room.price)}
+                                        </span>
                                     </div>
                                     <div className="h-8 w-[1px] bg-[var(--border)]" />
                                     <div className="flex flex-col text-right">
@@ -244,7 +347,94 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     {/* Right Side: Calendar & Form */}
                     <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
                         <section className="mb-10">
-                            {units.length > 0 && (
+
+                            {availablePackages.length > 0 && (
+                                <div className="mb-10">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-[var(--primary)]">Select Package</h3>
+                                            <p className="text-sm text-[var(--text-muted)]">Choose a package for your stay</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {availablePackages.map((pkg) => (
+                                            <button
+                                                key={pkg.name}
+                                                type="button"
+                                                onClick={() => setSelectedPackage(pkg.name)}
+                                                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${selectedPackage === pkg.name
+                                                    ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                    : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                    }`}
+                                            >
+                                                <span className="text-sm font-bold">{pkg.name}</span>
+                                                <span className="text-xs mt-1">RM{pkg.price}/night</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {isHomestay2 && (
+                                <div className="mb-10">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-[var(--primary)]">Select Add Ons</h3>
+                                            <p className="text-sm text-[var(--text-muted)]">Enhance your stay</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
+                                            <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.bbq} onChange={(e) => setAddOns({ ...addOns, bbq: e.target.checked })} />
+                                            <div>
+                                                <div className="text-sm font-bold text-[var(--primary)]">Barbecue Pit</div>
+                                                <div className="text-xs text-[var(--text-muted)]">+RM30</div>
+                                            </div>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
+                                            <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.cradle} onChange={(e) => setAddOns({ ...addOns, cradle: e.target.checked })} />
+                                            <div>
+                                                <div className="text-sm font-bold text-[var(--primary)]">Cradle</div>
+                                                <div className="text-xs text-[var(--text-muted)]">+RM10</div>
+                                            </div>
+                                        </label>
+
+                                        <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div>
+                                                    <div className="text-sm font-bold text-[var(--primary)]">Karaoke Set</div>
+                                                    <div className="text-xs text-[var(--text-muted)]">RM25/hour or RM150/day</div>
+                                                </div>
+                                                <select className="border border-[var(--border)] rounded-lg p-2 text-sm bg-white" value={addOns.karaoke} onChange={(e) => setAddOns({ ...addOns, karaoke: e.target.value })}>
+                                                    <option value="none">None</option>
+                                                    <option value="hour">Per Hour</option>
+                                                    <option value="day">Per Day</option>
+                                                </select>
+                                            </div>
+                                            {addOns.karaoke === 'hour' && (
+                                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
+                                                    <span className="text-xs text-[var(--text-muted)]">Number of hours:</span>
+                                                    <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeHours} onChange={(e) => setAddOns({ ...addOns, karaokeHours: parseInt(e.target.value) || 1 })} />
+                                                </div>
+                                            )}
+                                            {addOns.karaoke === 'day' && (
+                                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
+                                                    <span className="text-xs text-[var(--text-muted)]">Number of days:</span>
+                                                    <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeDays} onChange={(e) => setAddOns({ ...addOns, karaokeDays: parseInt(e.target.value) || 1 })} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {units.length > 1 && (
                                 <div className="mb-10">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
@@ -313,15 +503,39 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
 
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Email Address</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Phone Number</label>
                                     <input
-                                        type="email"
+                                        type="tel"
                                         required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
                                         className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
-                                        placeholder="example@mail.com"
+                                        placeholder="e.g. +60123456789"
                                     />
+                                </div>
+
+                                <div className="group">
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Check-in Time</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        value={checkInTime}
+                                        onChange={(e) => setCheckInTime(e.target.value)}
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                    />
+                                    <span className="text-[10px] text-gray-500 mt-1 block">Default check-in is 3:00 PM</span>
+                                </div>
+
+                                <div className="group">
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Check-out Time</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        value={checkOutTime}
+                                        onChange={(e) => setCheckOutTime(e.target.value)}
+                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                    />
+                                    <span className="text-[10px] text-gray-500 mt-1 block">RM{room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5") ? '20' : '10'}/hour extra charge applies after 12:00 PM</span>
                                 </div>
 
                                 <div className="md:col-span-2">
@@ -348,13 +562,14 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                 </>
                                             ) : (
                                                 <>
-                                                    <span>Secure Checkout</span>
+                                                    <span>Proceed Payment</span>
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                                                 </>
                                             )}
                                         </div>
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                                     </button>
+                                    <p className="mt-3 text-center text-xs font-semibold text-[var(--primary)] selection:bg-[var(--accent)] selection:text-white">You will be notified via WhatsApp.</p>
                                 </div>
                             </form>
 

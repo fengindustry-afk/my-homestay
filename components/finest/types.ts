@@ -8,6 +8,8 @@ export type RoomSummary = {
   id: number;
   title: string;
   price?: number | null;
+  basic_price?: number | null;
+  full_price?: number | null;
 };
 
 export type BookingRow = {
@@ -17,7 +19,11 @@ export type BookingRow = {
   guest_email: string;
   check_in: string;
   check_out: string;
+  check_in_time?: string;
+  check_out_time?: string;
   total_price: number | null;
+  package_name?: string | null;
+  units_count?: number | null;
   payment_status: string | null;
   unit_name?: string | null;
   created_at: string;
@@ -29,6 +35,8 @@ export type RoomRow = {
   type: string;
   location: string;
   price: number | null;
+  basic_price: number | null;
+  full_price: number | null;
   badge: string | null;
   beds: number | null;
   baths: number | null;

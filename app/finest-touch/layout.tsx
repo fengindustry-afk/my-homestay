@@ -4,6 +4,7 @@ import { signOut } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function FinestTouchLayout({
   children,
@@ -113,24 +114,25 @@ export default function FinestTouchLayout({
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
+    <div className="min-h-screen bg-[var(--surface-dark)] transition-colors duration-300">
+      <header className="bg-[var(--surface)] shadow border-b border-[var(--border)] transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <h1 className="text-2xl font-bold text-gray-900">Command Center</h1>
+            <h1 className="text-2xl font-bold text-[var(--primary)]">Command Center</h1>
             <button
               onClick={() => window.location.href = '/'}
-              className="text-sm text-gray-500 hover:text-gray-700 underline"
+              className="text-sm text-[var(--accent)] hover:text-[var(--accent-dark)] underline transition-colors"
             >
               ← Back to Site
             </button>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.email}</span>
+          <div className="flex items-center gap-6">
+            <ThemeToggle />
+            <span className="text-sm text-[var(--text-muted)] font-medium">{user?.email}</span>
             <button
               type="button"
               onClick={signOut}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-[var(--text-muted)] hover:text-[var(--primary)] border border-[var(--border)] px-4 py-2 rounded-lg transition-all"
             >
               Sign out
             </button>

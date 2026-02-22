@@ -78,6 +78,24 @@ function PaymentStatusContent() {
                     </p>
 
                     {bookingDetails && (
+                        <div className="mb-8 rounded-2xl bg-orange-50 border border-orange-200 p-6 flex flex-col items-center">
+                            <span className="font-bold text-orange-600 mb-2 uppercase tracking-wide text-xs">Action Required</span>
+                            <p className="text-sm text-orange-700 font-medium mb-4">You must push your booking details via WhatsApp to receive homestay access.</p>
+                            <a
+                                href={`https://wa.me/601157572001?text=${encodeURIComponent(
+                                    `*SUCCESS BOOKING!*\n\n*Homestay:* ${bookingDetails.rooms?.title || 'Our Homestay'}\n*Unit:* ${bookingDetails.unit_name || 'N/A'}\n*Name:* ${bookingDetails.guest_name}\n*Phone number:* ${bookingDetails.guest_email}\n*Date:* ${bookingDetails.check_in} to ${bookingDetails.check_out}\n*Package details:* ${bookingDetails.package_name}\n*Price:* RM${bookingDetails.total_price}`
+                                )}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1ebd5a] active:scale-95 transition-all text-white py-3 px-8 rounded-xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-green-200"
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                Send Booking Details to WhatsApp
+                            </a>
+                        </div>
+                    )}
+
+                    {bookingDetails && (
                         <div className="mb-10 grid grid-cols-2 gap-4 rounded-2xl bg-[var(--surface)] p-6 text-left border border-[var(--border)]">
                             <div>
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">Check In</p>

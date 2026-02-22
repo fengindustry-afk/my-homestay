@@ -8,9 +8,9 @@ const supabase = createClient(
 
 export async function POST(req: Request) {
   try {
-    const { listingId, price, title, guestEmail, guestName, checkIn, checkOut, unitName } = await req.json();
+    const { listingId, price, title, guestPhone, guestName, checkIn, checkOut, unitName, packageName, checkInTime, checkOutTime } = await req.json();
 
-    if (!listingId || !price || !guestEmail || !guestName || !checkIn || !checkOut) {
+    if (!listingId || !price || !guestPhone || !guestName || !checkIn || !checkOut) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -20,12 +20,13 @@ export async function POST(req: Request) {
       .insert({
         room_id: listingId,
         guest_name: guestName,
-        guest_email: guestEmail,
+        guest_email: guestPhone, // Maps to guest_email column since guest_phone does not exist
         check_in: checkIn,
         check_out: checkOut,
         total_price: price,
         payment_status: 'pending',
-        unit_name: unitName
+        unit_name: unitName,
+        package_name: `${packageName || 'Room Only'} (In: ${checkInTime}, Out: ${checkOutTime})`
       })
       .select()
       .single();
@@ -46,7 +47,8 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         collection_id: process.env.BILLPLZ_COLLECTION_ID,
-        email: guestEmail,
+        email: 'guest@indahmorib.com',
+        mobile: guestPhone,
         name: guestName,
         amount: Math.round(price * 100), // Amount in cents
         callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
