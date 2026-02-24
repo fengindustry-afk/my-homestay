@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { eachDayOfInterval, format } from "date-fns";
 
 import BookingCalendar from "./BookingCalendar";
-import { format } from "date-fns";
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -15,6 +15,8 @@ interface BookingModalProps {
         basic_price?: number;
         full_price?: number;
         image?: string;
+        description?: string;
+        amenities?: string;
     } | null;
 }
 
@@ -32,6 +34,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const [zoomedImage, setZoomedImage] = useState<string>("");
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
+    const [discounts, setDiscounts] = useState<{[key: string]: {roomId: number, percentage: number}}>({});
 
     const [selectedUnit, setSelectedUnit] = useState<string>("");
     const [selectedPackage, setSelectedPackage] = useState<string>("");
@@ -43,6 +46,34 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         karaokeHours: 1,
         karaokeDays: 1,
     });
+
+    // Helper functions for discounts
+    const toKey = (date: Date) => {
+        try {
+            if (isNaN(date.getTime())) return "invalid";
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+        } catch (e) {
+            return "invalid";
+        }
+    };
+
+    const getDiscountForDate = (day: Date, roomId: number) => {
+        const dateKey = toKey(day);
+        const discount = discounts[dateKey];
+        return discount && discount.roomId === roomId ? discount.percentage : 0;
+    };
+
+    const calculateTotalDiscount = (checkIn: Date, checkOut: Date, roomId: number) => {
+        const interval = eachDayOfInterval({ start: checkIn, end: checkOut });
+        const discountPercentages = interval.map(d => getDiscountForDate(d, roomId)).filter(p => p > 0);
+        
+        // If there are any discounts, use the first (highest) percentage found
+        // This ensures the same percentage is applied across all chosen dates
+        return discountPercentages.length > 0 ? Math.max(...discountPercentages) : 0;
+    };
 
     const cover = room?.image || "";
     const allPhotos = useMemo(() => {
@@ -56,19 +87,14 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         if (!room) return [];
         const title = room.title.toLowerCase();
         if (title.includes("homestay 2")) {
-            if (selectedPackage.includes("Unit 1")) return ["Unit 1 (Left)"];
-            if (selectedPackage.includes("Unit 2")) return ["Unit 2 (Right)"];
-            if (selectedPackage.includes("Unit 3")) return ["Unit 3 (Left)"];
-            if (selectedPackage.includes("Unit 4")) return ["Unit 4 (Right)"];
-
-            if (selectedPackage.includes("Lower")) return ["Unit 1 (Left)", "Unit 2 (Right)"];
-            if (selectedPackage.includes("Upper")) return ["Unit 3 (Left)", "Unit 4 (Right)"];
+            // For Homestay 2, always return all units regardless of package selection
+            // Users should select individual units, not packages
             return ["Unit 1 (Left)", "Unit 2 (Right)", "Unit 3 (Left)", "Unit 4 (Right)"];
         }
         if (title.includes("homestay 4")) return ["Unit Right", "Unit Left"];
         if (title.includes("homestay 6")) return ["Unit Right", "Unit Left", "Main Unit"];
         return [];
-    }, [room, selectedPackage]);
+    }, [room]);
 
     const isHomestay2 = room?.title.toLowerCase().includes("homestay 2") || false;
     const isMultiUnitRoom = useMemo(() => {
@@ -79,10 +105,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     // Set default unit if available
     useEffect(() => {
         if (isMultiUnitRoom) {
-            // For multi-unit rooms, we allow multiple. If none selected, default to first available
-            if (!selectedUnit && units.length > 0) {
-                setSelectedUnit(units[0]);
-            }
+            // For multi-unit rooms, don't auto-select any unit by default
+            // User should explicitly choose their preferred units
             return;
         }
 
@@ -109,7 +133,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     useEffect(() => {
         if (isMultiUnitRoom) {
             const count = selectedUnit ? selectedUnit.split(", ").filter(Boolean).length : 0;
-            setUnitsCount(count || 1);
+            setUnitsCount(count); // Don't default to 1 for multi-unit rooms
         }
     }, [selectedUnit, isMultiUnitRoom]);
 
@@ -131,11 +155,14 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     useEffect(() => {
         if (availablePackages.length > 0 && !selectedPackage) {
-            setSelectedPackage(availablePackages[0].name);
+            // Don't auto-select packages for Homestay 2 since users select individual units
+            if (!isHomestay2) {
+                setSelectedPackage(availablePackages[0].name);
+            }
         } else if (availablePackages.length === 0) {
             setSelectedPackage("");
         }
-    }, [availablePackages, selectedPackage]);
+    }, [availablePackages, selectedPackage, isHomestay2]);
 
     const nights = useMemo(() => {
         if (checkIn && checkOut) {
@@ -175,7 +202,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                 if (u.includes("1") || u.includes("2")) subtotal += 350;
                 else subtotal += 300;
             });
-            if (selected.length === 0) subtotal = room.price; // Fallback
+            if (selected.length === 0) subtotal = 0; // No units selected = RM0
         } else {
             let basePrice = room.price;
             if (selectedPackage === "Basic Package" && room.basic_price) {
@@ -190,8 +217,63 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         const lateFeeRate = isHomestay3or5 ? 20 : 10;
         const totalLateFee = extraHours * lateFeeRate;
 
-        return ((nights || 1) * subtotal) + addOnsPrice + totalLateFee;
-    }, [nights, room, selectedPackage, addOnsPrice, isHomestay2, extraHours, unitsCount, selectedUnit]);
+        const computedPrice = ((nights || 1) * subtotal) + addOnsPrice + totalLateFee;
+
+        // Apply discount if available
+        let finalPrice = computedPrice;
+        if (checkIn && checkOut && room.id) {
+            const totalDiscountPercentage = calculateTotalDiscount(checkIn, checkOut, room.id);
+            const discountAmount = (computedPrice * totalDiscountPercentage) / 100;
+            finalPrice = Math.max(0, computedPrice - discountAmount);
+        }
+
+        return finalPrice;
+    }, [nights, room, selectedPackage, addOnsPrice, isHomestay2, extraHours, unitsCount, selectedUnit, checkIn, checkOut]);
+
+    // Calculate discount details for display
+    const discountDetails = useMemo(() => {
+        if (!checkIn || !checkOut || !room?.id) return { percentage: 0, amount: 0 };
+        
+        const totalDiscountPercentage = calculateTotalDiscount(checkIn, checkOut, room.id);
+        const computedPrice = totalPrice;
+        const discountAmount = totalDiscountPercentage > 0 ? (computedPrice * 100) / (100 - totalDiscountPercentage) * (totalDiscountPercentage / 100) : 0;
+        
+        return {
+            percentage: totalDiscountPercentage,
+            amount: discountAmount
+        };
+    }, [checkIn, checkOut, room?.id, totalPrice]);
+
+    // Load discounts from localStorage or shared state
+    useEffect(() => {
+        try {
+            // Try to get discounts from localStorage (shared with BookingsPanel)
+            const savedDiscounts = localStorage.getItem('homestay-discounts');
+            if (savedDiscounts) {
+                setDiscounts(JSON.parse(savedDiscounts));
+            }
+        } catch (error) {
+            console.warn('Failed to load discounts:', error);
+        }
+    }, []);
+
+    // Listen for discount updates from other components
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'homestay-discounts') {
+                try {
+                    if (e.newValue) {
+                        setDiscounts(JSON.parse(e.newValue));
+                    }
+                } catch (error) {
+                    console.warn('Failed to parse updated discounts:', error);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -355,15 +437,29 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                         <div className="p-8">
                             <h2 className="mb-2 text-2xl font-bold text-[var(--primary)] leading-tight">{room.title}</h2>
                             <p className="text-sm text-[var(--text-muted)] mb-6">
-                                Serene accommodation with premium amenities.
+                                {room.description || "Serene accommodation with premium amenities."}
                             </p>
+
+                            {room.amenities && (
+                                <div className="mb-6">
+                                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] mb-3">Amenities</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {room.amenities.split(",").map((a, i) => (
+                                            <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[11px] font-medium text-[var(--primary)]">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                {a.trim()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between rounded-2xl bg-[var(--surface)] p-5 border border-[var(--border)] transition-all hover:shadow-inner">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Base Price</span>
                                         <span className="text-lg font-bold text-[var(--primary)]">
-                                            RM{isHomestay2 ? (selectedPackage === "Upper Floor" ? 300 : selectedPackage === "Lower Floor" ? 350 : room.price) :
+                                            RM{isHomestay2 ? (selectedPackage.includes("Upper Floor") ? 300 : selectedPackage.includes("Lower Floor") ? 350 : room.price) :
                                                 (selectedPackage === "Basic Package" ? room.basic_price : selectedPackage === "Full Package" ? room.full_price : room.price)}
                                         </span>
                                     </div>
@@ -381,6 +477,36 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     </div>
                                     <span className="text-3xl font-black">RM{totalPrice}</span>
                                 </div>
+
+                                {/* Discount Display */}
+                                {discountDetails.percentage > 0 && (
+                                    <div className="rounded-2xl bg-green-50 border-2 border-green-200 p-4 shadow-lg">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                </div>
+                                                <span className="text-sm font-bold text-green-700">Discount Applied!</span>
+                                            </div>
+                                            <span className="text-lg font-black text-green-600">-{discountDetails.percentage}%</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-green-600 font-medium">Original Amount:</span>
+                                                <span className="text-green-700 font-bold">RM{Math.round((totalPrice * 100) / (100 - discountDetails.percentage))}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-green-600 font-medium">Discount Amount:</span>
+                                                <span className="text-green-700 font-bold">-RM{Math.round(discountDetails.amount)}</span>
+                                            </div>
+                                            <div className="h-px bg-green-200 my-2"></div>
+                                            <div className="flex justify-between text-base">
+                                                <span className="text-green-700 font-bold">You Pay:</span>
+                                                <span className="text-lg font-black text-green-600">RM{totalPrice}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -415,6 +541,65 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                 <span className="text-xs mt-1">RM{pkg.price}/night</span>
                                             </button>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            
+                            {/* Moved Unit Selection to Top */}
+                            {units.length > 1 && (
+                                <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[var(--primary)] shadow-sm">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-[var(--primary)]">Choose Unit</h3>
+                                            <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {units.map((u) => {
+                                            const isSelected = isMultiUnitRoom
+                                                ? selectedUnit.split(", ").includes(u)
+                                                : selectedUnit === u;
+                                            const uPrice = (u.includes("1") || u.includes("2")) ? 350 : 300;
+                                            return (
+                                                <button
+                                                    key={u}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (isMultiUnitRoom) {
+                                                            handleUnitToggle(u);
+                                                        } else {
+                                                            setSelectedUnit(u);
+                                                        }
+                                                        setCheckIn(null);
+                                                        setCheckOut(null);
+                                                    }}
+                                                    className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all ${isSelected
+                                                        ? "border-[var(--accent)] bg-white text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                        : "border-transparent bg-white/50 text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                        }`}
+                                                >
+                                                    <span className="text-sm font-black uppercase tracking-tight">{u}</span>
+                                                    {isHomestay2 && <span className="text-xs font-bold opacity-70 mt-1">RM{uPrice} / night</span>}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {isMultiUnitRoom && (
+                                <div className="mb-10 text-center">
+                                    <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
+                                        <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-black">
+                                            {unitsCount}
+                                        </div>
+                                        <p className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
+                                            {unitsCount} Unit{unitsCount !== 1 ? 's' : ''} Selected
+                                        </p>
                                     </div>
                                 </div>
                             )}
@@ -475,71 +660,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
                             )}
 
-                            {/* Moved Unit Selection to Top */}
-                            {units.length > 1 && (
-                                <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[var(--primary)] shadow-sm">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-[var(--primary)]">Choose Unit</h3>
-                                            <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {units.map((u) => {
-                                            const isSelected = isMultiUnitRoom
-                                                ? selectedUnit.split(", ").includes(u)
-                                                : selectedUnit === u;
-                                            const uPrice = (u.includes("1") || u.includes("2")) ? 350 : 300;
-                                            return (
-                                                <button
-                                                    key={u}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (isMultiUnitRoom) {
-                                                            handleUnitToggle(u);
-                                                        } else {
-                                                            setSelectedUnit(u);
-                                                        }
-                                                        setCheckIn(null);
-                                                        setCheckOut(null);
-                                                    }}
-                                                    className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all ${isSelected
-                                                        ? "border-[var(--accent)] bg-white text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
-                                                        : "border-transparent bg-white/50 text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
-                                                        }`}
-                                                >
-                                                    <span className="text-sm font-black uppercase tracking-tight">{u}</span>
-                                                    {isHomestay2 && <span className="text-xs font-bold opacity-70 mt-1">RM{uPrice} / night</span>}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {isMultiUnitRoom && (
-                                <div className="mb-10 text-center">
-                                    <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
-                                        <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-black">
-                                            {unitsCount}
-                                        </div>
-                                        <p className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
-                                            {unitsCount} Unit{unitsCount > 1 ? 's' : ''} Selected
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="h-10 w-10 rounded-xl bg-[var(--accent-light)] flex items-center justify-center text-[var(--accent-dark)]">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-bold text-[var(--primary)]">Select Stay Dates</h3>
-                                    <p className="text-sm text-[var(--text-muted)]">Check availability for {selectedUnit || "this room"}</p>
+                                    <p className="text-sm text-[var(--text-muted)]">Check availability for {selectedUnit || "this homestay"}</p>
                                 </div>
                             </div>
                             <BookingCalendar roomId={room.id} unitName={selectedUnit} onSelect={handleDateSelect} />

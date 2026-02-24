@@ -13,7 +13,7 @@ import type { DashboardStats } from "@/components/finest/types";
 const initialStats: DashboardStats = {
   totalBookings: 0,
   upcomingCheckIns: 0,
-  activeRooms: 0,
+  activeHomestays: 0,
   bookings: [],
 };
 
@@ -66,7 +66,7 @@ export default function FinestTouchPage() {
           setStats({
             totalBookings,
             upcomingCheckIns,
-            activeRooms:
+            activeHomestays:
               roomsError || typeof roomsCount !== "number" ? 0 : roomsCount,
             bookings: (bookingsData || []) as any[]
           });
@@ -116,9 +116,9 @@ export default function FinestTouchPage() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {stats.activeRooms}
+                {stats.activeHomestays}
               </div>
-              <div className="text-sm text-gray-600">Active Rooms</div>
+              <div className="text-sm text-gray-600">Active Homestays</div>
             </div>
           </div>
         </section>
@@ -131,8 +131,8 @@ export default function FinestTouchPage() {
             Website Insight Overview
           </h1>
           <p className="mt-1 max-w-xl text-sm text-[var(--text-muted)]">
-            A quiet corner reserved just for you to review bookings, rooms and
-            the overall performance of Serenity Homestay.
+            A quiet corner reserved just for you to review bookings, homestays and
+            the overall performance of Indah Morib Homestay.
           </p>
         </div>
         <div className="flex gap-2 text-xs text-[var(--text-muted)]" />
@@ -153,7 +153,7 @@ export default function FinestTouchPage() {
         <div className="bg-yellow-50 border border-yellow-200 p-4 rounded">
           <h3 className="font-semibold text-yellow-800">Staff Access</h3>
           <p className="text-yellow-700">
-            You can view bookings and rooms. Admin features are restricted.
+            You can view bookings and homestays. Admin features are restricted.
           </p>
         </div>
       )}

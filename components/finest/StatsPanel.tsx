@@ -6,14 +6,14 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 interface Stats {
   totalBookings: number;
   upcomingCheckIns: number;
-  activeRooms: number;
+  activeHomestays: number;
 }
 
 export function StatsPanel() {
   const [stats, setStats] = useState<Stats>({
     totalBookings: 0,
     upcomingCheckIns: 0,
-    activeRooms: 0,
+    activeHomestays: 0,
   });
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function StatsPanel() {
   const chartData = [
     { name: 'Total Bookings', value: stats.totalBookings },
     { name: 'Upcoming Check‑ins', value: stats.upcomingCheckIns },
-    { name: 'Active Rooms', value: stats.activeRooms },
+    { name: 'Active Homestays', value: stats.activeHomestays },
   ];
 
   return (
@@ -41,8 +41,8 @@ export function StatsPanel() {
           <div className="text-sm text-gray-600">Upcoming Check‑ins</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">{stats.activeRooms}</div>
-          <div className="text-sm text-gray-600">Active Rooms</div>
+          <div className="text-2xl font-bold text-purple-600">{stats.activeHomestays}</div>
+          <div className="text-sm text-gray-600">Active Homestays</div>
         </div>
       </div>
 

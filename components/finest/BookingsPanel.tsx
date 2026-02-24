@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import type { RoomSummary, BookingRow } from "./types";
+import { eachDayOfInterval, format } from "date-fns";
 
 type BookingFormState = {
   room_id: string;
@@ -18,6 +18,9 @@ type BookingFormState = {
   ic_number: string;
   price_mode: "default" | "promo";
   total_price: string;
+  amount_paid: string;
+  admin_notes: string;
+  payment_status: string;
 };
 
 const emptyForm: BookingFormState = {
@@ -30,10 +33,13 @@ const emptyForm: BookingFormState = {
   check_in_time: "15:00",
   check_out_time: "12:00",
   package_name: "Basic Package",
-  units_count: "1",
+  units_count: "0", // Start with 0 units selected
   ic_number: "",
   price_mode: "default",
-  total_price: "",
+  total_price: "0", // Start with RM0
+  amount_paid: "",
+  admin_notes: "",
+  payment_status: "paid",
 };
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -69,6 +75,30 @@ export function BookingsPanel() {
   const [selectedDayBookings, setSelectedDayBookings] = useState<{ date: Date, bookings: BookingRow[] } | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRow | null>(null);
+  const [discounts, setDiscounts] = useState<{[key: string]: {roomId: number, percentage: number}}>({});
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+
+  // Load discounts from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedDiscounts = localStorage.getItem('homestay-discounts');
+      if (savedDiscounts) {
+        setDiscounts(JSON.parse(savedDiscounts));
+      }
+    } catch (error) {
+      console.warn('Failed to load discounts from localStorage:', error);
+    }
+  }, []);
+
+  // Save discounts to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('homestay-discounts', JSON.stringify(discounts));
+    } catch (error) {
+      console.warn('Failed to save discounts to localStorage:', error);
+    }
+  }, [discounts]);
 
   const todayKey = useMemo(() => toKey(new Date()), []);
 
@@ -80,29 +110,23 @@ export function BookingsPanel() {
       setError(null);
 
       try {
-        const [roomsRes, bookingsRes] = await Promise.all([
-          supabase.from("rooms").select("id,title,price,basic_price,full_price"),
-          supabase
-            .from("bookings")
-            .select(
-              "id,room_id,unit_name,guest_name,guest_email,ic_number,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
-            )
-            .order("check_in", { ascending: true }),
-        ]);
-
-        if (!roomsRes.error && isMounted) {
-          setRooms((roomsRes.data || []) as RoomSummary[]);
+        const response = await fetch('/api/bookings');
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch bookings');
         }
 
-        if (bookingsRes.error) {
-          console.warn("Unable to load bookings (check RLS policies):", bookingsRes.error.message);
-          if (isMounted) {
-            setError(
-              "Bookings cannot be read with the current Supabase policies. You can still create new bookings via the public website."
-            );
-          }
-        } else if (isMounted) {
-          setBookings((bookingsRes.data || []) as BookingRow[]);
+        if (isMounted) {
+          setRooms(data.rooms || []);
+          setBookings(data.bookings || []);
+        }
+      } catch (e: any) {
+        console.warn("Unable to load bookings:", e.message);
+        if (isMounted) {
+          setError(
+            "Bookings cannot be read with the current Supabase policies. You can still create new bookings via the public website."
+          );
         }
       } finally {
         if (isMounted) {
@@ -144,12 +168,12 @@ export function BookingsPanel() {
         if (u.includes("1") || u.includes("2")) subtotal += 350; // Lower Floor units
         else if (u.includes("3") || u.includes("4")) subtotal += 300; // Upper Floor units
       });
-      if (selected.length === 0) subtotal = Number(room.price || 0); // Fallback if no units selected
+      if (selected.length === 0) subtotal = 0; // No units selected = RM0
     } else {
       let basePrice = Number(room.price || 0);
       if (form.package_name === "Basic Package" && room.basic_price) basePrice = Number(room.basic_price);
       if (form.package_name === "Full Package" && room.full_price) basePrice = Number(room.full_price);
-      subtotal = basePrice * Number(form.units_count || 1);
+      subtotal = basePrice * Math.max(1, Number(form.units_count || 1)); // At least 1 unit for non-homestay2
     }
 
     // Late check-out calculation
@@ -165,8 +189,19 @@ export function BookingsPanel() {
 
     const computed = (subtotal * nights) + totalLateFee;
 
-    if (String(computed) !== form.total_price) {
-      setForm(prev => ({ ...prev, total_price: String(computed) }));
+    // Apply discount if available
+    let finalPrice = computed;
+    if (form.check_in && form.check_out && form.room_id) {
+      const checkInDate = new Date(form.check_in);
+      const checkOutDate = new Date(form.check_out);
+      const roomId = Number(form.room_id);
+      const totalDiscountPercentage = calculateTotalDiscount(checkInDate, checkOutDate, roomId);
+      const discountAmount = (computed * totalDiscountPercentage) / 100;
+      finalPrice = Math.max(0, computed - discountAmount);
+    }
+
+    if (String(finalPrice) !== form.total_price) {
+      setForm(prev => ({ ...prev, total_price: String(finalPrice) }));
     }
   }, [form.room_id, form.package_name, form.units_count, form.check_in, form.check_out, form.check_in_time, form.check_out_time, form.price_mode, rooms, form.unit_name]);
 
@@ -321,19 +356,22 @@ export function BookingsPanel() {
         package_name: `${form.package_name || 'Standard Package'} (In: ${form.check_in_time}, Out: ${form.check_out_time})`,
         units_count: Number(form.units_count || 1),
         total_price: Number(form.total_price || 0),
-        payment_status: 'paid', // Default to paid for manual admin entries
+        amount_paid: Number(form.amount_paid || 0),
+        admin_notes: form.admin_notes || null,
+        payment_status: form.payment_status || 'paid',
       };
 
       if (editingId) {
-        const { error: updateError } = await supabase.from("bookings").update(payload).eq("id", editingId);
-        if (updateError) {
-          alert(`Could not update booking: ${updateError.message}`);
-          return;
-        }
-      } else {
-        const { error: insertError } = await supabase.from("bookings").insert(payload);
-        if (insertError) {
-          alert(`Could not create booking: ${insertError.message}`);
+        const response = await fetch(editingId ? `/api/bookings` : `/api/bookings`, {
+          method: editingId ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editingId ? { ...payload, id: editingId } : payload)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          alert(`Could not ${editingId ? 'update' : 'create'} booking: ${data.error}`);
           return;
         }
       }
@@ -341,14 +379,12 @@ export function BookingsPanel() {
       setForm(emptyForm);
       setEditingId(null);
 
-      const refreshed = await supabase
-        .from("bookings")
-        .select(
-          "id,room_id,unit_name,guest_name,guest_email,check_in,check_out,total_price,package_name,units_count,payment_status,created_at"
-        )
-        .order("check_in", { ascending: true });
-      if (!refreshed.error) {
-        setBookings((refreshed.data || []) as BookingRow[]);
+      // Refresh bookings list
+      const refreshResponse = await fetch('/api/bookings');
+      const refreshData = await refreshResponse.json();
+      
+      if (refreshResponse.ok) {
+        setBookings(refreshData.bookings || []);
       }
     } finally {
       setSaving(false);
@@ -383,6 +419,9 @@ export function BookingsPanel() {
       units_count: String(booking.units_count || 1),
       price_mode: "promo", // Default to promo for edits manually
       total_price: String(booking.total_price || 0),
+      amount_paid: String(booking.amount_paid || 0),
+      admin_notes: booking.admin_notes || "",
+      payment_status: booking.payment_status || "paid",
     });
     setEditingId(booking.id);
     setSelectedDayBookings(null); // Close modal if open
@@ -394,9 +433,16 @@ export function BookingsPanel() {
     const previous = bookings;
     setBookings((current) => current.map((b) => (b.id === id ? { ...b, payment_status } : b)));
 
-    const { error: updateError } = await supabase.from("bookings").update({ payment_status }).eq("id", id);
-    if (updateError) {
-      alert(`Could not update status: ${updateError.message}`);
+    const response = await fetch('/api/bookings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, payment_status })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      alert(`Could not update status: ${data.error}`);
       setBookings(previous);
     }
   };
@@ -407,15 +453,53 @@ export function BookingsPanel() {
     const previous = bookings;
     setBookings((current) => current.filter((b) => b.id !== id));
 
-    const { error: deleteError } = await supabase.from("bookings").delete().eq("id", id);
-    if (deleteError) {
-      alert(`Could not delete booking: ${deleteError.message}`);
+    const response = await fetch(`/api/bookings?id=${id}`, {
+      method: 'DELETE'
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      alert(`Could not delete booking: ${data.error}`);
       setBookings(previous);
     }
   };
 
   const getRoomTitle = (room_id: number | null) =>
-    rooms.find((r) => r.id === room_id)?.title || "Unknown room";
+    rooms.find((r) => r.id === room_id)?.title || "Unknown homestay";
+
+  const getDiscountForDate = (day: Date, roomId: number) => {
+    const dateKey = toKey(day);
+    const discount = discounts[dateKey];
+    return discount && discount.roomId === roomId ? discount.percentage : 0;
+  };
+
+  const calculateTotalDiscount = (checkIn: Date, checkOut: Date, roomId: number) => {
+    const interval = eachDayOfInterval({ start: checkIn, end: checkOut });
+    const discountPercentages = interval.map(d => getDiscountForDate(d, roomId)).filter(p => p > 0);
+    
+    // If there are any discounts, use the first (highest) percentage found
+    // This ensures the same percentage is applied across all chosen dates
+    return discountPercentages.length > 0 ? Math.max(...discountPercentages) : 0;
+  };
+  const handleDateSelection = (date: Date) => {
+    const dateKey = toKey(date);
+    setSelectedDates(prev => {
+      if (prev.includes(dateKey)) {
+        return prev.filter(d => d !== dateKey);
+      } else {
+        return [...prev, dateKey];
+      }
+    });
+  };
+
+  const isDateSelected = (date: Date) => {
+    return selectedDates.includes(toKey(date));
+  };
+
+  const clearSelectedDates = () => {
+    setSelectedDates([]);
+  };
 
   const visibleMonthDate = useMemo(() => {
     const today = new Date();
@@ -552,11 +636,17 @@ export function BookingsPanel() {
               return (
                 <div
                   key={key + String(inCurrentMonth)}
-                  onClick={() => dayBookings.length > 0 && setSelectedDayBookings({ date, bookings: dayBookings })}
+                  onClick={() => {
+                    if (dayBookings.length > 0) {
+                      setSelectedDayBookings({ date, bookings: dayBookings });
+                    } else {
+                      handleDateSelection(date);
+                    }
+                  }}
                   className={`flex min-h-[5.5rem] flex-col rounded-xl border px-2 py-2 ${inCurrentMonth
                     ? "border-[var(--border-subtle)] bg-[var(--surface)]"
                     : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
-                    } ${dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] shadow-sm transition-all hover:-translate-y-0.5' : ''} ${isPast ? 'opacity-30 grayscale-[0.8] pointer-events-none bg-[var(--surface-dark)]' : ''}`}
+                    } ${dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] shadow-sm transition-all hover:-translate-y-0.5' : 'cursor-pointer hover:border-green-500 hover:shadow-sm transition-all hover:-translate-y-0.5'} ${isPast ? 'opacity-30 grayscale-[0.8] pointer-events-none bg-[var(--surface-dark)]' : ''} ${isDateSelected(date) ? 'ring-2 ring-green-500 bg-green-50' : ''}`}
                 >
                   <div className="mb-2 flex items-center justify-between text-[11px]">
                     <span
@@ -566,24 +656,36 @@ export function BookingsPanel() {
                     >
                       {date.getDate()}
                     </span>
-                    {dayBookings.length > 0 && (
-                      <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent_88%)] px-2 py-0.5 text-[10px] font-bold text-[var(--primary)] uppercase tracking-tight">
-                        {dayBookings.length} stay{dayBookings.length > 1 ? "s" : ""}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {dayBookings.length > 0 && (
+                        <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent_88%)] px-2 py-0.5 text-[10px] font-bold text-[var(--primary)] uppercase tracking-tight">
+                          {dayBookings.length} stay{dayBookings.length > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-1 flex-col gap-1.5">
                     {dayBookings.slice(0, 2).map((b) => {
                       const colorIndex = (b.room_id || 0) % PALETTE.length;
                       const bg = PALETTE[colorIndex];
                       const isPending = b.payment_status === 'pending';
+                      const discountPercentage = getDiscountForDate(date, b.room_id || 0);
                       return (
                         <div
                           key={b.id}
                           className={`truncate rounded-md px-2 py-1 text-[10px] font-semibold text-[var(--text-strong)] shadow-sm ${isPending ? 'opacity-40 grayscale-[0.5]' : ''}`}
                           style={{ backgroundColor: bg }}
                         >
-                          {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
+                          <div className="flex items-center justify-between">
+                            <span className="truncate">
+                              {getRoomTitle(b.room_id)} {b.unit_name && `(${b.unit_name})`}
+                            </span>
+                            {discountPercentage > 0 && (
+                              <span className="text-green-700 font-bold text-[9px] ml-1">
+                                -{discountPercentage}%
+                              </span>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -639,7 +741,7 @@ export function BookingsPanel() {
             <form onSubmit={handleSave} className="mt-5 grid gap-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
-                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Room</span>
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Homestay</span>
                   <select
                     className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary)]/10 outline-none transition-all"
                     value={form.room_id}
@@ -649,7 +751,7 @@ export function BookingsPanel() {
                     }}
                     required
                   >
-                    <option value="">Select room</option>
+                    <option value="">Select homestay</option>
                     {rooms.map((room) => (
                       <option key={room.id} value={room.id}>
                         {room.title}
@@ -843,6 +945,144 @@ export function BookingsPanel() {
                 </label>
               </div>
 
+              {/* Discount Management Section */}
+              <div className="rounded-2xl border-2 border-dashed border-green-500/30 bg-green-50/30 p-4 transition-all hover:border-green-500/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-green-600">Homestay Discounts</span>
+                </div>
+                <p className="text-[10px] text-green-700 mb-3 leading-tight font-medium">
+                  Select homestay, click calendar dates, then add percentage discount for selected dates.
+                </p>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      className="rounded-lg border border-green-200 bg-white px-3 py-2 text-xs font-medium focus:border-green-500 outline-none"
+                      id="discount-room"
+                    >
+                      <option value="">Select Homestay</option>
+                      {rooms.map(room => (
+                        <option key={room.id} value={room.id}>{room.title}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="Discount %"
+                      className="rounded-lg border border-green-200 bg-white px-3 py-2 text-xs font-medium focus:border-green-500 outline-none"
+                      id="discount-percentage"
+                    />
+                  </div>
+                  {selectedDates.length > 0 && (
+                    <div className="rounded-lg bg-green-100 p-2 border border-green-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-green-700">
+                          {selectedDates.length} date{selectedDates.length > 1 ? 's' : ''} selected
+                        </span>
+                        <button
+                          type="button"
+                          onClick={clearSelectedDates}
+                          className="text-[10px] text-green-600 hover:text-green-800 font-medium"
+                        >
+                          Clear Selection
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
+                        {selectedDates.map(date => (
+                          <span key={date} className="text-[9px] bg-green-200 px-1.5 py-0.5 rounded text-green-700">
+                            {formatDate(date)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const roomSelect = document.getElementById('discount-room') as HTMLSelectElement;
+                      const percentageInput = document.getElementById('discount-percentage') as HTMLInputElement;
+                      const roomId = Number(roomSelect.value);
+                      const percentage = Number(percentageInput.value);
+                      
+                      if (!roomId) {
+                        alert('Please select a homestay');
+                        return;
+                      }
+                      if (selectedDates.length === 0) {
+                        alert('Please select dates from the calendar first');
+                        return;
+                      }
+                      if (percentage <= 0 || percentage > 100) {
+                        alert('Please enter a valid percentage (1-100)');
+                        return;
+                      }
+                      
+                      const newDiscounts: {[key: string]: {roomId: number, percentage: number}} = {};
+                      selectedDates.forEach(date => {
+                        newDiscounts[date] = { roomId, percentage };
+                      });
+                      setDiscounts(prev => ({ ...prev, ...newDiscounts }));
+                      clearSelectedDates();
+                      roomSelect.value = '';
+                      percentageInput.value = '';
+                    }}
+                    className="w-full px-3 py-2 rounded-lg bg-green-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-all active:scale-95 disabled:opacity-50"
+                    disabled={selectedDates.length === 0}
+                  >
+                    Apply Discount to {selectedDates.length} {selectedDates.length === 1 ? 'Date' : 'Dates'}
+                  </button>
+                  <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
+                    {Object.entries(discounts).map(([date, discount]) => {
+                      const room = rooms.find(r => r.id === discount.roomId);
+                      return (
+                        <span key={date} className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-medium text-green-700">
+                          {formatDate(date)}: {room?.title || 'Unknown'} -{discount.percentage}%
+                          <button
+                            type="button"
+                            onClick={() => setDiscounts(prev => {
+                              const newDiscounts = { ...prev };
+                              delete newDiscounts[date];
+                              return newDiscounts;
+                            })}
+                            className="text-green-500 hover:text-green-700 font-bold"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Payment Status</span>
+                  <select
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
+                    value={form.payment_status}
+                    onChange={(e) => handleChange("payment_status", e.target.value)}
+                  >
+                    <option value="paid">Paid</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Amount Paid (RM)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
+                    value={form.amount_paid}
+                    onChange={(e) => handleChange("amount_paid", e.target.value)}
+                    placeholder="e.g. 100 or 0 for notes"
+                  />
+                </label>
+              </div>
+
               <div className="grid grid-cols-[1.5fr_2fr] gap-3">
                 <label className="flex flex-col gap-1.5">
                   <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Price Mode</span>
@@ -869,6 +1109,17 @@ export function BookingsPanel() {
                   />
                 </label>
               </div>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Admin Notes</span>
+                <textarea
+                  rows={2}
+                  className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
+                  value={form.admin_notes}
+                  onChange={(e) => handleChange("admin_notes", e.target.value)}
+                  placeholder="Additional notes for this booking..."
+                />
+              </label>
 
               <div className="flex gap-4">
                 <button
@@ -909,7 +1160,7 @@ export function BookingsPanel() {
               <div className="relative group">
                 <input
                   type="text"
-                  placeholder="Search name, date, room..."
+                  placeholder="Search name, date, homestay..."
                   className="w-full rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-2.5 text-xs font-medium focus:border-[var(--primary)] outline-none transition-all"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -927,7 +1178,11 @@ export function BookingsPanel() {
             ) : (
               <ul className="space-y-3 text-xs">
                 {recentFive.map((b) => (
-                  <li key={b.id} className={`flex items-start justify-between gap-3 p-3 rounded-xl border border-[var(--border-subtle)] transition-all hover:border-[var(--primary)] ${b.payment_status === 'pending' ? 'bg-[color-mix(in_srgb,var(--surface)_95%,black_5%)] opacity-70' : 'bg-[var(--surface-elevated)]'}`}>
+                  <li
+                    key={b.id}
+                    onClick={() => setSelectedBookingDetail(b)}
+                    className={`flex items-start justify-between gap-3 p-3 rounded-xl border border-[var(--border-subtle)] transition-all hover:border-[var(--primary)] cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-95 ${b.payment_status === 'pending' ? 'bg-[color-mix(in_srgb,var(--surface)_95%,black_5%)] opacity-70' : 'bg-[var(--surface-elevated)]'}`}
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="font-bold text-[var(--text-strong)] truncate">
                         {b.guest_name}
@@ -939,7 +1194,7 @@ export function BookingsPanel() {
                         {formatDate(b.check_in)} – {formatDate(b.check_out)}
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-2" onClick={(e) => e.stopPropagation()}>
                       <select
                         className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-2 py-1 text-[10px] font-bold outline-none focus:border-[var(--primary)]"
                         value={b.payment_status || "pending"}
@@ -1022,6 +1277,90 @@ export function BookingsPanel() {
                   </div>
                 )
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Individual Booking Detail Modal */}
+      {selectedBookingDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedBookingDetail(null)} />
+          <div className="relative w-full max-w-lg rounded-2xl bg-[var(--surface)] p-6 shadow-2xl z-10 animate-scale-in">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-xl font-black text-[var(--text-strong)] uppercase tracking-tight">Booking Details</h3>
+                <p className="text-xs text-[var(--text-muted)] font-medium">Record ID: #{selectedBookingDetail.id}</p>
+              </div>
+              <button onClick={() => setSelectedBookingDetail(null)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-8">
+              <div className="col-span-2 p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-subtle)]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Homestay</p>
+                <p className="text-base font-bold text-[var(--text-strong)]">{getRoomTitle(selectedBookingDetail.room_id)} {selectedBookingDetail.unit_name && `(${selectedBookingDetail.unit_name})`}</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Guest Name</p>
+                <p className="font-bold text-[var(--text-strong)]">{selectedBookingDetail.guest_name}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">WhatsApp Number</p>
+                <p className="font-bold text-[var(--text-strong)]">{selectedBookingDetail.guest_email}</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-in</p>
+                <p className="font-bold text-[var(--text-strong)]">{formatDate(selectedBookingDetail.check_in)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-out</p>
+                <p className="font-bold text-[var(--text-strong)]">{formatDate(selectedBookingDetail.check_out)}</p>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Price</p>
+                <p className="text-lg font-black text-[var(--text-strong)]">RM {selectedBookingDetail.total_price}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Status</p>
+                <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${selectedBookingDetail.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {selectedBookingDetail.payment_status}
+                </span>
+              </div>
+
+              <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Amount Paid (Record)</p>
+                <p className="font-black text-blue-800">RM {selectedBookingDetail.amount_paid || 0}</p>
+              </div>
+
+              <div className="col-span-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Admin Notes</p>
+                <p className="text-sm font-medium text-[var(--text-strong)] bg-gray-50 p-3 rounded-lg border border-gray-100 min-h-[60px]">
+                  {selectedBookingDetail.admin_notes || "No additional notes."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  handleEdit(selectedBookingDetail);
+                  setSelectedBookingDetail(null);
+                }}
+                className="flex-1 py-3.5 rounded-xl bg-[var(--primary)] text-white text-xs font-black uppercase tracking-widest shadow-lg hover:opacity-90 active:scale-95 transition-all"
+              >
+                Edit Record
+              </button>
+              <button
+                onClick={() => setSelectedBookingDetail(null)}
+                className="flex-1 py-3.5 rounded-xl border-2 border-[var(--border-subtle)] text-[var(--text-strong)] text-xs font-black uppercase tracking-widest hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

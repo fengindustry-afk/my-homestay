@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         .from('bookings')
         .delete()
         .eq('billplz_id', billId)
-        .eq('payment_status', 'pending');
+        .eq('payment_status', 'awaiting_payment');
 
       if (error) {
         console.error("Callback Deletion Error:", error);

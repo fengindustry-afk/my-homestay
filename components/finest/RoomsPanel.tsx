@@ -17,6 +17,8 @@ type RoomFormState = {
   baths: string;
   guests: string;
   image: string;
+  description: string;
+  amenities: string;
 };
 
 const emptyRoom: RoomFormState = {
@@ -31,6 +33,8 @@ const emptyRoom: RoomFormState = {
   baths: "",
   guests: "",
   image: "",
+  description: "",
+  amenities: "",
 };
 
 export function RoomsPanel() {
@@ -54,7 +58,7 @@ export function RoomsPanel() {
       setLoading(true);
       const { data, error } = await supabase
         .from("rooms")
-        .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
+        .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
         .order("created_at", { ascending: false });
       if (!error && isMounted) {
         setRooms((data || []) as RoomRow[]);
@@ -89,6 +93,8 @@ export function RoomsPanel() {
       baths: String(room.baths ?? ""),
       guests: String(room.guests ?? ""),
       image: room.image ?? "",
+      description: room.description ?? "",
+      amenities: room.amenities ?? "",
     });
     setPhotoError(null);
   };
@@ -165,7 +171,7 @@ export function RoomsPanel() {
 
         const refreshed = await supabase
           .from("rooms")
-          .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
+          .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
           .order("created_at", { ascending: false });
         if (!refreshed.error) {
           setRooms((refreshed.data || []) as RoomRow[]);
@@ -256,6 +262,8 @@ export function RoomsPanel() {
       baths: Number(form.baths || 0),
       guests: Number(form.guests || 0),
       image: form.image,
+      description: form.description || null,
+      amenities: form.amenities || null,
     };
 
     const isEditing = Boolean(form.id);
@@ -265,14 +273,14 @@ export function RoomsPanel() {
 
     const { error } = await query;
     if (error) {
-      alert(`Could not save room: ${error.message}`);
+      alert(`Could not save homestay: ${error.message}`);
       setSaving(false);
       return;
     }
 
     const refreshed = await supabase
       .from("rooms")
-      .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
+      .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
       .order("created_at", { ascending: false });
 
     if (!refreshed.error) {
@@ -291,7 +299,7 @@ export function RoomsPanel() {
 
     const { error } = await supabase.from("rooms").delete().eq("id", room.id);
     if (error) {
-      alert(`Could not delete room: ${error.message}`);
+      alert(`Could not delete homestay: ${error.message}`);
       setRooms(previous);
     }
   };
@@ -301,9 +309,9 @@ export function RoomsPanel() {
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-sm font-semibold text-[var(--text-strong)]">Rooms</h2>
+            <h2 className="text-sm font-semibold text-[var(--text-strong)]">Homestays</h2>
             <p className="mt-1 text-xs text-[var(--text-muted)]">
-              Add new rooms, update pricing, or refresh the cover photos used on your public website.
+              Add new homestays, update pricing, or refresh the cover photos used on your public website.
             </p>
           </div>
           <button
@@ -311,22 +319,22 @@ export function RoomsPanel() {
             onClick={startCreate}
             className="rounded-md border border-[var(--border-subtle)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-strong)] hover:bg-[color-mix(in_srgb,var(--surface)_80%,white_20%)]"
           >
-            New room
+            New homestay
           </button>
         </div>
 
         <div className="overflow-x-auto">
           {loading ? (
-            <p className="text-xs text-[var(--text-muted)]">Loading rooms…</p>
+            <p className="text-xs text-[var(--text-muted)]">Loading homestays…</p>
           ) : rooms.length === 0 ? (
             <p className="text-xs text-[var(--text-muted)]">
-              No rooms found yet. Use &quot;New room&quot; to add your first listing.
+              No homestays found yet. Use &quot;New homestay&quot; to add your first listing.
             </p>
           ) : (
             <table className="min-w-full border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-[var(--border-subtle)] text-[var(--text-muted)]">
-                  <th className="px-2 py-2 font-medium">Room</th>
+                  <th className="px-2 py-2 font-medium">Homestay</th>
                   <th className="px-2 py-2 font-medium">Type</th>
                   <th className="px-2 py-2 font-medium">Location</th>
                   <th className="px-2 py-2 font-medium">Price (RM)</th>
@@ -379,10 +387,10 @@ export function RoomsPanel() {
 
       <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-4 shadow-sm">
         <h2 className="text-sm font-semibold text-[var(--text-strong)]">
-          {form.id ? "Edit room details" : "Create a new room"}
+          {form.id ? "Edit homestay details" : "Create a new homestay"}
         </h2>
         <p className="mt-1 text-xs text-[var(--text-muted)]">
-          Changes saved here update the cards, pricing and photos on your public rooms section.
+          Changes saved here update the cards, pricing and photos on your public homestays section.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 grid gap-4 md:grid-cols-3">
@@ -494,6 +502,27 @@ export function RoomsPanel() {
           </label>
 
           <label className="md:col-span-3 flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Description</span>
+            <textarea
+              rows={3}
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
+              value={form.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              placeholder="Serene accommodation with premium amenities, spacious living area..."
+            />
+          </label>
+
+          <label className="md:col-span-3 flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Amenities (comma-separated)</span>
+            <input
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
+              value={form.amenities}
+              onChange={(e) => handleChange("amenities", e.target.value)}
+              placeholder="WiFi, Air Conditioning, Kitchen, Parking, BBQ Pit, Swimming Pool..."
+            />
+          </label>
+
+          <label className="md:col-span-3 flex flex-col gap-1.5 text-xs">
             <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Cover photo</span>
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <input
@@ -519,7 +548,7 @@ export function RoomsPanel() {
               <div>
                 <p className="text-xs font-semibold text-[var(--text-strong)]">Gallery photos</p>
                 <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">
-                  Upload additional photos so customers can see the full homestay. Save the room first to enable uploads.
+                  Upload additional photos so customers can see the full homestay. Save the homestay first to enable uploads.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -532,7 +561,7 @@ export function RoomsPanel() {
                   onChange={(e) => void onGallerySelected(e.target.files)}
                 />
                 <span className="text-[10px] text-[var(--text-muted)]">
-                  {uploadingGallery ? "Uploading…" : form.id ? "Upload" : "Save room to enable"}
+                  {uploadingGallery ? "Uploading…" : form.id ? "Upload" : "Save homestay to enable"}
                 </span>
               </div>
             </div>
@@ -543,7 +572,7 @@ export function RoomsPanel() {
               <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
                 {photos.map((p) => (
                   <div key={p.id} className="group relative overflow-hidden rounded-md border border-[var(--border-subtle)]">
-                    <img src={p.url} alt="Room gallery" className="h-16 w-full object-cover" loading="lazy" />
+                    <img src={p.url} alt="Homestay gallery" className="h-16 w-full object-cover" loading="lazy" />
                     <button
                       type="button"
                       onClick={() => void deleteGalleryPhoto(p)}

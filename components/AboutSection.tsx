@@ -209,19 +209,39 @@ export default function AboutSection() {
                                     onClick={() => setShowCert(true)}
                                     className="group cursor-pointer flex items-center gap-3 bg-white p-2 pr-4 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-all hover:shadow-md"
                                 >
-                                    <div className="h-12 w-12 bg-[var(--surface)] rounded-lg flex items-center justify-center overflow-hidden border border-[var(--border)] group-hover:bg-[var(--accent-light)] transition-colors">
+                                    <div className="h-25 w-25 bg-[var(--surface)] rounded-lg flex items-center justify-center overflow-hidden border border-[var(--border)] group-hover:bg-[var(--accent-light)] transition-colors">
                                         <img
                                             src="/TCC Badge.png"
                                             alt="TCC Badge"
-                                            className="h-8 w-8 object-contain group-hover:scale-110 transition-transform"
+                                            className="h-20 w-20 object-contain group-hover:scale-110 transition-transform"
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).src = 'https://placehold.co/40x40?text=TCC';
                                             }}
                                         />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-[var(--primary)] leading-tight">TCC Compliant</span>
-                                        <span className="text-[9px] font-bold text-[var(--accent-dark)] uppercase tracking-wider">Verified 2026</span>
+                                        <span className="text-[15px] font-black text-[var(--primary)] leading-tight">TCC Compliant</span>
+                                        <span className="text-[13px] font-bold text-[var(--accent-dark)] uppercase tracking-wider">Verified 2026</span>
+                                    </div>
+                                </div>
+
+                                {/* Muslim Friendly Badge Item */}
+                                <div
+                                    onClick={() => setShowCert(true)}
+                                    className="group cursor-pointer flex items-center gap-3 bg-white p-2 pr-4 rounded-xl border border-[var(--border)] hover:border-[var(--accent)] transition-all hover:shadow-md"
+                                >
+                                    <div className="h-25 w-25 bg-[var(--surface)] rounded-lg flex items-center justify-center overflow-hidden border border-[var(--border)] group-hover:bg-[var(--accent-light)] transition-colors">
+                                        <img
+                                            src="/MuslimFriendly.png"
+                                            alt="Muslim Friendly Badge"
+                                            className="h-20 w-20 object-contain group-hover:scale-110 transition-transform"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://placehold.co/40x40?text=TCC';
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[15px] font-black text-[var(--primary)] leading-tight">Muslim Friendly</span>
                                     </div>
                                 </div>
 

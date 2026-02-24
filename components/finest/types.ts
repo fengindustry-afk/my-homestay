@@ -1,7 +1,7 @@
 export type DashboardStats = {
   totalBookings: number;
   upcomingCheckIns: number;
-  activeRooms: number;
+  activeHomestays: number;
   bookings?: any[];
 };
 
@@ -28,6 +28,8 @@ export type BookingRow = {
   payment_status: string | null;
   unit_name?: string | null;
   ic_number?: string | null;
+  amount_paid?: number | null;
+  admin_notes?: string | null;
   created_at: string;
 };
 
@@ -44,6 +46,8 @@ export type RoomRow = {
   baths: number | null;
   guests: number | null;
   image: string | null;
+  description: string | null;
+  amenities: string | null;
 };
 
 export type RoomPhotoRow = {

@@ -11,7 +11,7 @@ export function DashboardPanel({ stats }: { stats: DashboardStats }) {
             Total Bookings
           </p>
           <p className="mt-3 text-3xl font-semibold text-[var(--text-strong)]">{stats.totalBookings}</p>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">All-time reservations across every room.</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">All-time reservations across every homestay.</p>
         </div>
 
         <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-4 shadow-sm">
@@ -24,9 +24,9 @@ export function DashboardPanel({ stats }: { stats: DashboardStats }) {
 
         <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-subtle)] p-4 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--text-muted)]">
-            Active Rooms
+            Active Homestays
           </p>
-          <p className="mt-3 text-3xl font-semibold text-[var(--text-strong)]">{stats.activeRooms}</p>
+          <p className="mt-3 text-3xl font-semibold text-[var(--text-strong)]">{stats.activeHomestays}</p>
           <p className="mt-1 text-xs text-[var(--text-muted)]">Currently listed and available on the website.</p>
         </div>
       </section>
@@ -84,7 +84,7 @@ export function DashboardPanel({ stats }: { stats: DashboardStats }) {
           <ul className="mt-3 space-y-1.5 text-xs text-[var(--text-muted)]">
             <li>• Check for guests arriving today and tomorrow.</li>
             <li>• Look for long gaps where you may want to run a promotion.</li>
-            <li>• Make sure each active room has an up-to-date photo and description.</li>
+            <li>• Make sure each active homestay has an up-to-date photo and description.</li>
           </ul>
         </div>
       </section>

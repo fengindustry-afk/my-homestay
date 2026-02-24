@@ -46,16 +46,16 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                     </select>
                 </div>
                 <div className="search-bar-field">
-                    <label className="search-bar-label">Room Type</label>
+                    <label className="search-bar-label">Homestay Type</label>
                     <select
                         className="search-bar-select"
                         value={roomType}
                         onChange={(e) => setRoomType(e.target.value)}
                     >
                         <option>All Types</option>
-                        <option>Standard Room</option>
+                        <option>Standard Homestay</option>
                         <option>Studio</option>
-                        <option>Family Room</option>
+                        <option>Family Homestay</option>
                         <option>Deluxe Suite</option>
                         <option>Penthouse</option>
                     </select>

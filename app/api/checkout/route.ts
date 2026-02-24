@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         check_in: checkIn,
         check_out: checkOut,
         total_price: price,
-        payment_status: 'pending',
+        payment_status: 'awaiting_payment',
         unit_name: unitName,
         package_name: `${packageName || 'Basic Package'} (In: ${checkInTime}, Out: ${checkOutTime})`,
         units_count: Number(unitsCount || 1)

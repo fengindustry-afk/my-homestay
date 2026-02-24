@@ -16,6 +16,8 @@ export interface Room {
     baths: number;
     guests: number;
     image: string;
+    description?: string;
+    amenities?: string;
 }
 
 interface RoomsSectionProps {
@@ -41,7 +43,7 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
 
             const { data, error } = await supabase
                 .from("rooms")
-                .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image")
+                .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
                 .order("created_at", { ascending: false });
 
             if (!isMounted) return;
@@ -84,20 +86,20 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
             <section id="rooms" className="section">
                 <div className="mx-auto max-w-7xl px-6">
                     <div className="mb-14 text-center">
-                        <p className="section-tag">Our Rooms</p>
+                        <p className="section-tag">Our Homestays</p>
                         <h2 className="section-title" style={{ maxWidth: 600, margin: "0 auto 16px" }}>
-                            {filterCriteria ? "Search Results" : "Handpicked Rooms for "}
+                            {filterCriteria ? "Search Results" : "Handpicked Homestays for "}
                             {!filterCriteria && <span style={{ color: "var(--accent)" }}>Every Taste</span>}
                         </h2>
                         <p className="section-description" style={{ maxWidth: 520, margin: "0 auto" }}>
                             {loading ? (
-                                "Searching our collection for the perfect rooms..."
+                                "Searching our collection for the perfect homestays..."
                             ) : filteredRooms.length > 0 ? (
-                                "Discover the perfect space for your stay. Every room is designed with comfort and style in mind."
+                                "Discover the perfect space for your stay. Every homestay is designed with comfort and style in mind."
                             ) : filterCriteria ? (
-                                "No rooms match your search criteria. Please try different filters."
+                                "No homestays match your search criteria. Please try different filters."
                             ) : (
-                                "Our collection of featured rooms is being prepared. Please check back shortly!"
+                                "Our collection of featured homestays is being prepared. Please check back shortly!"
                             )}
                         </p>
                     </div>
@@ -105,11 +107,11 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
                     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                         {loading ? (
                             <p className="text-center text-sm text-[var(--text-muted)] md:col-span-2 lg:col-span-3">
-                                Loading rooms…
+                                Loading homestays…
                             </p>
                         ) : loadError ? (
                             <p className="text-center text-sm text-red-500 md:col-span-2 lg:col-span-3">
-                                Could not load rooms: {loadError}
+                                Could not load homestays: {loadError}
                             </p>
                         ) : (
                             filteredRooms.map((room) => (
