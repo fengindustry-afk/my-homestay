@@ -64,6 +64,57 @@ const formatDate = (dateStr: string) => {
   return `${d}/${m}/${y}`;
 };
 
+const formatSelectedDatesAsRanges = (dates: string[]) => {
+  if (dates.length === 0) return "";
+  if (dates.length === 1) return formatDate(dates[0]);
+  
+  // Sort dates chronologically
+  const sortedDates = [...dates].sort();
+  const ranges: string[] = [];
+  let currentRange: { start: string; end: string } | null = null;
+  
+  for (let i = 0; i < sortedDates.length; i++) {
+    const date = sortedDates[i];
+    const dateObj = new Date(date);
+    const nextDate = i < sortedDates.length - 1 ? new Date(sortedDates[i + 1]) : null;
+    
+    if (!currentRange) {
+      currentRange = { start: date, end: date };
+    } else if (nextDate) {
+      const diffTime = nextDate.getTime() - dateObj.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+      
+      if (diffDays === 1) {
+        currentRange.end = date;
+      } else {
+        ranges.push(formatDateRange(currentRange.start, currentRange.end));
+        currentRange = { start: date, end: date };
+      }
+    }
+  }
+  
+  if (currentRange) {
+    ranges.push(formatDateRange(currentRange.start, currentRange.end));
+  }
+  
+  return ranges.join(", ");
+};
+
+const formatDateRange = (startDate: string, endDate: string) => {
+  if (startDate === endDate) return formatDate(startDate);
+  
+  const [startYear, startMonth, startDay] = startDate.split("-");
+  const [endYear, endMonth, endDay] = endDate.split("-");
+  
+  // If same month and year, format as "X-Y/M/YYYY"
+  if (startYear === endYear && startMonth === endMonth) {
+    return `${parseInt(startDay)}-${parseInt(endDay)}/${parseInt(startMonth)}/${startYear}`;
+  }
+  
+  // Otherwise, format as "DD/MM/YYYY - DD/MM/YYYY"
+  return `${formatDate(startDate)}-${formatDate(endDate)}`;
+};
+
 export function BookingsPanel() {
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [bookings, setBookings] = useState<BookingRow[]>([]);
@@ -78,6 +129,7 @@ export function BookingsPanel() {
   const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRow | null>(null);
   const [discounts, setDiscounts] = useState<{[key: string]: {roomId: number, percentage: number}}>({});
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [discountMode, setDiscountMode] = useState(false);
 
   // Load discounts from localStorage on mount
   useEffect(() => {
@@ -483,7 +535,19 @@ export function BookingsPanel() {
     return discountPercentages.length > 0 ? Math.max(...discountPercentages) : 0;
   };
   const handleDateSelection = (date: Date) => {
+    // If discount mode is not active, show booking details instead
+    if (!discountMode) {
+      const dateKey = toKey(date);
+      const dayBookings = bookingsByDay[dateKey] || [];
+      if (dayBookings.length > 0) {
+        setSelectedDayBookings({ date, bookings: dayBookings });
+      }
+      return;
+    }
+
+    // Discount mode: allow any date selection (not just dates with bookings)
     const dateKey = toKey(date);
+    
     setSelectedDates(prev => {
       if (prev.includes(dateKey)) {
         return prev.filter(d => d !== dateKey);
@@ -500,6 +564,35 @@ export function BookingsPanel() {
   const clearSelectedDates = () => {
     setSelectedDates([]);
   };
+
+  const activateDiscountMode = () => {
+    setDiscountMode(true);
+  };
+
+  const deactivateDiscountMode = () => {
+    setDiscountMode(false);
+    clearSelectedDates();
+  };
+
+  // Handle click outside to deactivate discount mode
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      
+      // Check if click is outside the calendar container
+      const calendarContainer = document.getElementById('calendar-container');
+      if (calendarContainer && !calendarContainer.contains(target)) {
+        deactivateDiscountMode();
+      }
+    };
+
+    if (discountMode) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [discountMode]);
 
   const visibleMonthDate = useMemo(() => {
     const today = new Date();
@@ -618,7 +711,7 @@ export function BookingsPanel() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2.1fr)_minmax(0,1.4fr)]">
-        <div className="space-y-4">
+        <div id="calendar-container" className="space-y-4">
           <div className="grid grid-cols-7 gap-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">
             {DAY_LABELS.map((label) => (
               <div key={label} className="px-2 py-1 text-center">
@@ -637,16 +730,15 @@ export function BookingsPanel() {
                 <div
                   key={key + String(inCurrentMonth)}
                   onClick={() => {
-                    if (dayBookings.length > 0) {
-                      setSelectedDayBookings({ date, bookings: dayBookings });
-                    } else {
-                      handleDateSelection(date);
-                    }
+                    handleDateSelection(date);
                   }}
                   className={`flex min-h-[5.5rem] flex-col rounded-xl border px-2 py-2 ${inCurrentMonth
                     ? "border-[var(--border-subtle)] bg-[var(--surface)]"
                     : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
-                    } ${dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] shadow-sm transition-all hover:-translate-y-0.5' : 'cursor-pointer hover:border-green-500 hover:shadow-sm transition-all hover:-translate-y-0.5'} ${isPast ? 'opacity-30 grayscale-[0.8] pointer-events-none bg-[var(--surface-dark)]' : ''} ${isDateSelected(date) ? 'ring-2 ring-green-500 bg-green-50' : ''}`}
+                    } ${discountMode 
+                      ? 'cursor-pointer hover:border-green-500 shadow-sm transition-all hover:-translate-y-0.5'
+                      : (dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] shadow-sm transition-all hover:-translate-y-0.5' : 'cursor-default')
+                    } ${isPast ? 'opacity-30 grayscale-[0.8] pointer-events-none bg-[var(--surface-dark)]' : ''} ${isDateSelected(date) ? 'ring-2 ring-green-500 bg-green-50' : ''}`}
                 >
                   <div className="mb-2 flex items-center justify-between text-[11px]">
                     <span
@@ -946,7 +1038,7 @@ export function BookingsPanel() {
               </div>
 
               {/* Discount Management Section */}
-              <div className="rounded-2xl border-2 border-dashed border-green-500/30 bg-green-50/30 p-4 transition-all hover:border-green-500/50">
+              <div id="discount-management-section" className={`rounded-2xl border-2 border-dashed p-4 transition-all ${discountMode ? 'border-green-500/50 bg-green-50/50' : 'border-green-500/30 bg-green-50/30 hover:border-green-500/50'}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
@@ -954,13 +1046,20 @@ export function BookingsPanel() {
                   <span className="text-[11px] font-black uppercase tracking-widest text-green-600">Homestay Discounts</span>
                 </div>
                 <p className="text-[10px] text-green-700 mb-3 leading-tight font-medium">
-                  Select homestay, click calendar dates, then add percentage discount for selected dates.
+                  {discountMode ? 'Click any calendar dates to select for discount. Click outside to cancel.' : 'Select homestay to activate discount selection mode.'}
                 </p>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <select
                       className="rounded-lg border border-green-200 bg-white px-3 py-2 text-xs font-medium focus:border-green-500 outline-none"
                       id="discount-room"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          activateDiscountMode();
+                        } else {
+                          deactivateDiscountMode();
+                        }
+                      }}
                     >
                       <option value="">Select Homestay</option>
                       {rooms.map(room => (
@@ -980,7 +1079,7 @@ export function BookingsPanel() {
                     <div className="rounded-lg bg-green-100 p-2 border border-green-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-bold text-green-700">
-                          {selectedDates.length} date{selectedDates.length > 1 ? 's' : ''} selected
+                          {formatSelectedDatesAsRanges(selectedDates)}
                         </span>
                         <button
                           type="button"
@@ -989,13 +1088,6 @@ export function BookingsPanel() {
                         >
                           Clear Selection
                         </button>
-                      </div>
-                      <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
-                        {selectedDates.map(date => (
-                          <span key={date} className="text-[9px] bg-green-200 px-1.5 py-0.5 rounded text-green-700">
-                            {formatDate(date)}
-                          </span>
-                        ))}
                       </div>
                     </div>
                   )}
@@ -1028,6 +1120,7 @@ export function BookingsPanel() {
                       clearSelectedDates();
                       roomSelect.value = '';
                       percentageInput.value = '';
+                      deactivateDiscountMode();
                     }}
                     className="w-full px-3 py-2 rounded-lg bg-green-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-all active:scale-95 disabled:opacity-50"
                     disabled={selectedDates.length === 0}
