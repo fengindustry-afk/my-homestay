@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { calculatePrice } from '@/lib/price-utils';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,23 +9,67 @@ const supabase = createClient(
 
 export async function POST(req: Request) {
   try {
-    const { listingId, price, title, guestPhone, guestName, icNumber, checkIn, checkOut, unitName, packageName, checkInTime, checkOutTime, unitsCount } = await req.json();
+    const body = await req.json();
+    const {
+      listingId,
+      price: clientPrice, // We'll validate this
+      title,
+      guestPhone,
+      guestName,
+      icNumber,
+      checkIn,
+      checkOut,
+      unitName,
+      packageName,
+      checkInTime,
+      checkOutTime,
+      unitsCount,
+      addOns // Optional, for Homestay 2
+    } = body;
 
-    if (!listingId || !price || !guestPhone || !guestName || !checkIn || !checkOut) {
+    if (!listingId || !guestPhone || !guestName || !checkIn || !checkOut) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Create a pending booking in Supabase
+    // 1. Fetch Room Details and Discounts from Database for Price Verification
+    const [roomRes, discountsRes] = await Promise.all([
+      supabase.from('rooms').select('id, title, price, basic_price, full_price').eq('id', listingId).single(),
+      supabase.from('discounts').select('room_id, discount_date, percentage').eq('room_id', listingId).eq('is_deleted', false)
+    ]);
+
+    if (roomRes.error || !roomRes.data) {
+      return NextResponse.json({ error: "Invalid room selected" }, { status: 400 });
+    }
+
+    // 2. Recalculate Price on Server
+    const serverPrice = calculatePrice({
+      room: roomRes.data,
+      checkIn,
+      checkOut,
+      selectedUnit: unitName,
+      selectedPackage: packageName,
+      unitsCount: Number(unitsCount || 1),
+      checkInTime,
+      checkOutTime,
+      addOns,
+      discounts: discountsRes.data || []
+    });
+
+    // SECURITY: If client price differs significantly or is lower, use server price
+    // We'll just always use server price to be safe
+    const finalPrice = serverPrice;
+
+    // 3. Create a pending booking in Supabase
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert({
         room_id: listingId,
         guest_name: guestName,
-        guest_email: guestPhone, // Maps to guest_email column since guest_phone does not exist
+        guest_email: guestPhone,
         ic_number: icNumber,
         check_in: checkIn,
         check_out: checkOut,
-        total_price: price,
+        total_price: finalPrice,
         payment_status: 'awaiting_payment',
         unit_name: unitName,
         package_name: `${packageName || 'Basic Package'} (In: ${checkInTime}, Out: ${checkOutTime})`,
@@ -38,8 +83,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
     }
 
-    // 2. Create Billplz bill
-    const auth = Buffer.from(`${process.env.BILLPLZ_API_KEY}:`).toString('base64');
+    // 4. Create Billplz bill
+    const authString = `${process.env.BILLPLZ_API_KEY}:`;
+    const auth = Buffer.from(authString).toString('base64');
 
     const res = await fetch('https://www.billplz.com/api/v3/bills', {
       method: 'POST',
@@ -52,7 +98,7 @@ export async function POST(req: Request) {
         email: 'guest@indahmorib.com',
         mobile: guestPhone,
         name: guestName,
-        amount: Math.round(price * 100), // Amount in cents
+        amount: Math.round(finalPrice * 100), // Amount in cents
         callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
         redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
         description: `Booking for ${title} (${checkIn} to ${checkOut})`,
@@ -70,7 +116,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to initialize payment" }, { status: 500 });
     }
 
-    // 3. Update booking with billplz_id
+    // 5. Update booking with billplz_id
     await supabase
       .from('bookings')
       .update({ billplz_id: bill.id })
