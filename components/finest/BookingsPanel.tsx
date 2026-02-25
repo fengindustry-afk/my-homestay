@@ -67,23 +67,23 @@ const formatDate = (dateStr: string) => {
 const formatSelectedDatesAsRanges = (dates: string[]) => {
   if (dates.length === 0) return "";
   if (dates.length === 1) return formatDate(dates[0]);
-  
+
   // Sort dates chronologically
   const sortedDates = [...dates].sort();
   const ranges: string[] = [];
   let currentRange: { start: string; end: string } | null = null;
-  
+
   for (let i = 0; i < sortedDates.length; i++) {
     const date = sortedDates[i];
     const dateObj = new Date(date);
     const nextDate = i < sortedDates.length - 1 ? new Date(sortedDates[i + 1]) : null;
-    
+
     if (!currentRange) {
       currentRange = { start: date, end: date };
     } else if (nextDate) {
       const diffTime = nextDate.getTime() - dateObj.getTime();
       const diffDays = diffTime / (1000 * 60 * 60 * 24);
-      
+
       if (diffDays === 1) {
         currentRange.end = date;
       } else {
@@ -92,25 +92,25 @@ const formatSelectedDatesAsRanges = (dates: string[]) => {
       }
     }
   }
-  
+
   if (currentRange) {
     ranges.push(formatDateRange(currentRange.start, currentRange.end));
   }
-  
+
   return ranges.join(", ");
 };
 
 const formatDateRange = (startDate: string, endDate: string) => {
   if (startDate === endDate) return formatDate(startDate);
-  
+
   const [startYear, startMonth, startDay] = startDate.split("-");
   const [endYear, endMonth, endDay] = endDate.split("-");
-  
+
   // If same month and year, format as "X-Y/M/YYYY"
   if (startYear === endYear && startMonth === endMonth) {
     return `${parseInt(startDay)}-${parseInt(endDay)}/${parseInt(startMonth)}/${startYear}`;
   }
-  
+
   // Otherwise, format as "DD/MM/YYYY - DD/MM/YYYY"
   return `${formatDate(startDate)}-${formatDate(endDate)}`;
 };
@@ -127,28 +127,88 @@ export function BookingsPanel() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [selectedBookingDetail, setSelectedBookingDetail] = useState<BookingRow | null>(null);
-  const [discounts, setDiscounts] = useState<{[key: string]: {roomId: number, percentage: number}}>({});
+  const [discounts, setDiscounts] = useState<{ [key: string]: { roomId: number, percentage: number } }>({});
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [discountMode, setDiscountMode] = useState(false);
+  const [discountsLoading, setDiscountsLoading] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
 
-  // Load discounts from localStorage on mount
+  // Load discounts from database on mount
   useEffect(() => {
-    try {
-      const savedDiscounts = localStorage.getItem('homestay-discounts');
-      if (savedDiscounts) {
-        setDiscounts(JSON.parse(savedDiscounts));
+    async function loadDiscounts() {
+      try {
+        setDiscountsLoading(true);
+        const response = await fetch('/api/discounts');
+        const data = await response.json();
+
+        if (data.discounts) {
+          const discountsMap: { [key: string]: { roomId: number, percentage: number } } = {};
+          data.discounts.forEach((discount: any) => {
+            const dateKey = discount.discount_date;
+            const roomId = discount.room_id;
+            // Only add valid discounts with proper room_id
+            if (roomId && typeof roomId === 'number' && roomId > 0) {
+              const compositeKey = `${dateKey}_${roomId}`;
+              discountsMap[compositeKey] = {
+                roomId: roomId,
+                percentage: discount.percentage
+              };
+            }
+          });
+          setDiscounts(discountsMap);
+        }
+      } catch (error) {
+        console.warn('Failed to load discounts from database:', error);
+      } finally {
+        setDiscountsLoading(false);
       }
-    } catch (error) {
-      console.warn('Failed to load discounts from localStorage:', error);
     }
+
+    loadDiscounts();
   }, []);
 
-  // Save discounts to localStorage whenever they change
+  // Save discounts to database whenever they change
   useEffect(() => {
-    try {
-      localStorage.setItem('homestay-discounts', JSON.stringify(discounts));
-    } catch (error) {
-      console.warn('Failed to save discounts to localStorage:', error);
+    async function saveDiscounts() {
+      try {
+        // Convert discounts map to API format
+        const discountData = Object.entries(discounts).map(([compositeKey, discount]) => {
+          const [date] = compositeKey.split('_');
+          return {
+            room_id: discount.roomId,
+            discount_date: date,
+            percentage: discount.percentage
+          };
+        }).filter(discount => {
+          // Strict validation: room_id must be a positive number, discount_date must be valid, percentage must be > 0
+          return discount.room_id &&
+            typeof discount.room_id === 'number' &&
+            discount.room_id > 0 &&
+            discount.discount_date &&
+            discount.percentage &&
+            discount.percentage > 0;
+        });
+
+        if (discountData.length === 0) {
+          return;
+        }
+
+        // Save each discount to database
+        for (const discount of discountData) {
+          await fetch('/api/discounts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(discount)
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to save discounts to database:', error);
+      }
+    }
+
+    // Only save if there are discounts to save
+    if (Object.keys(discounts).length > 0) {
+      saveDiscounts();
     }
   }, [discounts]);
 
@@ -164,7 +224,7 @@ export function BookingsPanel() {
       try {
         const response = await fetch('/api/bookings');
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(data.error || 'Failed to fetch bookings');
         }
@@ -414,16 +474,27 @@ export function BookingsPanel() {
       };
 
       if (editingId) {
-        const response = await fetch(editingId ? `/api/bookings` : `/api/bookings`, {
-          method: editingId ? 'PUT' : 'POST',
+        const response = await fetch(`/api/bookings`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editingId ? { ...payload, id: editingId } : payload)
+          body: JSON.stringify({ ...payload, id: editingId })
         });
-        
+
         const data = await response.json();
-        
         if (!response.ok) {
-          alert(`Could not ${editingId ? 'update' : 'create'} booking: ${data.error}`);
+          alert(`Could not update booking: ${data.error}`);
+          return;
+        }
+      } else {
+        const response = await fetch(`/api/bookings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(`Could not create booking: ${data.error}`);
           return;
         }
       }
@@ -434,7 +505,7 @@ export function BookingsPanel() {
       // Refresh bookings list
       const refreshResponse = await fetch('/api/bookings');
       const refreshData = await refreshResponse.json();
-      
+
       if (refreshResponse.ok) {
         setBookings(refreshData.bookings || []);
       }
@@ -490,9 +561,9 @@ export function BookingsPanel() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, payment_status })
     });
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       alert(`Could not update status: ${data.error}`);
       setBookings(previous);
@@ -508,9 +579,9 @@ export function BookingsPanel() {
     const response = await fetch(`/api/bookings?id=${id}`, {
       method: 'DELETE'
     });
-    
+
     const data = await response.json();
-    
+
     if (!response.ok) {
       alert(`Could not delete booking: ${data.error}`);
       setBookings(previous);
@@ -522,14 +593,15 @@ export function BookingsPanel() {
 
   const getDiscountForDate = (day: Date, roomId: number) => {
     const dateKey = toKey(day);
-    const discount = discounts[dateKey];
-    return discount && discount.roomId === roomId ? discount.percentage : 0;
+    const compositeKey = `${dateKey}_${roomId}`;
+    const discount = discounts[compositeKey];
+    return discount ? discount.percentage : 0;
   };
 
   const calculateTotalDiscount = (checkIn: Date, checkOut: Date, roomId: number) => {
     const interval = eachDayOfInterval({ start: checkIn, end: checkOut });
     const discountPercentages = interval.map(d => getDiscountForDate(d, roomId)).filter(p => p > 0);
-    
+
     // If there are any discounts, use the first (highest) percentage found
     // This ensures the same percentage is applied across all chosen dates
     return discountPercentages.length > 0 ? Math.max(...discountPercentages) : 0;
@@ -547,7 +619,7 @@ export function BookingsPanel() {
 
     // Discount mode: allow any date selection (not just dates with bookings)
     const dateKey = toKey(date);
-    
+
     setSelectedDates(prev => {
       if (prev.includes(dateKey)) {
         return prev.filter(d => d !== dateKey);
@@ -571,14 +643,13 @@ export function BookingsPanel() {
 
   const deactivateDiscountMode = () => {
     setDiscountMode(false);
-    clearSelectedDates();
   };
 
   // Handle click outside to deactivate discount mode
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      
+
       // Check if click is outside the calendar container
       const calendarContainer = document.getElementById('calendar-container');
       if (calendarContainer && !calendarContainer.contains(target)) {
@@ -735,7 +806,7 @@ export function BookingsPanel() {
                   className={`flex min-h-[5.5rem] flex-col rounded-xl border px-2 py-2 ${inCurrentMonth
                     ? "border-[var(--border-subtle)] bg-[var(--surface)]"
                     : "border-transparent bg-[color-mix(in_srgb,var(--surface)_90%,white_10%)] text-[var(--text-muted)] opacity-60"
-                    } ${discountMode 
+                    } ${discountMode
                       ? 'cursor-pointer hover:border-green-500 shadow-sm transition-all hover:-translate-y-0.5'
                       : (dayBookings.length > 0 ? 'cursor-pointer hover:border-[var(--primary)] shadow-sm transition-all hover:-translate-y-0.5' : 'cursor-default')
                     } ${isPast ? 'opacity-30 grayscale-[0.8] pointer-events-none bg-[var(--surface-dark)]' : ''} ${isDateSelected(date) ? 'ring-2 ring-green-500 bg-green-50' : ''}`}
@@ -1041,20 +1112,27 @@ export function BookingsPanel() {
               <div id="discount-management-section" className={`rounded-2xl border-2 border-dashed p-4 transition-all ${discountMode ? 'border-green-500/50 bg-green-50/50' : 'border-green-500/30 bg-green-50/30 hover:border-green-500/50'}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
                   </div>
                   <span className="text-[11px] font-black uppercase tracking-widest text-green-600">Homestay Discounts</span>
                 </div>
                 <p className="text-[10px] text-green-700 mb-3 leading-tight font-medium">
-                  {discountMode ? 'Click any calendar dates to select for discount. Click outside to cancel.' : 'Select homestay to activate discount selection mode.'}
+                  {discountsLoading ? 'Loading discounts...' : (discountMode ? 'Click any calendar dates to select for discount. Click outside to cancel.' : 'Select homestay to activate discount selection mode.')}
                 </p>
                 <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2" onClick={() => activateDiscountMode()}>
                     <select
                       className="rounded-lg border border-green-200 bg-white px-3 py-2 text-xs font-medium focus:border-green-500 outline-none"
                       id="discount-room"
+                      value={selectedRoomId || ''}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent the parent onClick from firing
+                        activateDiscountMode();
+                      }}
                       onChange={(e) => {
-                        if (e.target.value) {
+                        const roomId = e.target.value ? Number(e.target.value) : null;
+                        setSelectedRoomId(roomId);
+                        if (roomId) {
                           activateDiscountMode();
                         } else {
                           deactivateDiscountMode();
@@ -1073,6 +1151,10 @@ export function BookingsPanel() {
                       placeholder="Discount %"
                       className="rounded-lg border border-green-200 bg-white px-3 py-2 text-xs font-medium focus:border-green-500 outline-none"
                       id="discount-percentage"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent the parent onClick from firing
+                        activateDiscountMode();
+                      }}
                     />
                   </div>
                   {selectedDates.length > 0 && (
@@ -1094,11 +1176,10 @@ export function BookingsPanel() {
                   <button
                     type="button"
                     onClick={() => {
-                      const roomSelect = document.getElementById('discount-room') as HTMLSelectElement;
                       const percentageInput = document.getElementById('discount-percentage') as HTMLInputElement;
-                      const roomId = Number(roomSelect.value);
+                      const roomId = selectedRoomId;
                       const percentage = Number(percentageInput.value);
-                      
+
                       if (!roomId) {
                         alert('Please select a homestay');
                         return;
@@ -1111,36 +1192,67 @@ export function BookingsPanel() {
                         alert('Please enter a valid percentage (1-100)');
                         return;
                       }
-                      
-                      const newDiscounts: {[key: string]: {roomId: number, percentage: number}} = {};
+
+                      const newDiscounts: { [key: string]: { roomId: number, percentage: number } } = {};
                       selectedDates.forEach(date => {
-                        newDiscounts[date] = { roomId, percentage };
+                        const compositeKey = `${date}_${roomId}`;
+                        newDiscounts[compositeKey] = { roomId, percentage };
                       });
-                      setDiscounts(prev => ({ ...prev, ...newDiscounts }));
-                      clearSelectedDates();
-                      roomSelect.value = '';
-                      percentageInput.value = '';
-                      deactivateDiscountMode();
+
+                      // Save discounts first
+                      const updatedDiscounts = { ...discounts, ...newDiscounts };
+                      setDiscounts(updatedDiscounts);
+
+                      // Update localStorage for immediate feedback across components if on same browser
+                      localStorage.setItem('homestay-discounts', JSON.stringify(updatedDiscounts));
+
+                      // Then clear UI state after a small delay
+                      setTimeout(() => {
+                        clearSelectedDates();
+                        setSelectedRoomId(null);
+                        percentageInput.value = '';
+                      }, 100);
+                      // Don't deactivate mode immediately - let user see the applied discounts
                     }}
                     className="w-full px-3 py-2 rounded-lg bg-green-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-all active:scale-95 disabled:opacity-50"
                     disabled={selectedDates.length === 0}
                   >
                     Apply Discount to {selectedDates.length} {selectedDates.length === 1 ? 'Date' : 'Dates'}
                   </button>
-                  <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
-                    {Object.entries(discounts).map(([date, discount]) => {
+                  <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
+                    {Object.entries(discounts).sort((a, b) => a[0].localeCompare(b[0])).map(([compositeKey, discount]) => {
+                      const [date] = compositeKey.split('_');
                       const room = rooms.find(r => r.id === discount.roomId);
                       return (
-                        <span key={date} className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-medium text-green-700">
+                        <span key={compositeKey} className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-[10px] font-medium text-green-700">
                           {formatDate(date)}: {room?.title || 'Unknown'} -{discount.percentage}%
                           <button
                             type="button"
-                            onClick={() => setDiscounts(prev => {
-                              const newDiscounts = { ...prev };
-                              delete newDiscounts[date];
-                              return newDiscounts;
-                            })}
-                            className="text-green-500 hover:text-green-700 font-bold"
+                            onClick={async () => {
+                              // Then delete from database
+                              try {
+                                await fetch('/api/discounts', {
+                                  method: 'DELETE',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    discount_date: date,
+                                    room_id: discount.roomId
+                                  })
+                                });
+                              } catch (error) {
+                                console.warn('Failed to delete discount from database:', error);
+                              }
+
+                              // Remove from local state
+                              setDiscounts(prev => {
+                                const newDiscounts = { ...prev };
+                                delete newDiscounts[compositeKey];
+                                // Sync local storage too
+                                localStorage.setItem('homestay-discounts', JSON.stringify(newDiscounts));
+                                return newDiscounts;
+                              });
+                            }}
+                            className="text-green-500 hover:text-green-700 font-bold ml-1"
                           >
                             ×
                           </button>

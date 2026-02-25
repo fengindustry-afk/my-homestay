@@ -34,7 +34,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const [zoomedImage, setZoomedImage] = useState<string>("");
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
-    const [discounts, setDiscounts] = useState<{[key: string]: {roomId: number, percentage: number}}>({});
+    const [discounts, setDiscounts] = useState<{ [key: string]: { roomId: number, percentage: number } }>({});
 
     const [selectedUnit, setSelectedUnit] = useState<string>("");
     const [selectedPackage, setSelectedPackage] = useState<string>("");
@@ -62,16 +62,17 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     const getDiscountForDate = (day: Date, roomId: number) => {
         const dateKey = toKey(day);
-        const discount = discounts[dateKey];
-        return discount && discount.roomId === roomId ? discount.percentage : 0;
+        const compositeKey = `${dateKey}_${roomId}`;
+        const discount = discounts[compositeKey];
+        return discount ? discount.percentage : 0;
     };
 
     const calculateTotalDiscount = (checkIn: Date, checkOut: Date, roomId: number) => {
+        if (!checkIn || !checkOut || !roomId) return 0;
         const interval = eachDayOfInterval({ start: checkIn, end: checkOut });
         const discountPercentages = interval.map(d => getDiscountForDate(d, roomId)).filter(p => p > 0);
-        
-        // If there are any discounts, use the first (highest) percentage found
-        // This ensures the same percentage is applied across all chosen dates
+
+        // If there are any discounts, use the highest percentage found
         return discountPercentages.length > 0 ? Math.max(...discountPercentages) : 0;
     };
 
@@ -233,29 +234,58 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     // Calculate discount details for display
     const discountDetails = useMemo(() => {
         if (!checkIn || !checkOut || !room?.id) return { percentage: 0, amount: 0 };
-        
+
         const totalDiscountPercentage = calculateTotalDiscount(checkIn, checkOut, room.id);
         const computedPrice = totalPrice;
         const discountAmount = totalDiscountPercentage > 0 ? (computedPrice * 100) / (100 - totalDiscountPercentage) * (totalDiscountPercentage / 100) : 0;
-        
+
         return {
             percentage: totalDiscountPercentage,
             amount: discountAmount
         };
     }, [checkIn, checkOut, room?.id, totalPrice]);
 
-    // Load discounts from localStorage or shared state
+    // Load discounts from database on mount
     useEffect(() => {
-        try {
-            // Try to get discounts from localStorage (shared with BookingsPanel)
-            const savedDiscounts = localStorage.getItem('homestay-discounts');
-            if (savedDiscounts) {
-                setDiscounts(JSON.parse(savedDiscounts));
+        async function loadDiscounts() {
+            try {
+                const response = await fetch('/api/discounts');
+                const data = await response.json();
+
+                if (data.discounts) {
+                    const discountsMap: { [key: string]: { roomId: number, percentage: number } } = {};
+                    data.discounts.forEach((discount: any) => {
+                        const dateKey = discount.discount_date;
+                        const roomId = Number(discount.room_id);
+                        if (roomId && !isNaN(roomId)) {
+                            const compositeKey = `${dateKey}_${roomId}`;
+                            discountsMap[compositeKey] = {
+                                roomId: roomId,
+                                percentage: discount.percentage
+                            };
+                        }
+                    });
+                    setDiscounts(discountsMap);
+                    // Also update localStorage for immediate local feedback if needed
+                    localStorage.setItem('homestay-discounts', JSON.stringify(discountsMap));
+                }
+            } catch (error) {
+                console.warn('Failed to load discounts from database:', error);
+
+                // Fallback to localStorage if API fails
+                try {
+                    const savedDiscounts = localStorage.getItem('homestay-discounts');
+                    if (savedDiscounts) {
+                        setDiscounts(JSON.parse(savedDiscounts));
+                    }
+                } catch (e) { }
             }
-        } catch (error) {
-            console.warn('Failed to load discounts:', error);
         }
-    }, []);
+
+        if (isOpen) {
+            loadDiscounts();
+        }
+    }, [isOpen]);
 
     // Listen for discount updates from other components
     useEffect(() => {
@@ -484,7 +514,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
                                                 </div>
                                                 <span className="text-sm font-bold text-green-700">Discount Applied!</span>
                                             </div>
@@ -545,7 +575,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
                             )}
 
-                            
+
                             {/* Moved Unit Selection to Top */}
                             {units.length > 1 && (
                                 <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
