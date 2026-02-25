@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 
@@ -14,14 +14,19 @@ export async function verifyAdmin() {
 
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
         cookies: {
-            get(name: string) {
-                return cookieStore.get(name)?.value;
+            getAll() {
+                return cookieStore.getAll();
             },
-            set(name: string, value: string, options: any) {
-                cookieStore.set({ name, value, ...options });
-            },
-            remove(name: string, options: any) {
-                cookieStore.set({ name, value: '', ...options });
+            setAll(cookiesToSet) {
+                try {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        cookieStore.set(name, value, options)
+                    );
+                } catch {
+                    // The `setAll` method was called from a Server Component.
+                    // This can be ignored if you have middleware refreshing
+                    // sessions.
+                }
             },
         },
     });
@@ -32,7 +37,7 @@ export async function verifyAdmin() {
         return { authenticated: false, role: null, isAdmin: false };
     }
 
-    // Use admin client to check role in the users table to avoid RLS limitations
+    // Use admin client with service_role to check user role directly from a protected table
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: userData, error: roleError } = await adminClient
         .from('users')
@@ -60,3 +65,4 @@ export async function verifyStaff() {
 
     return { ...verification, isStaff: false };
 }
+
