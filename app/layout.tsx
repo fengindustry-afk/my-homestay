@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import BannerPopup from "@/components/BannerPopup";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -52,6 +53,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <BannerPopup />
         </ThemeProvider>
       </body>
     </html>

@@ -9,28 +9,42 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [roomsRes, bookingsRes] = await Promise.all([
-      supabaseAdmin.from("rooms").select("id,title,price,basic_price,full_price"),
-      supabaseAdmin
+    // We use all columns from the whitelist. If columns are missing in DB, this will fail.
+    // Ensure you have run the latest migrations!
+    const { data: roomsData, error: roomsError } = await supabaseAdmin
+      .from("rooms")
+      .select("id,title,price,basic_price,full_price");
+
+    if (roomsError) throw roomsError;
+
+    const { data: bookingsData, error: bookingsError } = await supabaseAdmin
+      .from("bookings")
+      .select("id,room_id,unit_name,guest_name,guest_email,ic_number,check_in,check_out,check_in_time,check_out_time,total_price,package_name,units_count,payment_status,created_at,amount_paid,billplz_id,admin_notes")
+      .order("created_at", { ascending: false });
+
+    if (bookingsError) {
+      console.error('Database Error:', bookingsError);
+      // If we can't read the new columns yet, fall back to basic info to avoid breaking the dashboard
+      const { data: fallbackData } = await supabaseAdmin
         .from("bookings")
-        .select(
-          "id,room_id,unit_name,guest_name,guest_email,ic_number,check_in,check_out,total_price,package_name,units_count,payment_status,created_at,amount_paid,admin_notes"
-        )
-        .order("created_at", { ascending: false })
-    ]);
+        .select("id,room_id,guest_name,guest_email,check_in,check_out,total_price,payment_status,created_at")
+        .order("created_at", { ascending: false });
 
-
-    if (roomsRes.error) throw roomsRes.error;
-    if (bookingsRes.error) throw bookingsRes.error;
+      return NextResponse.json({
+        rooms: roomsData || [],
+        bookings: fallbackData || [],
+        warning: "Some columns are missing from the database. Please run the latest SQL migrations."
+      });
+    }
 
     return NextResponse.json({
-      rooms: roomsRes.data || [],
-      bookings: bookingsRes.data || []
+      rooms: roomsData || [],
+      bookings: bookingsData || []
     });
-  } catch (error) {
-    console.error('Error fetching bookings:', error);
+  } catch (error: any) {
+    console.error('Final API Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch bookings' },
+      { error: error.message || 'Failed to fetch bookings' },
       { status: 500 }
     );
   }
@@ -59,6 +73,8 @@ export async function POST(request: NextRequest) {
       package_name: body.package_name,
       units_count: Number(body.units_count || 1),
       payment_status: body.payment_status || 'pending',
+      check_in_time: body.check_in_time,
+      check_out_time: body.check_out_time,
       admin_notes: body.admin_notes
     };
 
@@ -109,6 +125,8 @@ export async function PUT(request: NextRequest) {
       amount_paid: Number(body.amount_paid),
       package_name: body.package_name,
       units_count: Number(body.units_count),
+      check_in_time: body.check_in_time,
+      check_out_time: body.check_out_time,
       payment_status: body.payment_status,
       admin_notes: body.admin_notes,
       updated_at: new Date().toISOString()

@@ -4,10 +4,7 @@ import { verifyAdmin } from '@/lib/auth-utils';
 
 export async function GET(request: NextRequest) {
   try {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Removed admin verification for public access to discounts
 
     const { data, error } = await supabaseAdmin
       .from('discounts')

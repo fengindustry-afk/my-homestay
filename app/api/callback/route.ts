@@ -50,11 +50,16 @@ export async function POST(req: Request) {
     if (!billId) return new Response('Missing bill ID', { status: 400 });
 
     if (isPaid) {
-      // 1. Mark as paid
+      // Billplz provides amount in cents (e.g. 10000 = RM100.00)
+      const amountCents = parseInt(data['amount'] || '0');
+      const amountPaid = amountCents / 100;
+
+      // 1. Mark as paid and record the exact transaction value
       const { error } = await supabase
         .from('bookings')
         .update({
           payment_status: 'paid',
+          amount_paid: amountPaid,
           updated_at: new Date().toISOString()
         })
         .eq('billplz_id', billId);

@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { eachDayOfInterval, format } from "date-fns";
+import { eachDayOfInterval, format, addDays } from "date-fns";
+import { areIntervalsOverlapping, parseISO } from "date-fns";
 
 import BookingCalendar from "./BookingCalendar";
 
@@ -39,6 +40,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const [selectedUnit, setSelectedUnit] = useState<string>("");
     const [selectedPackage, setSelectedPackage] = useState<string>("");
     const [unitsCount, setUnitsCount] = useState<number>(1);
+    const [unavailableUnits, setUnavailableUnits] = useState<string[]>([]);
     const [addOns, setAddOns] = useState({
         bbq: false,
         cradle: false,
@@ -70,9 +72,15 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const calculateTotalDiscount = (checkIn: Date, checkOut: Date, roomId: number) => {
         if (!checkIn || !checkOut || !roomId) return 0;
         const interval = eachDayOfInterval({ start: checkIn, end: checkOut });
+
+        // Remove the check-out day since discounts (like prices) apply per night
+        if (interval.length > 1) {
+            interval.pop();
+        }
+
         const discountPercentages = interval.map(d => getDiscountForDate(d, roomId)).filter(p => p > 0);
 
-        // If there are any discounts, use the highest percentage found
+        // If there are any discounts, use the highest percentage found in the stay
         return discountPercentages.length > 0 ? Math.max(...discountPercentages) : 0;
     };
 
@@ -305,6 +313,54 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
+    // Fetch unavailable units when dates are selected
+    useEffect(() => {
+        async function fetchUnavailableUnits() {
+            if (!room?.id || !checkIn) {
+                setUnavailableUnits([]);
+                return;
+            }
+
+            // If we only have checkIn, we check for units unavailable for at least one night starting then
+            const checkOutToUse = checkOut || addDays(checkIn, 1);
+
+            const { data, error } = await supabase
+                .from("bookings")
+                .select("check_in, check_out, unit_name")
+                .eq("room_id", room.id)
+                .eq("payment_status", "paid");
+
+            if (error) {
+                console.error("Error fetching bookings for units:", error);
+                return;
+            }
+
+            const unavailable: string[] = [];
+            units.forEach(unit => {
+                const hasOverlap = data?.some((booking: any) => {
+                    const bookingUnits = booking.unit_name ? booking.unit_name.split(", ").map((u: string) => u.trim()) : [];
+                    if (!bookingUnits.includes(unit)) return false;
+
+                    const bookingStart = parseISO(`${booking.check_in}T${booking.check_in_time || '15:00'}`);
+                    const bookingEnd = parseISO(`${booking.check_out}T${booking.check_out_time || '12:00'}`);
+
+                    const currentStart = parseISO(`${format(checkIn, 'yyyy-MM-dd')}T${checkInTime || '15:00'}`);
+                    const currentEnd = parseISO(`${format(checkOutToUse, 'yyyy-MM-dd')}T${checkOutTime || '12:00'}`);
+
+                    return areIntervalsOverlapping(
+                        { start: currentStart, end: currentEnd },
+                        { start: bookingStart, end: bookingEnd }
+                    );
+                });
+                if (hasOverlap) unavailable.push(unit);
+            });
+
+            setUnavailableUnits(unavailable);
+        }
+
+        fetchUnavailableUnits();
+    }, [checkIn, checkOut, checkInTime, checkOutTime, room?.id, units]);
+
     useEffect(() => {
         let isMounted = true;
 
@@ -342,16 +398,6 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const handlePay = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (units.length > 0 && !selectedUnit) {
-            setError("Please select a unit.");
-            return;
-        }
-
-        if (!checkIn || !checkOut) {
-            setError("Please select your stay dates on the calendar.");
-            return;
-        }
-
         setLoading(true);
         setError("");
 
@@ -365,8 +411,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                 ? `${selectedPackage} + ${addonsList.join(', ')}`
                 : (selectedPackage || "Basic Package");
 
-            const checkInFormatted = format(checkIn, "yyyy-MM-dd");
-            const checkOutFormatted = format(checkOut, "yyyy-MM-dd");
+            const checkInFormatted = format(checkIn!, "yyyy-MM-dd");
+            const checkOutFormatted = format(checkOut!, "yyyy-MM-dd");
 
             const res = await fetch("/api/checkout", {
                 method: "POST",
@@ -544,152 +590,6 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     {/* Right Side: Calendar & Form */}
                     <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
                         <section className="mb-10">
-
-                            {availablePackages.length > 0 && !isHomestay2 && (
-                                <div className="mb-10">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-[var(--primary)]">Select Package</h3>
-                                            <p className="text-sm text-[var(--text-muted)]">Choose a package for your stay</p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {availablePackages.map((pkg) => (
-                                            <button
-                                                key={pkg.name}
-                                                type="button"
-                                                onClick={() => setSelectedPackage(pkg.name)}
-                                                className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${selectedPackage === pkg.name
-                                                    ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
-                                                    : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
-                                                    }`}
-                                            >
-                                                <span className="text-sm font-bold">{pkg.name}</span>
-                                                <span className="text-xs mt-1">RM{pkg.price}/night</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-
-                            {/* Moved Unit Selection to Top */}
-                            {units.length > 1 && (
-                                <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[var(--primary)] shadow-sm">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-[var(--primary)]">Choose Unit</h3>
-                                            <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {units.map((u) => {
-                                            const isSelected = isMultiUnitRoom
-                                                ? selectedUnit.split(", ").includes(u)
-                                                : selectedUnit === u;
-                                            const uPrice = (u.includes("1") || u.includes("2")) ? 350 : 300;
-                                            return (
-                                                <button
-                                                    key={u}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (isMultiUnitRoom) {
-                                                            handleUnitToggle(u);
-                                                        } else {
-                                                            setSelectedUnit(u);
-                                                        }
-                                                        setCheckIn(null);
-                                                        setCheckOut(null);
-                                                    }}
-                                                    className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all ${isSelected
-                                                        ? "border-[var(--accent)] bg-white text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
-                                                        : "border-transparent bg-white/50 text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
-                                                        }`}
-                                                >
-                                                    <span className="text-sm font-black uppercase tracking-tight">{u}</span>
-                                                    {isHomestay2 && <span className="text-xs font-bold opacity-70 mt-1">RM{uPrice} / night</span>}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {isMultiUnitRoom && (
-                                <div className="mb-10 text-center">
-                                    <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
-                                        <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-black">
-                                            {unitsCount}
-                                        </div>
-                                        <p className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
-                                            {unitsCount} Unit{unitsCount !== 1 ? 's' : ''} Selected
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {isHomestay2 && (
-                                <div className="mb-10">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-[var(--primary)]">Select Add Ons</h3>
-                                            <p className="text-sm text-[var(--text-muted)]">Enhance your stay</p>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
-                                            <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.bbq} onChange={(e) => setAddOns({ ...addOns, bbq: e.target.checked })} />
-                                            <div>
-                                                <div className="text-sm font-bold text-[var(--primary)]">Barbecue Pit</div>
-                                                <div className="text-xs text-[var(--text-muted)]">+RM30</div>
-                                            </div>
-                                        </label>
-                                        <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
-                                            <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.cradle} onChange={(e) => setAddOns({ ...addOns, cradle: e.target.checked })} />
-                                            <div>
-                                                <div className="text-sm font-bold text-[var(--primary)]">Cradle</div>
-                                                <div className="text-xs text-[var(--text-muted)]">+RM10</div>
-                                            </div>
-                                        </label>
-
-                                        <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div>
-                                                    <div className="text-sm font-bold text-[var(--primary)]">Karaoke Set</div>
-                                                    <div className="text-xs text-[var(--text-muted)]">RM25/hour or RM150/day</div>
-                                                </div>
-                                                <select className="border border-[var(--border)] rounded-lg p-2 text-sm bg-white" value={addOns.karaoke} onChange={(e) => setAddOns({ ...addOns, karaoke: e.target.value })}>
-                                                    <option value="none">None</option>
-                                                    <option value="hour">Per Hour</option>
-                                                    <option value="day">Per Day</option>
-                                                </select>
-                                            </div>
-                                            {addOns.karaoke === 'hour' && (
-                                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
-                                                    <span className="text-xs text-[var(--text-muted)]">Number of hours:</span>
-                                                    <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeHours} onChange={(e) => setAddOns({ ...addOns, karaokeHours: parseInt(e.target.value) || 1 })} />
-                                                </div>
-                                            )}
-                                            {addOns.karaoke === 'day' && (
-                                                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
-                                                    <span className="text-xs text-[var(--text-muted)]">Number of days:</span>
-                                                    <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeDays} onChange={(e) => setAddOns({ ...addOns, karaokeDays: parseInt(e.target.value) || 1 })} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="h-10 w-10 rounded-xl bg-[var(--accent-light)] flex items-center justify-center text-[var(--accent-dark)]">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -699,8 +599,165 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <p className="text-sm text-[var(--text-muted)]">Check availability for {selectedUnit || "this homestay"}</p>
                                 </div>
                             </div>
-                            <BookingCalendar roomId={room.id} unitName={selectedUnit} onSelect={handleDateSelect} />
+                            <BookingCalendar
+                                roomId={room.id}
+                                unitName={selectedUnit}
+                                totalUnits={units.length || 1}
+                                discounts={discounts}
+                                onSelect={handleDateSelect}
+                            />
                         </section>
+
+                        <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[var(--border)] to-transparent my-10" />
+
+                        {availablePackages.length > 0 && !isHomestay2 && (
+                            <div className="mb-10">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-[var(--primary)]">Select Package</h3>
+                                        <p className="text-sm text-[var(--text-muted)]">Choose a package for your stay</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {availablePackages.map((pkg) => (
+                                        <button
+                                            key={pkg.name}
+                                            type="button"
+                                            onClick={() => setSelectedPackage(pkg.name)}
+                                            className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${selectedPackage === pkg.name
+                                                ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                }`}
+                                        >
+                                            <span className="text-sm font-bold">{pkg.name}</span>
+                                            <span className="text-xs mt-1">RM{pkg.price}/night</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* Moved Unit Selection to Top */}
+                        {units.length > 1 && (
+                            <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[var(--primary)] shadow-sm">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-[var(--primary)]">Choose Unit</h3>
+                                        <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {units.map((u) => {
+                                        const isSelected = isMultiUnitRoom
+                                            ? selectedUnit.split(", ").includes(u)
+                                            : selectedUnit === u;
+                                        const uPrice = (u.includes("1") || u.includes("2")) ? 350 : 300;
+                                        return (
+                                            <button
+                                                key={u}
+                                                type="button"
+                                                disabled={unavailableUnits.includes(u)}
+                                                onClick={() => {
+                                                    if (unavailableUnits.includes(u)) return;
+                                                    if (isMultiUnitRoom) {
+                                                        handleUnitToggle(u);
+                                                    } else {
+                                                        setSelectedUnit(u);
+                                                    }
+                                                    // Don't reset dates when switching units, 
+                                                    // because availability is already checked
+                                                }}
+                                                className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all ${isSelected
+                                                    ? "border-[var(--accent)] bg-white text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                    : unavailableUnits.includes(u)
+                                                        ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
+                                                        : "border-transparent bg-white/50 text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                    }`}
+                                            >
+                                                <span className="text-sm font-black uppercase tracking-tight">{u}</span>
+                                                {isHomestay2 && <span className="text-xs font-bold opacity-70 mt-1">RM{uPrice} / night</span>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {isMultiUnitRoom && (
+                            <div className="mb-10 text-center">
+                                <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
+                                    <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-black">
+                                        {unitsCount}
+                                    </div>
+                                    <p className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
+                                        {unitsCount} Unit{unitsCount !== 1 ? 's' : ''} Selected
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {isHomestay2 && (
+                            <div className="mb-10">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-[var(--primary)]">Select Add Ons</h3>
+                                        <p className="text-sm text-[var(--text-muted)]">Enhance your stay</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
+                                        <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.bbq} onChange={(e) => setAddOns({ ...addOns, bbq: e.target.checked })} />
+                                        <div>
+                                            <div className="text-sm font-bold text-[var(--primary)]">Barbecue Pit</div>
+                                            <div className="text-xs text-[var(--text-muted)]">+RM30</div>
+                                        </div>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
+                                        <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.cradle} onChange={(e) => setAddOns({ ...addOns, cradle: e.target.checked })} />
+                                        <div>
+                                            <div className="text-sm font-bold text-[var(--primary)]">Cradle</div>
+                                            <div className="text-xs text-[var(--text-muted)]">+RM10</div>
+                                        </div>
+                                    </label>
+
+                                    <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div>
+                                                <div className="text-sm font-bold text-[var(--primary)]">Karaoke Set</div>
+                                                <div className="text-xs text-[var(--text-muted)]">RM25/hour or RM150/day</div>
+                                            </div>
+                                            <select className="border border-[var(--border)] rounded-lg p-2 text-sm bg-white" value={addOns.karaoke} onChange={(e) => setAddOns({ ...addOns, karaoke: e.target.value })}>
+                                                <option value="none">None</option>
+                                                <option value="hour">Per Hour</option>
+                                                <option value="day">Per Day</option>
+                                            </select>
+                                        </div>
+                                        {addOns.karaoke === 'hour' && (
+                                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
+                                                <span className="text-xs text-[var(--text-muted)]">Number of hours:</span>
+                                                <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeHours} onChange={(e) => setAddOns({ ...addOns, karaokeHours: parseInt(e.target.value) || 1 })} />
+                                            </div>
+                                        )}
+                                        {addOns.karaoke === 'day' && (
+                                            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
+                                                <span className="text-xs text-[var(--text-muted)]">Number of days:</span>
+                                                <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeDays} onChange={(e) => setAddOns({ ...addOns, karaokeDays: parseInt(e.target.value) || 1 })} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[var(--border)] to-transparent my-10" />
 

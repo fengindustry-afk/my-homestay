@@ -132,6 +132,8 @@ export function BookingsPanel() {
   const [discountMode, setDiscountMode] = useState(false);
   const [discountsLoading, setDiscountsLoading] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [txMonth, setTxMonth] = useState(new Date().getMonth());
+  const [txYear, setTxYear] = useState(new Date().getFullYear());
 
   // Load discounts from database on mount
   useEffect(() => {
@@ -465,6 +467,8 @@ export function BookingsPanel() {
         ic_number: form.ic_number,
         check_in: form.check_in,
         check_out: form.check_out,
+        check_in_time: form.check_in_time,
+        check_out_time: form.check_out_time,
         package_name: `${form.package_name || 'Standard Package'} (In: ${form.check_in_time}, Out: ${form.check_out_time})`,
         units_count: Number(form.units_count || 1),
         total_price: Number(form.total_price || 0),
@@ -515,17 +519,13 @@ export function BookingsPanel() {
   };
 
   const handleEdit = (booking: BookingRow) => {
-    // Extract time from package_name if possible: "Standard Package (In: 15:00, Out: 12:00)"
-    let checkInTime = "15:00";
-    let checkOutTime = "12:00";
-    let purePackageName = booking.package_name || "Standard Package";
+    let checkInTime = booking.check_in_time || "15:00";
+    let checkOutTime = booking.check_out_time || "12:00";
+    let purePackageName = booking.package_name || "Basic Package";
 
-    const timeRegex = /\(In: ([\d:]+), Out: ([\d:]+)\)/;
-    const match = booking.package_name?.match(timeRegex);
-    if (match && booking.package_name) {
-      checkInTime = match[1];
-      checkOutTime = match[2];
-      purePackageName = booking.package_name.split(" (In:")[0];
+    // Clean package name if it still contains the legacy "In: XX, Out: YY" string
+    if (purePackageName.includes(" (In: ")) {
+      purePackageName = purePackageName.split(" (In: ")[0];
     }
 
     setForm({
@@ -716,7 +716,7 @@ export function BookingsPanel() {
       const end = new Date(b.check_out);
 
       const cursor = new Date(start);
-      while (cursor <= end) { // Reverted to <= to include checkout day as requested
+      while (cursor < end) { // Changed to < to support same-day turnovers (Check-out day is free for check-in)
         const key = toKey(cursor);
         if (key !== "invalid") {
           if (!map[key]) map[key] = [];
@@ -750,6 +750,18 @@ export function BookingsPanel() {
   }, [bookings, search]);
 
   const recentFive = filteredBookings.slice(0, 10); // Show more if searching
+
+  const transactions = useMemo(() => {
+    return bookings
+      .filter(b => b.billplz_id && b.payment_status === 'paid')
+      .filter(b => {
+        const d = new Date(b.created_at);
+        return d.getMonth() === txMonth && d.getFullYear() === txYear;
+      })
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [bookings, txMonth, txYear]);
+
+  const totalTxAmount = transactions.reduce((sum, tx) => sum + (tx.amount_paid || 0), 0);
 
   return (
     <section className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-4 shadow-sm">
@@ -861,6 +873,82 @@ export function BookingsPanel() {
                 </div>
               );
             })}
+          </div>
+
+          {/* Legitimate Transactions List */}
+          <div id="transactions-list" className="mt-8 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface)] p-6 shadow-sm">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-sm font-black text-[var(--text-strong)] uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  Legitimate Transactions
+                </h3>
+                <p className="text-[10px] text-[var(--text-muted)] font-medium mt-1">Verified digital payments via Billplz gateway.</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  className="rounded-lg border border-[var(--border-subtle)] bg-white px-3 py-1.5 text-[11px] font-bold outline-none focus:border-[var(--primary)]"
+                  value={txMonth}
+                  onChange={(e) => setTxMonth(parseInt(e.target.value))}
+                >
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <option key={i} value={i}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-lg border border-[var(--border-subtle)] bg-white px-3 py-1.5 text-[11px] font-bold outline-none focus:border-[var(--primary)]"
+                  value={txYear}
+                  onChange={(e) => setTxYear(parseInt(e.target.value))}
+                >
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const year = new Date().getFullYear() - 2 + i;
+                    return <option key={year} value={year}>{year}</option>
+                  })}
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-xl bg-[var(--primary)]/5 border border-[var(--primary)]/10 p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]/70">Monthly Revenue</span>
+                <span className="text-xl font-black text-[var(--primary)]">RM {totalTxAmount.toFixed(2)}</span>
+              </div>
+              <div className="mt-1 text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-tighter">
+                {transactions.length} verified transaction{transactions.length !== 1 ? 's' : ''}
+              </div>
+            </div>
+
+            <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {transactions.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-xs text-[var(--text-muted)] italic">No transactions found for this period.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map(tx => (
+                    <div
+                      key={tx.id}
+                      onClick={() => setSelectedBookingDetail(tx)}
+                      className="group relative flex items-center justify-between p-3 rounded-xl border border-[var(--border-subtle)] bg-white hover:border-[var(--primary)] transition-all cursor-pointer overflow-hidden"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500 opacity-0 group-hover:opacity-100 transition-all" />
+                      <div className="min-w-0 pr-4">
+                        <div className="text-[11px] font-bold text-[var(--text-strong)] truncate">{tx.guest_name}</div>
+                        <div className="text-[9px] font-medium text-[var(--text-muted)] mt-0.5">
+                          {getRoomTitle(tx.room_id)} • {formatDate(tx.check_in)}
+                        </div>
+                        <div className="text-[8px] text-[var(--text-muted)] mt-1 font-mono">{tx.billplz_id}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-black text-[var(--text-strong)]">RM {(tx.amount_paid || 0).toFixed(2)}</div>
+                        <div className="text-[8px] font-bold text-green-600 uppercase tracking-tighter mt-1 bg-green-50 px-1.5 py-0.5 rounded leading-none border border-green-100 inline-block">SUCCESS</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -1519,11 +1607,11 @@ export function BookingsPanel() {
 
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-in</p>
-                <p className="font-bold text-[var(--text-strong)]">{formatDate(selectedBookingDetail.check_in)}</p>
+                <p className="font-bold text-[var(--text-strong)]">{formatDate(selectedBookingDetail.check_in)} ({selectedBookingDetail.check_in_time || '15:00'})</p>
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-out</p>
-                <p className="font-bold text-[var(--text-strong)]">{formatDate(selectedBookingDetail.check_out)}</p>
+                <p className="font-bold text-[var(--text-strong)]">{formatDate(selectedBookingDetail.check_out)} ({selectedBookingDetail.check_out_time || '12:00'})</p>
               </div>
 
               <div>
@@ -1537,9 +1625,17 @@ export function BookingsPanel() {
                 </span>
               </div>
 
-              <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Amount Paid (Record)</p>
-                <p className="font-black text-blue-800">RM {selectedBookingDetail.amount_paid || 0}</p>
+              <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex flex-col justify-between">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Amount Paid (Record)</p>
+                  <p className="font-black text-blue-800">RM {selectedBookingDetail.amount_paid || 0}</p>
+                </div>
+                {selectedBookingDetail.billplz_id && (
+                  <div className="mt-2 flex items-center gap-1.5 px-2 py-1 bg-green-100/50 rounded-md border border-green-200">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[9px] font-bold text-green-700 uppercase tracking-tighter">Billplz Verified</span>
+                  </div>
+                )}
               </div>
 
               <div className="col-span-2">

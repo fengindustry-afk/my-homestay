@@ -22,10 +22,12 @@ import { supabase } from "@/lib/supabaseClient";
 interface BookingCalendarProps {
     roomId: number;
     unitName?: string;
+    totalUnits?: number;
+    discounts?: { [key: string]: { roomId: number, percentage: number } };
     onSelect: (checkIn: Date | null, checkOut: Date | null) => void;
 }
 
-export default function BookingCalendar({ roomId, unitName, onSelect }: BookingCalendarProps) {
+export default function BookingCalendar({ roomId, unitName, totalUnits = 1, discounts = {}, onSelect }: BookingCalendarProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
@@ -39,7 +41,7 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
             setLoading(true);
             const { data, error } = await supabase
                 .from("bookings")
-                .select("check_in, check_out, unit_name")
+                .select("check_in, check_out, unit_name, units_count")
                 .eq("room_id", roomId)
                 .eq("payment_status", "paid");
 
@@ -52,33 +54,54 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
             const requestedUnits = unitName ? unitName.split(", ").map(u => u.trim()) : [];
             const allBookedDays: Date[] = [];
 
-            data?.forEach((booking: any) => {
-                // If specific units are requested, only mark as booked if this booking overlaps with any requested unit
-                if (requestedUnits.length > 0) {
+            if (requestedUnits.length > 0) {
+                data?.forEach((booking: any) => {
                     const bookingUnits = booking.unit_name ? booking.unit_name.split(", ").map((u: string) => u.trim()) : [];
                     const hasOverlap = requestedUnits.some(ru => bookingUnits.includes(ru));
-                    if (!hasOverlap) return;
-                }
+                    if (hasOverlap) {
+                        const start = parseISO(booking.check_in);
+                        const end = parseISO(booking.check_out);
+                        const days = eachDayOfInterval({ start, end });
+                        if (days.length > 1) {
+                            days.pop();
+                        }
+                        allBookedDays.push(...days);
+                    }
+                });
+            } else {
+                // When no unit is selected, count bookings per day
+                const bookingsCountByDay: { [key: string]: number } = {};
 
-                const start = parseISO(booking.check_in);
-                const end = parseISO(booking.check_out);
-                const days = eachDayOfInterval({ start, end });
-                // Usually check-out day is available for check-in of another guest
-                // But for simplicity in viewing, we mark the whole interval as "booked" 
-                // until we decide otherwise. In many hotels, check-out day is available.
-                // Let's exclude the last day if we want to support same-day turnovers.
-                // However, the standard logic is "Night-based". 
-                // For this calendar, let's mark all days including check-out as booked 
-                // if that's what the data implies.
-                allBookedDays.push(...days);
-            });
+                data?.forEach((booking: any) => {
+                    const start = parseISO(booking.check_in);
+                    const end = parseISO(booking.check_out);
+                    const days = eachDayOfInterval({ start, end });
+                    if (days.length > 1) {
+                        days.pop();
+                    }
+
+                    days.forEach(d => {
+                        const key = format(d, 'yyyy-MM-dd');
+                        // Use units_count if available, otherwise assume 1 unit for the booking
+                        const count = Number(booking.units_count || (booking.unit_name ? booking.unit_name.split(',').length : 1));
+                        bookingsCountByDay[key] = (bookingsCountByDay[key] || 0) + count;
+                    });
+                });
+
+                // Mark as booked only if total booked units >= totalUnits
+                Object.keys(bookingsCountByDay).forEach(key => {
+                    if (bookingsCountByDay[key] >= totalUnits) {
+                        allBookedDays.push(parseISO(key));
+                    }
+                });
+            }
 
             setBookedDates(allBookedDays);
             setLoading(false);
         }
 
         fetchBookings();
-    }, [roomId, unitName]);
+    }, [roomId, unitName, totalUnits]);
 
     const handleDateClick = (day: Date) => {
         if (isDateBooked(day) || isPast(day) && !isSameDay(day, new Date())) return;
@@ -185,6 +208,10 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
                 const isCheckIn = checkIn && isSameDay(cloneDay, checkIn);
                 const isCheckOut = checkOut && isSameDay(cloneDay, checkOut);
 
+                const dateKey = format(cloneDay, "yyyy-MM-dd");
+                const compositeKey = `${dateKey}_${roomId}`;
+                const discount = discounts[compositeKey];
+
                 days.push(
                     <div
                         key={cloneDay.toString()}
@@ -203,13 +230,23 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
               ${isPastDay ? "text-gray-200 cursor-not-allowed" : ""}
               ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-white shadow-md scale-110" : "hover:bg-gray-50 text-[var(--primary)]"}
               ${isBooked && "hover:bg-transparent"}
+              ${discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
             `}>
                             {format(cloneDay, "d")}
                         </div>
 
+                        {/* Discount Badge */}
+                        {discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay && (
+                            <div className="absolute -top-1 -right-0 z-20 scale-[0.6] origin-top-right">
+                                <div className="bg-green-500 text-white px-1.5 py-0.5 rounded-md font-black text-[10px] shadow-sm animate-pulse">
+                                    -{discount.percentage}%
+                                </div>
+                            </div>
+                        )}
+
                         {/* Dot indicator for available (dark blue/black as per image) */}
                         {!isBooked && !isSelected && isCurrentMonth && !isPastDay && (
-                            <div className="absolute bottom-1 h-1 w-1 rounded-full bg-[var(--primary)] opacity-20" />
+                            <div className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : 'bg-[var(--primary)]'} opacity-20`} />
                         )}
                     </div>
                 );
@@ -251,6 +288,10 @@ export default function BookingCalendar({ roomId, unitName, onSelect }: BookingC
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-[var(--primary)]" />
                     <span>Available</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-md bg-green-500 text-white px-1 text-[8px] flex items-center justify-center font-bold">PROMO</div>
+                    <span>Discounted</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-gray-200" />
