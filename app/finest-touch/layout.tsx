@@ -22,96 +22,114 @@ export default function FinestTouchLayout({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Checking auth session...');
+        const { data: { user }, error: userErr } = await supabase.auth.getUser();
+        console.log('User result:', { hasUser: !!user, error: userErr });
 
-        if (!session) {
+        if (!user) {
+          console.log('No user found');
           if (!isLoginPage) {
-            router.push('/finest-touch/login');
+            console.log('Redirecting to login');
+            router.replace('/finest-touch/login');
           } else {
-            // Already on login page and no session, stop loading
             setLoading(false);
           }
           return;
         }
 
-        // If we have a session but are on login page, redirect to dashboard
-        if (isLoginPage) {
-          router.push('/finest-touch');
+        // Check user role from public.users table
+        const { data: userData, error: roleErr } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        console.log('Role check result:', { userData, roleErr });
+
+        if (roleErr || !userData || (userData.role !== 'admin' && userData.role !== 'staff')) {
+          console.error('Unauthorized role or error:', roleErr);
+          if (!isLoginPage) {
+            router.replace('/finest-touch/login?error=unauthorized');
+          } else {
+            setLoading(false);
+          }
           return;
         }
 
-        setUser(session.user);
+        // IMPORTANT: If we are on login page, redirect to dashboard
+        if (isLoginPage) {
+          console.log('On login page with valid session/role, redirecting to dashboard');
+          router.replace('/finest-touch');
+          return;
+        }
+
+        console.log('Auth and Role check successful, setting user and stopping loading');
+        setUser(user);
         setLoading(false);
+        console.log('setLoading(false) called');
       } catch (error) {
         console.error('Error checking auth:', error);
         if (!isLoginPage) {
-          router.push('/finest-touch/login');
+          router.replace('/finest-touch/login');
         } else {
           setLoading(false);
         }
       }
     };
 
-    // Safety timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('Auth check timed out, redirecting to login');
-        if (!isLoginPage) {
-          router.push('/finest-touch/login');
-        } else {
-          setLoading(false);
-        }
-      }
-    }, 5000);
-
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        clearTimeout(timeout);
+      async (event, session) => {
+        console.log('Auth state changed event:', event, { hasSession: !!session });
+        
         if (!session) {
+          console.log('onAuthStateChange: No session');
           if (!isLoginPage) {
-            router.push('/finest-touch/login');
+            router.replace('/finest-touch/login');
           } else {
             setLoading(false);
           }
         } else {
-          if (isLoginPage) {
-            router.push('/finest-touch');
-          } else {
-            setUser(session.user);
-            setLoading(false);
+          // If session exists, let checkAuth handle the logic or handle it here if it's a login event
+          if (event === 'SIGNED_IN') {
+            checkAuth();
           }
         }
       }
     );
 
     return () => {
-      clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [router, pathname, isLoginPage, loading]);
+  }, [router, pathname, isLoginPage]);
 
   if (loading) {
+    console.log('Rendering Loading state...');
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--surface-dark)]">
         <div className="text-center">
-          <div className="text-lg">Loading...</div>
-          <div className="text-sm text-gray-500 mt-2">
-            If this takes too long, you will be redirected to login.
+          <div className="text-lg text-[var(--text-strong)] font-medium italic">Loading...</div>
+          <div className="text-sm text-[var(--text-muted)] mt-2">
+            Verifying your security credentials...
           </div>
         </div>
       </div>
     );
   }
 
+  console.log('Rendering Layout content. User:', !!user, 'isLoginPage:', isLoginPage);
+  
   // If we are on the login page, just render the login form without the protected layout wrapper
   if (isLoginPage) {
     return <>{children}</>;
   }
 
   // If no user and not on login page, don't show anything (redirection is handled in useEffect)
-  if (!user) return null;
+  if (!user) {
+    console.log('No user state yet, rendering null');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[var(--surface-dark)] transition-colors duration-300">

@@ -3,16 +3,16 @@ import { supabase } from './supabaseClient';
 export type UserRole = 'admin' | 'staff';
 
 export async function getCurrentUserRole(): Promise<UserRole | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return null;
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return null;
 
-  const { data: user } = await supabase
+  const { data: userData } = await supabase
     .from('users')
     .select('role')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
-  return (user?.role as UserRole) ?? null;
+  return (userData?.role as UserRole) ?? null;
 }
 
 export function canAccessAdmin(role: UserRole | null): boolean {

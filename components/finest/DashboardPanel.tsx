@@ -46,8 +46,11 @@ export function DashboardPanel({ stats }: { stats: DashboardStats }) {
                 {(() => {
                   const salesMap: Record<string, number> = {};
                   stats.bookings?.forEach(b => {
-                    if (!b.check_in || !b.total_price) return;
-                    const [y, m, d] = b.check_in.split("-").map(Number);
+                    if (!b || !b.check_in || b.total_price === undefined || b.total_price === null) return;
+                    const dateParts = b.check_in.split("-");
+                    if (dateParts.length < 3) return;
+                    const [y, m, d] = dateParts.map(Number);
+                    if (isNaN(y) || isNaN(m) || isNaN(d)) return;
                     const date = new Date(y, m - 1, d);
                     const key = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
                     salesMap[key] = (salesMap[key] || 0) + Number(b.total_price);

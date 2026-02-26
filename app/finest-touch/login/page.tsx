@@ -26,8 +26,8 @@ export default function LoginPage() {
         throw signInError;
       }
 
-      // Use router.push for navigation
-      router.push('/finest-touch');
+      // Use window.location.href for navigation to ensure cookies are sent
+      window.location.href = '/finest-touch';
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'An error occurred during login');

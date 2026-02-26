@@ -27,29 +27,34 @@ export default function FinestTouchPage() {
     let isMounted = true;
 
     async function loadStats() {
+      console.log('Starting loadStats...');
       try {
         const today = new Date().toISOString().slice(0, 10);
 
         let totalBookings = 0;
         let upcomingCheckIns = 0;
 
-        const [
-          { count: bookingsCount, error: bookingsError },
-          { count: upcomingCount, error: upcomingError },
-          { data: bookingsData, error: bookingsDataError },
-        ] = await Promise.all([
-          supabase
+        console.log('Fetching bookings data...');
+        const bookingsResult = await supabase
             .from("bookings")
-            .select("*", { count: "exact", head: true }),
-          supabase
+            .select("*", { count: "exact", head: true });
+        console.log('Bookings total count result:', bookingsResult);
+
+        const upcomingResult = await supabase
             .from("bookings")
             .select("*", { count: "exact", head: true })
-            .gte("check_in", today),
-          supabase
+            .gte("check_in", today);
+        console.log('Upcoming count result:', upcomingResult);
+
+        const paidBookingsResult = await supabase
             .from("bookings")
             .select("total_price, check_in, payment_status")
-            .eq("payment_status", "paid")
-        ]);
+            .eq("payment_status", "paid");
+        console.log('Paid bookings data result:', paidBookingsResult);
+
+        const { count: bookingsCount, error: bookingsError } = bookingsResult;
+        const { count: upcomingCount, error: upcomingError } = upcomingResult;
+        const { data: bookingsData, error: bookingsDataError } = paidBookingsResult;
 
         if (!bookingsError && typeof bookingsCount === "number") {
           totalBookings = bookingsCount;
@@ -58,9 +63,12 @@ export default function FinestTouchPage() {
           upcomingCheckIns = upcomingCount;
         }
 
+        console.log('Fetching rooms count...');
         const { count: roomsCount, error: roomsError } = await supabase
           .from("rooms")
           .select("*", { count: "exact", head: true });
+
+        console.log('Rooms count result:', { roomsCount, roomsError });
 
         if (isMounted) {
           setStats({
@@ -70,6 +78,7 @@ export default function FinestTouchPage() {
               roomsError || typeof roomsCount !== "number" ? 0 : roomsCount,
             bookings: (bookingsData || []) as any[]
           });
+          console.log('Stats state updated');
         }
       } catch (error) {
         console.error("Error loading dashboard stats:", error);
@@ -85,15 +94,41 @@ export default function FinestTouchPage() {
 
   // NEW: load current user role
   useEffect(() => {
+    let isMounted = true;
+    console.log('Page role check starting...');
     getCurrentUserRole().then((r) => {
+      if (!isMounted) return;
+      console.log('Page role check complete:', r);
       setRole(r);
       setLoadingRole(false);
+    }).catch(err => {
+      if (!isMounted) return;
+      console.error('Page role check error:', err);
+      setLoadingRole(false);
     });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
+  console.log('Rendering FinestTouchPage. Role:', role, 'LoadingRole:', loadingRole, 'Stats:', stats);
+
   if (loadingRole) {
-    return <div className="p-6">Loading permissions...</div>;
+    console.log('Page still in loadingRole state');
+    return <div className="p-6 text-[var(--text-strong)]">Loading permissions...</div>;
   }
+
+  if (!role) {
+    console.log('Rendering access denied - No role found');
+    return (
+      <div className="p-6 bg-[var(--surface-dark)] min-h-screen">
+        <h1 className="text-xl font-bold text-red-600">Access Denied</h1>
+        <p className="text-[var(--text-muted)]">You do not have permission to view this page. (No role found)</p>
+      </div>
+    );
+  }
+
+  console.log('Proceeding to render main dashboard UI');
 
   return (
     <div className="space-y-8">
