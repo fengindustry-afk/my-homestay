@@ -51,7 +51,9 @@ export function calculatePrice({
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return 0;
 
     const diff = endDate.getTime() - startDate.getTime();
-    const nights = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    const nights = diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0;
+
+    if (nights === 0) return 0;
 
     const isHomestay2 = room.title.toLowerCase().includes("homestay 2");
 
@@ -72,7 +74,7 @@ export function calculatePrice({
         });
         if (selected.length === 0) subtotal = 0;
     } else if (roomTitle.includes("homestay 4")) {
-        subtotal = room.price * Math.max(1, unitsCount || 1);
+        subtotal = room.price * (unitsCount || 0);
     } else {
         let basePrice = room.price;
         if (selectedPackage === "Basic Package" && room.basic_price) {
@@ -80,7 +82,7 @@ export function calculatePrice({
         } else if (selectedPackage === "Full Package" && room.full_price) {
             basePrice = room.full_price;
         }
-        subtotal = basePrice * (unitsCount || 1);
+        subtotal = basePrice * (unitsCount || 0);
     }
 
     // Extra hours fee

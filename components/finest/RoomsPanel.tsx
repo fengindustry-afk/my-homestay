@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { RoomPhotoRow, RoomRow } from "./types";
 
@@ -46,10 +46,20 @@ export function RoomsPanel() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   const bucketName = "room-photos";
 
   const roomIdForPath = useMemo(() => (form.id ? String(form.id) : "tmp"), [form.id]);
+
+  // Auto-resize textarea function
+  const autoResizeTextarea = () => {
+    if (descriptionRef.current) {
+      const textarea = descriptionRef.current;
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -128,6 +138,11 @@ export function RoomsPanel() {
       isMounted = false;
     };
   }, [form.id]);
+
+  // Auto-resize textarea when form.description changes
+  useEffect(() => {
+    autoResizeTextarea();
+  }, [form.description]);
 
   const safeName = (name: string) => name.replace(/[^\w.\-]+/g, "-");
 
@@ -504,11 +519,17 @@ export function RoomsPanel() {
           <label className="md:col-span-3 flex flex-col gap-1.5 text-xs">
             <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Description</span>
             <textarea
+              ref={descriptionRef}
               rows={3}
-              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all resize-none overflow-hidden min-h-[80px]"
               value={form.description}
-              onChange={(e) => handleChange("description", e.target.value)}
+              onChange={(e) => {
+                handleChange("description", e.target.value);
+                // Auto-expand textarea with a small delay to ensure the value is updated
+                setTimeout(autoResizeTextarea, 0);
+              }}
               placeholder="Serene accommodation with premium amenities, spacious living area..."
+              style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
             />
           </label>
 

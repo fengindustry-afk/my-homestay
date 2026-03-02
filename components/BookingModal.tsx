@@ -186,7 +186,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             const calcNights = Math.ceil(diff / (1000 * 60 * 60 * 24));
             return calcNights > 0 ? calcNights : 1; // Always at least 1 night for same-day picks
         }
-        return 1; // Default to 1 night if checkout not selected yet
+        return 0; // Default to 0 night if checkout not selected yet
     }, [checkIn, checkOut]);
 
     const addOnsPrice = useMemo(() => {
@@ -210,7 +210,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     }, [checkOutTime]);
 
     const totalPrice = useMemo(() => {
-        if (!room) return 0;
+        if (!room || nights === 0) return 0;
 
         let subtotal = 0;
         let basePrice = room.price;
@@ -238,15 +238,19 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             } else if (!isHomestay2 && room.basic_price) {
                 basePrice = room.basic_price; // Fallback to basic price
             }
-            subtotal = basePrice * (unitsCount > 0 ? unitsCount : 1);
+            subtotal = basePrice * unitsCount;
         }
 
         const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
         const lateFeeRate = isHomestay3or5 ? 20 : 10;
         const totalLateFee = extraHours * lateFeeRate;
 
-        const safeUnitsCount = unitsCount > 0 ? unitsCount : 1;
-        const computedPrice = (nights * (basePrice * safeUnitsCount)) + addOnsPrice + totalLateFee;
+        // For multi-unit rooms, price is already sum of unit prices in subtotal
+        // For others, subtotal is basePrice * unitsCount
+        const computedPrice = (nights * subtotal) + addOnsPrice + totalLateFee;
+
+        // If multi-unit room and no units selected, total should be 0
+        if (isMultiUnitRoom && unitsCount === 0) return 0;
 
         // Apply discount if available
         let finalPrice = computedPrice;
@@ -534,7 +538,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
                         <div className="p-8">
                             <h2 className="mb-2 text-2xl font-bold text-[var(--primary)] leading-tight">{room.title}</h2>
-                            <p className="text-sm text-[var(--text-muted)] mb-6">
+                            <p className="text-sm text-[var(--text-muted)] mb-6" style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
                                 {room.description || "Serene accommodation with premium amenities."}
                             </p>
 

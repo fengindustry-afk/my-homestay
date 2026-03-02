@@ -266,13 +266,20 @@ export function BookingsPanel() {
 
     const roomTitle = room.title.toLowerCase();
 
-    let nights = 1;
+    let nights = 0;
     if (form.check_in && form.check_out) {
       const start = new Date(form.check_in);
       const end = new Date(form.check_out);
       const diffTime = end.getTime() - start.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       nights = diffDays > 0 ? diffDays : 1;
+    }
+
+    if (nights === 0) {
+      if (form.total_price !== "0") {
+        setForm(prev => ({ ...prev, total_price: "0" }));
+      }
+      return;
     }
 
     let subtotal = 0;
@@ -291,12 +298,12 @@ export function BookingsPanel() {
       });
       if (selected.length === 0) subtotal = 0;
     } else if (roomTitle.includes("homestay 4")) {
-      subtotal = Number(room.price || 0) * Math.max(1, Number(form.units_count || 1));
+      subtotal = Number(room.price || 0) * Number(form.units_count || 0);
     } else {
       let basePrice = Number(room.price || 0);
       if (form.package_name === "Basic Package" && room.basic_price) basePrice = Number(room.basic_price);
       if (form.package_name === "Full Package" && room.full_price) basePrice = Number(room.full_price);
-      subtotal = basePrice * Math.max(1, Number(form.units_count || 1)); // At least 1 unit for non-homestay2
+      subtotal = basePrice * Number(form.units_count || 0);
     }
 
     // Late check-out calculation
