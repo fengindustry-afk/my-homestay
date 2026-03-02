@@ -45,7 +45,7 @@ function PaymentStatusContent() {
                     .from("bookings")
                     .delete()
                     .eq("billplz_id", billId)
-                    .eq("payment_status", "pending");
+                    .eq("payment_status", "awaiting_payment");
             }
         }
 
@@ -135,8 +135,8 @@ function PaymentStatusContent() {
                     <Link href="/#rooms" className="btn-dark flex-1 py-4 justify-center font-bold">
                         Retry Booking
                     </Link>
-                    <Link href="/" className="px-8 py-4 border-2 border-[var(--border)] text-[var(--primary)] rounded-xl hover:bg-gray-50 transition-all font-bold">
-                        Home
+                    <Link href="/" className="px-8 py-4 border-2 border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-all font-bold flex-1 flex items-center justify-center">
+                        Cancel and Go Back
                     </Link>
                 </div>
             </div>

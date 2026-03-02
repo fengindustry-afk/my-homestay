@@ -458,10 +458,12 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             if (data.url) {
                 window.location.href = data.url;
             } else {
-                setError("Failed to initialize payment. Please try again.");
+                const detail = data.detail || (typeof data.error === 'string' ? data.error : null);
+                setError(detail ? `Payment Error: ${detail}` : "Failed to initialize payment. Please try again.");
             }
         } catch (err) {
-            setError("An unexpected error occurred.");
+            console.error("handlePay error:", err);
+            setError("An unexpected error occurred. Please check your connection.");
         } finally {
             setLoading(false);
         }

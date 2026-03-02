@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { calculatePrice } from '@/lib/price-utils';
+import crypto from 'crypto';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -118,36 +119,84 @@ export async function POST(req: Request) {
     }
 
     // 4. Create Billplz bill
-    const authString = `${process.env.BILLPLZ_API_KEY}:`;
+    const apiKey = process.env.BILLPLZ_API_KEY;
+    const collectionId = process.env.BILLPLZ_COLLECTION_ID;
+    const xSignatureKey = process.env.BILLPLZ_X_SIGNATURE_KEY;
+
+    if (!apiKey || !collectionId) {
+      console.error("Missing Billplz Configuration:", { apiKeyExists: !!apiKey, collectionIdExists: !!collectionId });
+      return NextResponse.json({ error: "Payment system is not configured correctly." }, { status: 500 });
+    }
+
+    const authString = `${apiKey}:`;
     const auth = Buffer.from(authString).toString('base64');
 
-    const res = await fetch('https://www.billplz.com/api/v3/bills', {
+    const isSandbox = apiKey.startsWith('s-');
+    const billplzUrl = isSandbox
+      ? 'https://www.billplz-sandbox.com/api/v3/bills'
+      : 'https://www.billplz.com/api/v3/bills';
+
+    const billPayload: any = {
+      collection_id: collectionId,
+      email: 'guest@indahmorib.com',
+      mobile: guestPhone,
+      name: guestName,
+      amount: Math.round(finalPrice * 100), // Amount in cents
+      callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
+      redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
+      description: `Booking for ${title} (${checkIn} to ${checkOut})`.substring(0, 120),
+      metadata: {
+        listingId,
+        bookingId: booking.id
+      }
+    };
+
+    // Calculate X-Signature if key is available (required if "X-Signature for Bill Creation" is enabled)
+    if (xSignatureKey) {
+      // Exclude objects/metadata from signature as Billplz signature usually only covers flat strings/numbers
+      const signParams = Object.keys(billPayload)
+        .filter(key => typeof billPayload[key] !== 'object' && key !== 'x_signature')
+        .sort()
+        .map(key => `${key}${billPayload[key]}`)
+        .join('|');
+
+      const signature = crypto
+        .createHmac('sha256', xSignatureKey)
+        .update(signParams)
+        .digest('hex');
+
+      billPayload.x_signature = signature;
+      console.log("Generated X-Signature for bill creation:", signature);
+    }
+
+    console.log(`Initializing Billplz ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} payment with:`, {
+      url: billplzUrl,
+      collection_id: collectionId,
+      mobile: guestPhone,
+      name: guestName,
+      amount: billPayload.amount,
+      hasSignature: !!billPayload.x_signature
+    });
+
+    const res = await fetch(billplzUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        collection_id: process.env.BILLPLZ_COLLECTION_ID,
-        email: 'guest@indahmorib.com',
-        mobile: guestPhone,
-        name: guestName,
-        amount: Math.round(finalPrice * 100), // Amount in cents
-        callback_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`,
-        redirect_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success`,
-        description: `Booking for ${title} (${checkIn} to ${checkOut})`,
-        metadata: {
-          listingId,
-          bookingId: booking.id
-        }
-      }),
+      body: JSON.stringify(billPayload),
     });
 
     const bill = await res.json();
 
     if (!bill.url) {
-      console.error("Billplz Error:", bill);
-      return NextResponse.json({ error: "Failed to initialize payment" }, { status: 500 });
+      console.error("Billplz Initialization Failed:", bill);
+      const errorMessage = bill.error?.message || "Unknown Billplz error";
+      return NextResponse.json({
+        error: "Failed to initialize payment",
+        detail: errorMessage,
+        billplz_response: bill
+      }, { status: 500 });
     }
 
     // 5. Update booking with billplz_id
