@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Indah Morib Homestay — Redesign Wireframe</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    background: #fff;
+    color: #000;
+    font-size: 14px;
+  }
+
+  /* ===== LEGEND ===== */
+  .legend-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #f5f5f5;
+    border-bottom: 2px solid #999;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    z-index: 9999;
+    font-size: 12px;
+  }
+  .legend-bar h2 { font-size: 13px; font-weight: bold; margin-right: 8px; }
+  .badge-reuse { background: #4CAF50; color: #fff; padding: 2px 8px; border-radius: 3px; font-weight: bold; font-size: 11px; }
+  .badge-new   { background: #FF9800; color: #fff; padding: 2px 8px; border-radius: 3px; font-weight: bold; font-size: 11px; }
+  .badge-fix   { background: #e53935; color: #fff; padding: 2px 8px; border-radius: 3px; font-weight: bold; font-size: 11px; }
+
+  /* ===== LAYOUT ===== */
+  .page-wrap { margin-top: 44px; }
+
+  /* ===== BADGE HELPERS ===== */
+  .rel { position: relative; display: block; }
+  .abs-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .b-reuse { background: #4CAF50; color: #fff; }
+  .b-new   { background: #FF9800; color: #fff; }
+  .b-fix   { background: #e53935; color: #fff; }
+
+  /* ===== WIREFRAME ELEMENTS ===== */
+  .wf-box {
+    border: 2px solid #333;
+    background: #f5f5f5;
+    border-radius: 4px;
+  }
+  .wf-box-dark {
+    border: 2px solid #333;
+    background: #ccc;
+    border-radius: 4px;
+  }
+  .wf-img {
+    background: #ddd;
+    border: 2px solid #999;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 12px;
+    text-align: center;
+  }
+  .wf-btn {
+    border: 2px solid #333;
+    border-radius: 4px;
+    padding: 8px 18px;
+    display: inline-block;
+    font-family: inherit;
+    cursor: default;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+  }
+  .wf-btn-solid { background: #333; color: #fff; }
+  .wf-btn-outline { background: transparent; color: #333; }
+  .wf-input {
+    border: none;
+    border-bottom: 2px solid #333;
+    background: transparent;
+    width: 100%;
+    padding: 6px 0;
+    font-family: inherit;
+    font-size: 12px;
+    color: #333;
+  }
+  .wf-section-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  .wf-h1 { font-size: 28px; font-weight: bold; line-height: 1.2; margin-bottom: 12px; }
+  .wf-h2 { font-size: 22px; font-weight: bold; line-height: 1.2; margin-bottom: 10px; }
+  .wf-h3 { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+  .wf-p { font-size: 12px; color: #444; line-height: 1.6; }
+  .wf-divider { border: none; border-top: 1px dashed #999; margin: 12px 0; }
+  .wf-tag { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 8px; display: block; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+  .flex { display: flex; }
+  .flex-center { display: flex; align-items: center; justify-content: center; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-16 { gap: 16px; }
+  .gap-24 { gap: 24px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mt-16 { margin-top: 16px; }
+  .text-center { text-align: center; }
+  .w-full { width: 100%; }
+  .section-pad { padding: 64px 0; }
+  .section-header { text-align: center; margin-bottom: 48px; }
+  .note-tag {
+    display: inline-block;
+    background: #fffde7;
+    border: 1px solid #f9a825;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 10px;
+    color: #f57f17;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LEGEND -->
+<div class="legend-bar">
+  <h2>Indahmorib Redesign Wireframe</h2>
+  <span class="badge-reuse">[REUSE]</span> Existing component
+  <span class="badge-new">[NEW]</span> New component
+  <span class="badge-fix">[FIX]</span> Bug/issue addressed
+</div>
+
+<div class="page-wrap">
+
+  <!-- ============================
+       SECTION 1: NAVBAR
+  ============================= -->
+  <!-- REUSABLE: Navbar from components/Navbar.tsx -->
+  <div class="rel wf-box" style="padding: 0 32px; height: 60px; border-radius: 0; border-left: none; border-right: none; border-top: none; background: rgba(255,255,255,0.96);">
+    <span class="abs-badge b-reuse">[REUSE] Navbar.tsx</span>
+    <div style="max-width: 1100px; margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: space-between;">
+      <!-- Logo -->
+      <div class="flex gap-8" style="align-items: center;">
+        <div class="wf-img" style="width: 38px; height: 38px; flex-shrink: 0; border-radius: 6px; font-size: 18px; font-weight: 900;">I</div>
+        <span style="font-weight: bold; font-size: 15px;">Indahmorib</span>
+      </div>
+      <!-- Nav links -->
+      <div class="flex gap-24" style="font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em;">
+        <span>Home</span><span>About</span><span>Homestays</span><span>Amenities</span><span>Gallery</span><span>Contact</span>
+      </div>
+      <!-- CTA + theme -->
+      <div class="flex gap-8" style="align-items: center;">
+        <!-- FIX: Use icon library for ThemeToggle instead of just a circle -->
+        <div class="wf-box flex-center" style="width: 36px; height: 36px; border-radius: 50%; font-size: 14px;">☀</div>
+        <div class="wf-btn wf-btn-solid" style="padding: 8px 20px; font-size: 11px;">Book Now</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 2: HERO
+  ============================= -->
+  <!-- REUSABLE: HeroSection from components/HeroSection.tsx -->
+  <div class="rel" style="height: 540px; background: #bbb; border-bottom: 3px solid #333; overflow: hidden;">
+    <span class="abs-badge b-reuse">[REUSE] HeroSection.tsx — Improved</span>
+    <!-- Background image placeholder -->
+    <div class="wf-img" style="position: absolute; inset: 0; border-radius: 0; border: none; font-size: 13px; color: #555;">
+      [ Background Image: Pool / Property — better crop centered on pool/guests ]<br/>
+      <span style="font-size: 10px; color: #888;">FIX: backgroundPosition: "center 60%" to show more of the pool</span>
+    </div>
+    <!-- Stronger gradient overlay -->
+    <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.6) 100%);"></div>
+    <!-- Content -->
+    <div style="position: relative; z-index: 2; text-align: center; padding-top: 120px;">
+      <div class="wf-section-label" style="color: #ddd; margin-bottom: 12px; letter-spacing: 0.35em;">✦ Welcome to Indahmorib ✦</div>
+      <div class="wf-h1" style="color: #fff; font-size: 38px; max-width: 680px; margin: 0 auto 16px;">
+        Find Your Perfect<br/>
+        <span style="text-decoration: underline; text-decoration-style: dotted;">Home Away</span> From Home
+      </div>
+      <div class="wf-p" style="color: rgba(255,255,255,0.85); max-width: 480px; margin: 0 auto 28px;">
+        Enjoy a cozy family setting where comfort, togetherness,<br/>and relaxation come naturally.
+      </div>
+      <div class="flex flex-center gap-16">
+        <div class="wf-btn wf-btn-solid" style="background: #888; border-color: #888;">EXPLORE ROOMS →</div>
+        <div class="wf-btn wf-btn-outline" style="border-color: #fff; color: #fff;">LEARN MORE</div>
+      </div>
+      <!-- Scroll indicator -->
+      <div style="margin-top: 36px; color: #ddd; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;">
+        ↓ SCROLL DOWN ↓
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 3: SEARCH BAR (Floating, full-width)
+  ============================= -->
+  <!-- REUSABLE: SearchBar from components/SearchBar.tsx -->
+  <!-- FIX: Add check-out validation, persist as sticky bar on scroll -->
+  <div class="rel container" style="margin-top: -36px; position: relative; z-index: 20;">
+    <span class="abs-badge b-reuse">[REUSE] SearchBar.tsx — with date validation fix</span>
+    <div class="wf-box" style="padding: 20px 28px; background: #fff; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 16px; align-items: end; box-shadow: 0 8px 32px rgba(0,0,0,0.14);">
+      <div>
+        <div class="wf-tag">Check-In</div>
+        <input class="wf-input" type="text" value="2026-02-26" readonly />
+      </div>
+      <div>
+        <div class="wf-tag">Check-Out</div>
+        <input class="wf-input" type="text" placeholder="Select date" readonly />
+        <span class="note-tag">⚠ FIX: validate check-out > check-in</span>
+      </div>
+      <div>
+        <div class="wf-tag">Guests</div>
+        <select class="wf-input" style="border-bottom: 2px solid #333;"><option>2 Guests</option></select>
+      </div>
+      <div>
+        <div class="wf-tag">Homestay Type</div>
+        <select class="wf-input" style="border-bottom: 2px solid #333;"><option>All Types</option></select>
+      </div>
+      <div class="wf-btn wf-btn-solid" style="white-space: nowrap; height: 38px; display: flex; align-items: center;">🔍 Search</div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 4: ABOUT
+  ============================= -->
+  <!-- REUSABLE: AboutSection from components/AboutSection.tsx -->
+  <div class="rel section-pad" style="background: #f5f5f5;">
+    <span class="abs-badge b-reuse">[REUSE] AboutSection.tsx — Dark mode fix</span>
+    <div class="container">
+      <div class="grid-2" style="align-items: center; gap: 48px;">
+        <!-- Left: image collage -->
+        <div style="position: relative; height: 400px;">
+          <div class="wf-img" style="position: absolute; top: 0; left: 0; width: 60%; height: 72%; font-size: 11px; color: #666;">[ Langit Sunset Image ]</div>
+          <div class="wf-img" style="position: absolute; bottom: 0; right: 0; width: 52%; height: 60%; font-size: 11px; color: #666; border: 4px solid #fff;">[ H5 Pool Image ]</div>
+          <!-- Floating stat card -->
+          <div class="wf-box" style="position: absolute; bottom: 48px; left: 12px; padding: 14px 20px; background: #333; color: #fff; z-index: 5;">
+            <div style="font-size: 22px; font-weight: 900;">8+</div>
+            <div style="font-size: 10px; opacity: 0.8;">Years of Excellence</div>
+          </div>
+        </div>
+        <!-- Right: text content -->
+        <div>
+          <span class="wf-tag">About Our Homestay</span>
+          <div class="wf-h2">A Unique Balance of <u>Luxury</u> &amp; Comfort</div>
+          <div class="wf-p mb-16">Nestled in the heart of Malaysia, Indah Morib Homestay offers a perfect blend of modern luxury and warm hospitality.</div>
+          <div class="wf-p mb-24">Whether you're here for a family getaway, a romantic escape, or a business trip, our dedicated team ensures every moment is extraordinary.</div>
+          <!-- Bullet list -->
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+            <div class="flex gap-8" style="align-items: center; font-size: 12px;"><div class="wf-box-dark flex-center" style="width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;">✓</div> Handpicked premium furnishings &amp; linens</div>
+            <div class="flex gap-8" style="align-items: center; font-size: 12px;"><div class="wf-box-dark flex-center" style="width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;">✓</div> 24/7 concierge and guest support</div>
+            <div class="flex gap-8" style="align-items: center; font-size: 12px;"><div class="wf-box-dark flex-center" style="width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;">✓</div> Strategic locations near top attractions</div>
+            <div class="flex gap-8" style="align-items: center; font-size: 12px;"><div class="wf-box-dark flex-center" style="width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;">✓</div> Complimentary breakfast &amp; amenities</div>
+          </div>
+          <div class="wf-btn wf-btn-solid mb-24">Discover More →</div>
+          <!-- Badges row -->
+          <div style="border-top: 1px dashed #ccc; padding-top: 16px;">
+            <div class="wf-tag mb-8">Recognitions &amp; Standards</div>
+            <div class="flex gap-16">
+              <div class="wf-box flex gap-8" style="padding: 8px 14px; align-items: center;">
+                <div class="wf-img" style="width: 48px; height: 48px; font-size: 9px;">TCC</div>
+                <div><div style="font-size: 12px; font-weight: bold;">TCC Compliant</div><div style="font-size: 10px; color: #666;">Verified 2026</div></div>
+              </div>
+              <div class="wf-box flex gap-8" style="padding: 8px 14px; align-items: center;">
+                <div class="wf-img" style="width: 48px; height: 48px; font-size: 9px;">MF</div>
+                <div style="font-size: 12px; font-weight: bold;">Muslim Friendly</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid-4 mt-16" style="background: #fff; border: 2px solid #ccc; border-radius: 6px; padding: 12px 0; margin-top: 40px;">
+        <div class="text-center" style="padding: 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 8px; font-size: 18px;">🏠</div>
+          <div style="font-size: 22px; font-weight: 900;">12+</div>
+          <div style="font-size: 11px; color: #666;">Unique Rooms</div>
+        </div>
+        <div class="text-center" style="padding: 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 8px; font-size: 18px;">👥</div>
+          <div style="font-size: 22px; font-weight: 900;">2,500+</div>
+          <div style="font-size: 11px; color: #666;">Happy Guests</div>
+        </div>
+        <div class="text-center" style="padding: 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 8px; font-size: 18px;">⭐</div>
+          <div style="font-size: 22px; font-weight: 900;">4.5</div>
+          <div style="font-size: 11px; color: #666;">Average Rating</div>
+        </div>
+        <div class="text-center" style="padding: 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 8px; font-size: 18px;">🕐</div>
+          <div style="font-size: 22px; font-weight: 900;">8</div>
+          <div style="font-size: 11px; color: #666;">Years Experience</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 5: ROOMS
+  ============================= -->
+  <!-- REUSABLE: RoomsSection from components/RoomsSection.tsx -->
+  <div class="rel section-pad">
+    <span class="abs-badge b-reuse">[REUSE] RoomsSection.tsx</span>
+    <div class="container">
+      <div class="section-header">
+        <span class="wf-tag">Our Homestays</span>
+        <div class="wf-h2">Handpicked Homestays for <u>Every Taste</u></div>
+        <div class="wf-p" style="max-width: 480px; margin: 0 auto;">Discover the perfect space for your stay. Every homestay is designed with comfort and style in mind.</div>
+      </div>
+      <!-- Room cards grid -->
+      <div class="grid-3">
+        <!-- Room card 1 -->
+        <!-- REUSABLE: RoomCard (room-card CSS) -->
+        <div class="rel wf-box" style="overflow: hidden; cursor: pointer;">
+          <span class="abs-badge b-reuse">[REUSE] room-card CSS</span>
+          <div class="wf-img" style="width: 100%; height: 220px; border-radius: 0; border: none; font-size: 11px;">[ Room Photo: Hall / Dewan ]</div>
+          <div class="wf-img" style="position: absolute; top: 12px; left: 12px; width: auto; padding: 4px 12px; height: auto; background: #888; color: #fff; border-radius: 999px; font-size: 10px; font-weight: bold; border: none;">POPULAR</div>
+          <div style="padding: 18px;">
+            <div class="wf-tag" style="margin-bottom: 4px;">Multipurpose Hall</div>
+            <div class="wf-h3">Indah Morib Hall</div>
+            <div class="wf-p mb-8" style="display: flex; align-items: center; gap: 4px;">📍 Banting, Selangor</div>
+            <hr class="wf-divider" />
+            <div class="flex-between">
+              <div><span style="font-size: 18px; font-weight: 900;">RM350</span> <span style="font-size: 11px; color: #666;">/ night</span></div>
+              <div style="font-size: 11px; color: #666;">4 Beds · 2 Baths</div>
+            </div>
+          </div>
+          <!-- Hover overlay note -->
+          <div class="wf-box" style="margin: 0 18px 18px; padding: 6px; background: #fffde7; border-color: #f9a825;">
+            <span class="note-tag">⚠ FIX: "Book Now" hover button conflicts with card-level click</span>
+          </div>
+        </div>
+
+        <!-- Room card 2 -->
+        <div class="rel wf-box" style="overflow: hidden; cursor: pointer;">
+          <div class="wf-img" style="width: 100%; height: 220px; border-radius: 0; border: none; font-size: 11px;">[ Room Photo: Homestay 6 ]</div>
+          <div class="wf-img" style="position: absolute; top: 12px; left: 12px; width: auto; padding: 4px 12px; height: auto; background: #888; color: #fff; border-radius: 999px; font-size: 10px; font-weight: bold; border: none;">BEST VALUE</div>
+          <div style="padding: 18px;">
+            <div class="wf-tag" style="margin-bottom: 4px;">Tiny House</div>
+            <div class="wf-h3">Homestay 6</div>
+            <div class="wf-p mb-8" style="display: flex; align-items: center; gap: 4px;">📍 Banting, Selangor</div>
+            <hr class="wf-divider" />
+            <div class="flex-between">
+              <div><span style="font-size: 18px; font-weight: 900;">RM280</span> <span style="font-size: 11px; color: #666;">/ night</span></div>
+              <div style="font-size: 11px; color: #666;">3 Beds · 2 Baths</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room card 3 -->
+        <div class="rel wf-box" style="overflow: hidden; cursor: pointer;">
+          <div class="wf-img" style="width: 100%; height: 220px; border-radius: 0; border: none; font-size: 11px;">[ Room Photo: Homestay 4 ]</div>
+          <div style="padding: 18px;">
+            <div class="wf-tag" style="margin-bottom: 4px;">Studio Unit</div>
+            <div class="wf-h3">Homestay 4</div>
+            <div class="wf-p mb-8" style="display: flex; align-items: center; gap: 4px;">📍 Banting, Selangor</div>
+            <hr class="wf-divider" />
+            <div class="flex-between">
+              <div><span style="font-size: 18px; font-weight: 900;">RM320</span> <span style="font-size: 11px; color: #666;">/ night</span></div>
+              <div style="font-size: 11px; color: #666;">2 Beds · 1 Bath</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 6: AMENITIES
+  ============================= -->
+  <!-- REUSABLE: AmenitiesSection from components/AmenitiesSection.tsx -->
+  <div class="rel section-pad" style="background: #f5f5f5;">
+    <span class="abs-badge b-reuse">[REUSE] AmenitiesSection.tsx — Fix pool icon</span>
+    <div class="container">
+      <div class="section-header">
+        <span class="wf-tag">Amenities</span>
+        <div class="wf-h2">Everything You <u>Need</u></div>
+        <div class="wf-p" style="max-width: 480px; margin: 0 auto;">We've thought of every detail to make your stay perfect. From premium amenities to thoughtful touches.</div>
+      </div>
+      <!-- 4x2 Grid -->
+      <div class="grid-4">
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">🏊</div>
+          <div class="wf-h3">Swimming Pool</div>
+          <div class="wf-p">Relax in our infinity pool with panoramic views</div>
+          <span class="note-tag">⚠ FIX: Replace candle SVG with actual pool icon</span>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">📶</div>
+          <div class="wf-h3">Free Wi-Fi</div>
+          <div class="wf-p">High-speed internet throughout the property</div>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">☕</div>
+          <div class="wf-h3">Breakfast Included</div>
+          <div class="wf-p">Complimentary local &amp; continental breakfast daily</div>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">📺</div>
+          <div class="wf-h3">Smart TV</div>
+          <div class="wf-p">55-inch Smart TVs with Netflix &amp; streaming</div>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">🛡</div>
+          <div class="wf-h3">24/7 Security</div>
+          <div class="wf-p">Round-the-clock security with CCTV monitoring</div>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">❄</div>
+          <div class="wf-h3">Air Conditioning</div>
+          <div class="wf-p">Individual climate control in every room</div>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">🅿</div>
+          <div class="wf-h3">Parking</div>
+          <div class="wf-p">Free private parking space for every guest</div>
+        </div>
+        <div class="wf-box text-center" style="padding: 28px 16px;">
+          <div class="wf-img flex-center" style="width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 8px; font-size: 20px;">🔐</div>
+          <div class="wf-h3">Digital Lock</div>
+          <div class="wf-p">Keyless entry with secure digital lock system</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 7: GALLERY (with Lightbox)
+  ============================= -->
+  <!-- REUSABLE: GallerySection from components/GallerySection.tsx -->
+  <!-- NEW: Lightbox modal on image click -->
+  <div class="rel section-pad">
+    <span class="abs-badge b-reuse">[REUSE] GallerySection.tsx</span>
+    <!-- NEW: GalleryLightbox component -->
+    <div class="abs-badge b-new" style="top: 4px; right: 160px;">[NEW] GalleryLightbox modal</div>
+    <div class="container">
+      <div class="section-header">
+        <span class="wf-tag">Gallery</span>
+        <div class="wf-h2">A Glimpse of <u>Indahmorib</u></div>
+        <div class="wf-p" style="max-width: 480px; margin: 0 auto;">Take a visual tour of our beautifully curated spaces and surroundings.</div>
+      </div>
+      <!-- Gallery grid: first image large (span 2 rows) -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 240px 240px; gap: 12px;">
+        <div class="wf-img" style="grid-row: span 2; border-radius: 6px; font-size: 11px; color: #555; flex-direction: column; gap: 8px;">
+          [ Interior: Living Room ]<br/>
+          <span style="font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 3px;">🔍 Click to enlarge</span>
+        </div>
+        <div class="wf-img" style="border-radius: 6px; font-size: 11px; color: #555;">[ Dewan/Hall ]</div>
+        <div class="wf-img" style="border-radius: 6px; font-size: 11px; color: #555;">[ Event Setup ]</div>
+        <div class="wf-img" style="border-radius: 6px; font-size: 11px; color: #555;">[ Outdoor Event ]</div>
+        <div class="wf-img" style="border-radius: 6px; font-size: 11px; color: #555;">[ Pool Area ]</div>
+      </div>
+      <!-- View all -->
+      <div class="text-center mt-16" style="margin-top: 28px;">
+        <!-- NEW: View All Gallery CTA -->
+        <div class="rel wf-btn wf-btn-outline" style="display: inline-block;">
+          <span class="abs-badge b-new" style="top: -10px;">[NEW] View All Photos CTA</span>
+          View All Photos (20+)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 8: TESTIMONIALS (improved layout)
+  ============================= -->
+  <!-- REUSABLE: TestimonialsSection from components/TestimonialsSection.tsx -->
+  <!-- FIX: Add section id, truncate long reviews with "Read More" -->
+  <div class="rel section-pad" style="background: #f5f5f5;" id="testimonials">
+    <span class="abs-badge b-reuse">[REUSE] TestimonialsSection.tsx — Fix: add id, truncate text</span>
+    <div class="container">
+      <div class="section-header">
+        <span class="wf-tag">Testimonials</span>
+        <div class="wf-h2">What Our <u>Guests</u> Say</div>
+        <div class="wf-p" style="max-width: 480px; margin: 0 auto;">Don't just take our word for it — hear from our happy guests.</div>
+      </div>
+      <div class="grid-3">
+        <!-- Testimonial 1 -->
+        <div class="wf-box" style="padding: 28px 24px; position: relative; background: #fff;">
+          <div style="font-size: 20px; color: #ccc; position: absolute; top: 16px; right: 20px; font-size: 40px; line-height: 1;">"</div>
+          <div style="color: #888; margin-bottom: 12px; font-size: 16px;">★★★★★</div>
+          <div class="wf-p mb-16" style="font-style: italic; font-size: 12px; max-height: 80px; overflow: hidden;">
+            I stayed with my colleagues for a work trip. The person I spoke with was helpful and attentive...
+          </div>
+          <!-- NEW: Read More link -->
+          <span class="note-tag">[NEW] "Read More" expand toggle</span>
+          <hr class="wf-divider" />
+          <div class="flex gap-8" style="align-items: center; margin-top: 12px;">
+            <div class="wf-img" style="width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; font-size: 9px;">Avatar</div>
+            <div>
+              <div style="font-weight: bold; font-size: 13px;">Haqeem Noorazli</div>
+              <div style="font-size: 11px; color: #666;">Business Trip</div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 2 -->
+        <div class="wf-box" style="padding: 28px 24px; position: relative; background: #fff;">
+          <div style="color: #888; margin-bottom: 12px; font-size: 16px;">★★★★★</div>
+          <div class="wf-p mb-16" style="font-style: italic; font-size: 12px; max-height: 80px; overflow: hidden;">
+            We held a Family Day with almost 120 people. A very suitable place with the best facilities...
+          </div>
+          <hr class="wf-divider" />
+          <div class="flex gap-8" style="align-items: center; margin-top: 12px;">
+            <div class="wf-img" style="width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; font-size: 9px;">Avatar</div>
+            <div>
+              <div style="font-weight: bold; font-size: 13px;">Najwa Syolehah</div>
+              <div style="font-size: 11px; color: #666;">Family Day</div>
+            </div>
+          </div>
+        </div>
+        <!-- Testimonial 3 -->
+        <div class="wf-box" style="padding: 28px 24px; position: relative; background: #fff;">
+          <div style="color: #888; margin-bottom: 12px; font-size: 16px;">★★★★★</div>
+          <div class="wf-p mb-16" style="font-style: italic; font-size: 12px; max-height: 80px; overflow: hidden;">
+            The place is spacious and neat, the room is comfortable and clean. Ample kitchen equipment...
+          </div>
+          <hr class="wf-divider" />
+          <div class="flex gap-8" style="align-items: center; margin-top: 12px;">
+            <div class="wf-img" style="width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; font-size: 9px;">Avatar</div>
+            <div>
+              <div style="font-weight: bold; font-size: 13px;">Che Maryam Ahmad</div>
+              <div style="font-size: 11px; color: #666;">Family Retreat</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google Reviews link CTA -->
+      <!-- NEW: Link to Google Maps reviews -->
+      <div class="text-center mt-16" style="margin-top: 28px;">
+        <div class="rel wf-btn wf-btn-outline" style="display: inline-block;">
+          <span class="abs-badge b-new" style="top: -10px;">[NEW] View All Google Reviews</span>
+          ★ See All Reviews on Google Maps
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 9: CTA / CONTACT
+  ============================= -->
+  <!-- REUSABLE: CTASection from components/CTASection.tsx -->
+  <!-- FIX: Show full email address; fix image URL dependency -->
+  <div class="rel" style="padding: 80px 0; background: #555; overflow: hidden;" id="contact">
+    <span class="abs-badge b-reuse" style="color:#fff;">[REUSE] CTASection.tsx — Fix email, fix image</span>
+    <div class="wf-img" style="position: absolute; inset: 0; border: none; border-radius: 0; opacity: 0.3; font-size: 12px;">[ Background: Property image from Supabase storage — FIX: move from Google Maps to stable URL ]</div>
+    <div class="container text-center" style="position: relative; z-index: 2;">
+      <span class="wf-tag" style="color: #ddd; margin-bottom: 12px; display: block;">Ready to Experience Indahmorib?</span>
+      <div class="wf-h2" style="color: #fff; font-size: 28px; margin-bottom: 16px;">Book Your Stay Today &amp; Create <u>Unforgettable Memories</u></div>
+      <div class="wf-p" style="color: rgba(255,255,255,0.8); max-width: 480px; margin: 0 auto 28px;">Contact us directly for the best rates, special packages, and personalised assistance.</div>
+      <div class="flex flex-center gap-16 mb-24" style="margin-bottom: 32px;">
+        <div class="wf-btn wf-btn-solid" style="background: #888; border-color: #888;">WhatsApp Us</div>
+        <div class="wf-btn wf-btn-outline" style="border-color: #fff; color: #fff;">Email Us</div>
+      </div>
+      <div class="grid-3" style="max-width: 640px; margin: 0 auto; gap: 12px;">
+        <div class="wf-box" style="padding: 16px 12px; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; text-align: center;">
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 4px;">Phone</div>
+          <div style="font-size: 13px; font-weight: bold;">+60 11-5757 2001</div>
+        </div>
+        <div class="wf-box" style="padding: 16px 12px; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; text-align: center;">
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 4px;">Email</div>
+          <!-- FIX: Show full email -->
+          <div style="font-size: 11px; font-weight: bold;">indahmoribhomestay<br/>@gmail.com</div>
+          <span class="note-tag">⚠ FIX: Truncated in original</span>
+        </div>
+        <div class="wf-box" style="padding: 16px 12px; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; text-align: center;">
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 4px;">Location</div>
+          <div style="font-size: 13px; font-weight: bold;">Selangor, MY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 10: FOOTER
+  ============================= -->
+  <!-- REUSABLE: Footer from components/Footer.tsx -->
+  <!-- FIX: Social icons with proper SVG icons from lucide-react -->
+  <div class="rel" style="background: #333; color: #ccc; padding: 60px 0 24px;">
+    <span class="abs-badge b-reuse" style="color: #fff;">[REUSE] Footer.tsx — Fix social icons</span>
+    <div class="container">
+      <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap: 40px; margin-bottom: 40px;">
+        <!-- Brand -->
+        <div>
+          <div class="flex gap-8 mb-16" style="align-items: center;">
+            <div class="wf-img flex-center" style="width: 34px; height: 34px; border-radius: 6px; font-size: 16px; font-weight: 900; color: #fff; background: #666;">I</div>
+            <span style="color: #fff; font-weight: bold; font-size: 14px;">Indahmorib</span>
+          </div>
+          <div style="font-size: 12px; line-height: 1.7; margin-bottom: 20px;">Your home away from home. Experience luxury, comfort, and Malaysian hospitality at its finest.</div>
+          <!-- Social icons - FIX: Use proper icons from lucide-react -->
+          <div class="rel flex gap-8">
+            <span class="abs-badge b-fix" style="top: -18px; left: 0; right: 'auto';">[FIX] Use Facebook/Instagram/X/YouTube icons from lucide-react</span>
+            <div class="wf-img flex-center" style="width: 36px; height: 36px; border-radius: 50%; font-size: 13px; border: 1px solid #555;">f</div>
+            <div class="wf-img flex-center" style="width: 36px; height: 36px; border-radius: 50%; font-size: 13px; border: 1px solid #555;">ig</div>
+            <div class="wf-img flex-center" style="width: 36px; height: 36px; border-radius: 50%; font-size: 13px; border: 1px solid #555;">x</div>
+            <div class="wf-img flex-center" style="width: 36px; height: 36px; border-radius: 50%; font-size: 13px; border: 1px solid #555;">yt</div>
+          </div>
+        </div>
+        <!-- Quick Links -->
+        <div>
+          <div style="color: #fff; font-weight: bold; font-size: 13px; margin-bottom: 16px;">Quick Links</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+            <span>Home</span><span>About Us</span><span>Our Rooms</span><span>Amenities</span><span>Gallery</span><span>Contact</span>
+          </div>
+        </div>
+        <!-- Room Types -->
+        <div>
+          <div style="color: #fff; font-weight: bold; font-size: 13px; margin-bottom: 16px;">Room Types</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+            <span>Standard Room</span><span>Studio</span><span>Family Room</span><span>Deluxe Suite</span><span>Penthouse</span>
+          </div>
+        </div>
+        <!-- Contact -->
+        <div>
+          <div style="color: #fff; font-weight: bold; font-size: 13px; margin-bottom: 16px;">Contact Info</div>
+          <div style="font-size: 12px; line-height: 1.8;">
+            Pt 704, Jalan Perdana 2 Indah Perdana,<br/>
+            Kampung Endah<br/>
+            Banting 42700, Selangor<br/><br/>
+            +60 11-5757 2001<br/>
+            indahmoribhomestay@gmail.com
+          </div>
+        </div>
+      </div>
+      <!-- Footer bottom bar -->
+      <div style="border-top: 1px solid #444; padding-top: 20px; display: flex; justify-content: space-between; font-size: 11px; color: #666;">
+        <span>&copy; 2026 Indahmorib Homestay. All rights reserved.</span>
+        <span><a href="#" style="color: #666; text-decoration: none;">Privacy</a> · <a href="#" style="color: #666; text-decoration: none;">Terms</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       SECTION 11: BANNER POPUP (Improved)
+  ============================= -->
+  <!-- REUSABLE: BannerPopup from components/BannerPopup.tsx -->
+  <!-- FIX: Show only once per session using sessionStorage -->
+  <div style="border: 2px dashed #999; margin: 32px; padding: 20px; border-radius: 8px; background: #f9f9f9;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <strong>BannerPopup Component — Improvements</strong>
+      <span class="badge-reuse">[REUSE] BannerPopup.tsx</span>
+    </div>
+    <div class="grid-2" style="gap: 24px; align-items: start;">
+      <!-- Current (with issues) -->
+      <div>
+        <div style="font-size: 11px; font-weight: bold; color: #e53935; margin-bottom: 8px;">❌ CURRENT (Issues)</div>
+        <div class="wf-box" style="padding: 16px; background: #fff; max-width: 320px; margin: 0 auto; position: relative;">
+          <div style="position: absolute; top: 8px; right: 8px; font-size: 18px;">✕</div>
+          <div class="wf-img" style="width: 100%; height: 120px; border-radius: 4px; font-size: 11px; color: #e53935; border-color: #e53935;">
+            ⚠ /Ramadhan-Discount.png MISSING<br/>ERR_CONNECTION_REFUSED
+          </div>
+        </div>
+        <div class="note-tag" style="display: block; margin-top: 8px;">Shows on EVERY page load — no dismiss memory</div>
+      </div>
+      <!-- Proposed (fixed) -->
+      <div>
+        <div style="font-size: 11px; font-weight: bold; color: #2e7d32; margin-bottom: 8px;">✅ PROPOSED (Fixed)</div>
+        <div class="wf-box" style="padding: 16px; background: #fff; max-width: 320px; margin: 0 auto; position: relative;">
+          <div style="position: absolute; top: 8px; right: 8px; font-size: 18px;">✕</div>
+          <div class="wf-img" style="width: 100%; height: 120px; border-radius: 4px; font-size: 11px;">[ Ramadan Discount Banner Image ]</div>
+          <div style="font-size: 11px; margin-top: 8px; text-align: center;">
+            Up to 30% Off — This Ramadan!
+          </div>
+        </div>
+        <div style="font-size: 10px; color: #2e7d32; margin-top: 8px;">
+          ✓ Add /public/Ramadhan-Discount.png<br/>
+          ✓ Check sessionStorage before showing<br/>
+          ✓ Fade-in animation on open<br/>
+          ✓ Save dismiss to sessionStorage on close
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================
+       DESIGN ISSUES SUMMARY
+  ============================= -->
+  <div style="border: 2px solid #333; margin: 32px; padding: 24px; border-radius: 6px; background: #fff;">
+    <h3 style="margin-bottom: 16px; font-size: 16px;">📋 Key Issues Addressed in This Redesign</h3>
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+      <thead>
+        <tr style="background: #f5f5f5;">
+          <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Area</th>
+          <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Issue</th>
+          <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Fix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="border: 1px solid #ccc; padding: 8px;">BannerPopup</td><td style="border: 1px solid #ccc; padding: 8px;">Shows every load; image missing</td><td style="border: 1px solid #ccc; padding: 8px;">sessionStorage check + add image + fade-in</td></tr>
+        <tr style="background: #f9f9f9;"><td style="border: 1px solid #ccc; padding: 8px;">Hero</td><td style="border: 1px solid #ccc; padding: 8px;">Image crop shows roof/sky</td><td style="border: 1px solid #ccc; padding: 8px;">backgroundPosition: "center 60%"</td></tr>
+        <tr><td style="border: 1px solid #ccc; padding: 8px;">Amenities</td><td style="border: 1px solid #ccc; padding: 8px;">Swimming Pool shows candle icon</td><td style="border: 1px solid #ccc; padding: 8px;">Replace SVG with correct Waves icon</td></tr>
+        <tr style="background: #f9f9f9;"><td style="border: 1px solid #ccc; padding: 8px;">Gallery</td><td style="border: 1px solid #ccc; padding: 8px;">No click/lightbox action</td><td style="border: 1px solid #ccc; padding: 8px;">Add GalleryLightbox modal component</td></tr>
+        <tr><td style="border: 1px solid #ccc; padding: 8px;">Footer</td><td style="border: 1px solid #ccc; padding: 8px;">Social icons are text (Fb/Ig/X/Yt)</td><td style="border: 1px solid #ccc; padding: 8px;">Use Facebook/Instagram/Twitter/Youtube from lucide-react</td></tr>
+        <tr style="background: #f9f9f9;"><td style="border: 1px solid #ccc; padding: 8px;">CTA</td><td style="border: 1px solid #ccc; padding: 8px;">Email truncated without domain</td><td style="border: 1px solid #ccc; padding: 8px;">Show full email address</td></tr>
+        <tr><td style="border: 1px solid #ccc; padding: 8px;">Testimonials</td><td style="border: 1px solid #ccc; padding: 8px;">Very long untruncated reviews; missing id</td><td style="border: 1px solid #ccc; padding: 8px;">Truncate with "Read More" expand + add id="testimonials"</td></tr>
+        <tr style="background: #f9f9f9;"><td style="border: 1px solid #ccc; padding: 8px;">SearchBar</td><td style="border: 1px solid #ccc; padding: 8px;">No check-out date validation</td><td style="border: 1px solid #ccc; padding: 8px;">Validate check-out > check-in</td></tr>
+        <tr><td style="border: 1px solid #ccc; padding: 8px;">Dark Mode</td><td style="border: 1px solid #ccc; padding: 8px;">System preference overrides defaultTheme</td><td style="border: 1px solid #ccc; padding: 8px;">Add enableSystem={false} to ThemeProvider</td></tr>
+        <tr style="background: #f9f9f9;"><td style="border: 1px solid #ccc; padding: 8px;">Animations</td><td style="border: 1px solid #ccc; padding: 8px;">All fire on load, not on scroll into view</td><td style="border: 1px solid #ccc; padding: 8px;">Add IntersectionObserver for scroll-triggered animations</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /page-wrap -->
+</body>
+</html>

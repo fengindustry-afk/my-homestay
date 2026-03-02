@@ -283,6 +283,15 @@ export function BookingsPanel() {
         else if (u.includes("3") || u.includes("4")) subtotal += 300; // Upper Floor units
       });
       if (selected.length === 0) subtotal = 0; // No units selected = RM0
+    } else if (roomTitle.includes("homestay 6")) {
+      const selected = form.unit_name.split(", ").filter(Boolean);
+      selected.forEach((u) => {
+        if (u.toLowerCase().includes("main")) subtotal += 270;
+        else subtotal += 150;
+      });
+      if (selected.length === 0) subtotal = 0;
+    } else if (roomTitle.includes("homestay 4")) {
+      subtotal = Number(room.price || 0) * Math.max(1, Number(form.units_count || 1));
     } else {
       let basePrice = Number(room.price || 0);
       if (form.package_name === "Basic Package" && room.basic_price) basePrice = Number(room.basic_price);
@@ -1174,7 +1183,10 @@ export function BookingsPanel() {
               </div>
 
               <div className="grid grid-cols-1">
-                <label className={`flex flex-col gap-1.5 ${rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase().includes("homestay 2") ? 'hidden' : ''}`}>
+                <label className={`flex flex-col gap-1.5 ${(() => {
+                  const title = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
+                  return title.includes("homestay 2") || title.includes("homestay 4") || title.includes("homestay 6");
+                })() ? 'hidden' : ''}`}>
                   <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Package</span>
                   <select
                     className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"

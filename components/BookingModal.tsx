@@ -148,6 +148,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     const availablePackages = useMemo(() => {
         if (!room) return [];
+        const title = room.title.toLowerCase();
+
+        // Remove package options for Homestay 4 and Homestay 6
+        if (title.includes("homestay 4") || title.includes("homestay 6")) {
+            return [];
+        }
+
         if (isHomestay2) {
             return [
                 { name: "Lower Floor - Unit 1 (Left)", price: 350 },
@@ -176,9 +183,10 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const nights = useMemo(() => {
         if (checkIn && checkOut) {
             const diff = checkOut.getTime() - checkIn.getTime();
-            return Math.ceil(diff / (1000 * 60 * 60 * 24));
+            const calcNights = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            return calcNights > 0 ? calcNights : 1; // Always at least 1 night for same-day picks
         }
-        return 0;
+        return 1; // Default to 1 night if checkout not selected yet
     }, [checkIn, checkOut]);
 
     const addOnsPrice = useMemo(() => {
@@ -205,6 +213,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         if (!room) return 0;
 
         let subtotal = 0;
+        let basePrice = room.price;
+
         if (isHomestay2) {
             const selected = selectedUnit.split(", ").filter(Boolean);
             selected.forEach(u => {
@@ -212,21 +222,31 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                 else subtotal += 300;
             });
             if (selected.length === 0) subtotal = 0; // No units selected = RM0
+        } else if (room.title.toLowerCase().includes("homestay 6")) {
+            const selected = selectedUnit.split(", ").filter(Boolean);
+            selected.forEach(u => {
+                if (u.toLowerCase().includes("main")) subtotal += 270;
+                else subtotal += 150;
+            });
+            if (selected.length === 0) subtotal = 0;
+            basePrice = subtotal / (unitsCount > 0 ? unitsCount : 1); // For display consistency if needed
         } else {
-            let basePrice = room.price;
             if (selectedPackage === "Basic Package" && room.basic_price) {
                 basePrice = room.basic_price;
             } else if (selectedPackage === "Full Package" && room.full_price) {
                 basePrice = room.full_price;
+            } else if (!isHomestay2 && room.basic_price) {
+                basePrice = room.basic_price; // Fallback to basic price
             }
-            subtotal = basePrice * unitsCount;
+            subtotal = basePrice * (unitsCount > 0 ? unitsCount : 1);
         }
 
         const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
         const lateFeeRate = isHomestay3or5 ? 20 : 10;
         const totalLateFee = extraHours * lateFeeRate;
 
-        const computedPrice = ((nights || 1) * subtotal) + addOnsPrice + totalLateFee;
+        const safeUnitsCount = unitsCount > 0 ? unitsCount : 1;
+        const computedPrice = (nights * (basePrice * safeUnitsCount)) + addOnsPrice + totalLateFee;
 
         // Apply discount if available
         let finalPrice = computedPrice;
@@ -536,7 +556,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Base Price</span>
                                         <span className="text-lg font-bold text-[var(--primary)]">
                                             RM{isHomestay2 ? (selectedPackage.includes("Upper Floor") ? 300 : selectedPackage.includes("Lower Floor") ? 350 : room.price) :
-                                                (selectedPackage === "Basic Package" ? room.basic_price : selectedPackage === "Full Package" ? room.full_price : room.price)}
+                                                room.title.toLowerCase().includes("homestay 6") ? (selectedUnit.includes("Main") ? 270 : selectedUnit ? 150 : 0) :
+                                                    (selectedPackage === "Basic Package" ? room.basic_price : selectedPackage === "Full Package" ? room.full_price : room.price)}
                                         </span>
                                     </div>
                                     <div className="h-8 w-[1px] bg-[var(--border)]" />
@@ -682,7 +703,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                     }`}
                                             >
                                                 <span className="text-sm font-black uppercase tracking-tight">{u}</span>
-                                                {isHomestay2 && <span className="text-xs font-bold opacity-70 mt-1">RM{uPrice} / night</span>}
+                                                {(isHomestay2 || room.title.toLowerCase().includes("homestay 6")) && (
+                                                    <span className="text-xs font-bold opacity-70 mt-1">
+                                                        RM{u.toLowerCase().includes("main") ? 270 : u.includes("1") || u.includes("2") ? 350 : u.includes("3") || u.includes("4") ? 300 : 150} / night
+                                                    </span>
+                                                )}
                                             </button>
                                         );
                                     })}

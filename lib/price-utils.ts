@@ -56,12 +56,23 @@ export function calculatePrice({
     const isHomestay2 = room.title.toLowerCase().includes("homestay 2");
 
     let subtotal = 0;
-    if (isHomestay2) {
+    const roomTitle = room.title.toLowerCase();
+
+    if (roomTitle.includes("homestay 2")) {
         const selected = (selectedUnit || "").split(", ").filter(Boolean);
         selected.forEach(u => {
             if (u.includes("1") || u.includes("2")) subtotal += 350;
             else subtotal += 300;
         });
+    } else if (roomTitle.includes("homestay 6")) {
+        const selected = (selectedUnit || "").split(", ").filter(Boolean);
+        selected.forEach(u => {
+            if (u.toLowerCase().includes("main")) subtotal += 270;
+            else subtotal += 150;
+        });
+        if (selected.length === 0) subtotal = 0;
+    } else if (roomTitle.includes("homestay 4")) {
+        subtotal = room.price * Math.max(1, unitsCount || 1);
     } else {
         let basePrice = room.price;
         if (selectedPackage === "Basic Package" && room.basic_price) {
