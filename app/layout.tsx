@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import BannerPopup from "@/components/BannerPopup";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -54,6 +55,7 @@ export default function RootLayout({
         >
           {children}
           <BannerPopup />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
