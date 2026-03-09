@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
+import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -25,9 +26,11 @@ interface RoomsSectionProps {
         roomType: string;
         guests: string;
     };
+    onSearch?: (criteria: any) => void;
+    onReset?: () => void;
 }
 
-export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
+export default function RoomsSection({ filterCriteria, onSearch, onReset }: RoomsSectionProps) {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
@@ -68,7 +71,7 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
         if (!filterCriteria) return rooms;
 
         return rooms.filter(room => {
-            const matchesType = filterCriteria.roomType === "All Types" || room.type === filterCriteria.roomType;
+            const matchesType = filterCriteria.roomType === "All Types" || room.type.trim() === filterCriteria.roomType;
 
             const guestCount = parseInt(filterCriteria.guests);
             const matchesGuests = room.guests >= guestCount;
@@ -76,6 +79,7 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
             return matchesType && matchesGuests;
         });
     }, [filterCriteria, rooms]);
+
     const handleBook = (room: Room) => {
         setSelectedRoom(room);
         setIsModalOpen(true);
@@ -87,10 +91,27 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
                 <div className="mx-auto max-w-7xl px-6">
                     <div className="mb-14 text-center">
                         <p className="section-tag">Our Homestays</p>
+
                         <h2 className="section-title" style={{ maxWidth: 600, margin: "0 auto 16px" }}>
                             {filterCriteria ? "Search Results" : "Handpicked Homestays for "}
                             {!filterCriteria && <span style={{ color: "var(--accent)" }}>Every Taste</span>}
                         </h2>
+
+                        {filterCriteria && (
+                            <div className="mb-6">
+                                <button
+                                    onClick={onReset}
+                                    className="text-sm font-medium text-[var(--accent)] hover:underline flex items-center justify-center gap-1 mx-auto"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                        <path d="M3 3v5h5" />
+                                    </svg>
+                                    Reset Search
+                                </button>
+                            </div>
+                        )}
+
                         <p className="section-description" style={{ maxWidth: 520, margin: "0 auto" }}>
                             {loading ? (
                                 "Searching our collection for the perfect homestays..."
@@ -152,11 +173,15 @@ export default function RoomsSection({ filterCriteria }: RoomsSectionProps) {
 
                     {filterCriteria && filteredRooms.length === 0 && (
                         <div className="mt-12 text-center">
-                            <button onClick={() => window.location.reload()} className="btn-dark">
+                            <button onClick={onReset} className="btn-dark">
                                 Reset Filters
                             </button>
                         </div>
                     )}
+
+                    <div className="mt-16">
+                        <SearchBar onSearch={onSearch} />
+                    </div>
                 </div>
             </section>
 

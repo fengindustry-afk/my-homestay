@@ -23,9 +23,12 @@ export default function Home() {
     <>
       <Navbar />
       <HeroSection />
-      <SearchBar onSearch={handleSearch} />
       <AboutSection />
-      <RoomsSection filterCriteria={filterCriteria} />
+      <RoomsSection
+        filterCriteria={filterCriteria}
+        onSearch={handleSearch}
+        onReset={() => setFilterCriteria(undefined)}
+      />
       <AmenitiesSection />
       <GallerySection />
       <TestimonialsSection />

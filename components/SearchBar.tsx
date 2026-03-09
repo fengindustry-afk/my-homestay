@@ -21,7 +21,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     };
 
     return (
-        <div className="mx-auto max-w-6xl px-6" style={{ marginTop: -50, position: "relative", zIndex: 20 }}>
+        <div className="mx-auto max-w-6xl px-6 mb-10">
             <div className="search-bar animate-fade-up delay-400">
                 <div className="search-bar-field">
                     <label className="search-bar-label">Check-in</label>
@@ -53,11 +53,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                         onChange={(e) => setRoomType(e.target.value)}
                     >
                         <option>All Types</option>
-                        <option>Standard Homestay</option>
-                        <option>Studio</option>
-                        <option>Family Homestay</option>
-                        <option>Deluxe Suite</option>
-                        <option>Penthouse</option>
+                        <option>Bungalow Unit</option>
+                        <option>Studio Unit</option>
+                        <option>Family Room</option>
+                        <option>Holiday Home</option>
+                        <option>Tiny House</option>
+                        <option>Event Hall</option>
                     </select>
                 </div>
                 <button

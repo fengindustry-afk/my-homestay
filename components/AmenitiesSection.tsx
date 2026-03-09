@@ -76,7 +76,7 @@ const amenities = [
         title: "Parking",
         desc: "Free private parking space for every guest",
     },
-    {
+   /* {
         icon: (
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 9V5a3 3 0 00-6 0v4" />
@@ -86,7 +86,7 @@ const amenities = [
         ),
         title: "Digital Lock",
         desc: "Keyless entry with secure digital lock system",
-    },
+    },*/
 ];
 
 export default function AmenitiesSection() {

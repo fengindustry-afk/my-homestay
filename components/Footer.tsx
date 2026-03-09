@@ -41,10 +41,10 @@ export default function Footer() {
                         ))}
                     </div>
 
-                    {/* Room Types */}
+                    {/* Homestay Types */}
                     <div>
-                        <h4 className="footer-title">Room Types</h4>
-                        {["Standard Room", "Studio", "Family Room", "Deluxe Suite", "Penthouse"].map((r) => (
+                        <h4 className="footer-title">Homestay Types</h4>
+                        {["Bungalow Unit", "Studio Unit", "Family Room", "Holiday Home", "Tiny House", "Event Hall"].map((r) => (
                             <a key={r} href="#rooms" className="footer-link">{r}</a>
                         ))}
                     </div>
