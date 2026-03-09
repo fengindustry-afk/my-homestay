@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { eachDayOfInterval, format, addDays } from "date-fns";
-import { areIntervalsOverlapping, parseISO } from "date-fns";
+import { eachDayOfInterval, format, addDays, isWeekend, areIntervalsOverlapping, parseISO } from "date-fns";
 
 import BookingCalendar from "./BookingCalendar";
 
@@ -106,6 +105,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     }, [room]);
 
     const isHomestay2 = room?.title.toLowerCase().includes("homestay 2") || false;
+    const isHall = room?.title.toLowerCase().includes("multipurpose hall") || false;
     const isMultiUnitRoom = useMemo(() => {
         const title = room?.title.toLowerCase() || "";
         return title.includes("homestay 2") || title.includes("homestay 4") || title.includes("homestay 6");
@@ -148,11 +148,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     const availablePackages = useMemo(() => {
         if (!room) return [];
-        const title = room.title.toLowerCase();
-
-        // Remove package options for Homestay 4 and Homestay 6
-        if (title.includes("homestay 4") || title.includes("homestay 6")) {
-            return [];
+        if (isHall) {
+            const isActuallyWeekend = checkIn ? isWeekend(checkIn) : false;
+            return [
+                { name: "Day Rate (8 a.m. - 6 p.m.)", price: isActuallyWeekend ? 900 : 800 },
+                { name: "Day Rate (8 a.m. - 10 p.m.)", price: isActuallyWeekend ? 1000 : 900 },
+                { name: "Overnight Stay (8 a.m. - 12 p.m.)", price: isActuallyWeekend ? 1200 : 1000 },
+            ];
         }
 
         if (isHomestay2) {
@@ -167,7 +169,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         if (room.basic_price) pkgs.push({ name: "Basic Package", price: room.basic_price });
         if (room.full_price) pkgs.push({ name: "Full Package", price: room.full_price });
         return pkgs;
-    }, [room, isHomestay2]);
+    }, [room, isHomestay2, isHall, checkIn]);
 
     useEffect(() => {
         if (availablePackages.length > 0 && !selectedPackage) {
@@ -215,7 +217,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         let subtotal = 0;
         let basePrice = room.price;
 
-        if (isHomestay2) {
+        if (isHall) {
+            const isActuallyWeekend = checkIn ? isWeekend(checkIn) : false;
+            if (selectedPackage.includes("8 a.m. - 6 p.m.")) subtotal = isActuallyWeekend ? 900 : 800;
+            else if (selectedPackage.includes("8 a.m. - 10 p.m.")) subtotal = isActuallyWeekend ? 1000 : 900;
+            else if (selectedPackage.includes("Overnight Stay")) subtotal = isActuallyWeekend ? 1200 : 1000;
+            else subtotal = isActuallyWeekend ? 900 : 800; // Default
+        } else if (isHomestay2) {
             const selected = selectedUnit.split(", ").filter(Boolean);
             selected.forEach(u => {
                 if (u.includes("1") || u.includes("2")) subtotal += 350;
@@ -243,7 +251,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
         const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
         const lateFeeRate = isHomestay3or5 ? 20 : 10;
-        const totalLateFee = extraHours * lateFeeRate;
+        const totalLateFee = isHall ? 0 : extraHours * lateFeeRate;
 
         // For multi-unit rooms, price is already sum of unit prices in subtotal
         // For others, subtotal is basePrice * unitsCount
@@ -384,6 +392,22 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
         fetchUnavailableUnits();
     }, [checkIn, checkOut, checkInTime, checkOutTime, room?.id, units]);
+
+    // Auto-set times for the Hall based on selected package
+    useEffect(() => {
+        if (isHall && selectedPackage) {
+            if (selectedPackage.includes("8 a.m. - 6 p.m.")) {
+                setCheckInTime("08:00");
+                setCheckOutTime("18:00");
+            } else if (selectedPackage.includes("8 a.m. - 10 p.m.")) {
+                setCheckInTime("08:00");
+                setCheckOutTime("22:00");
+            } else if (selectedPackage.includes("Overnight Stay")) {
+                setCheckInTime("08:00");
+                setCheckOutTime("12:00");
+            }
+        }
+    }, [selectedPackage, isHall]);
 
     useEffect(() => {
         let isMounted = true;
@@ -537,7 +561,16 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                         )}
 
                         <div className="p-8">
-                            <h2 className="mb-2 text-2xl font-bold text-[var(--primary)] leading-tight">{room.title}</h2>
+                            <div className="flex items-start justify-between mb-2 gap-4">
+                                <h2 className="text-2xl font-bold text-[var(--primary)] leading-tight">{room.title}</h2>
+                                <a
+                                    href={`/homestay/${room.id}`}
+                                    className="text-xs font-bold text-white bg-[var(--primary)] hover:bg-[var(--accent)] transition-colors px-4 py-2 rounded-full whitespace-nowrap shadow-md flex items-center gap-1"
+                                >
+                                    View Detail
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </a>
+                            </div>
                             <p className="text-sm text-[var(--text-muted)] mb-6" style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
                                 {room.description || "Serene accommodation with premium amenities."}
                             </p>
@@ -842,12 +875,12 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <input
                                         type="time"
                                         required
-                                        min="15:00"
+                                        min={isHall ? "08:00" : "15:00"}
                                         value={checkInTime}
                                         onChange={(e) => setCheckInTime(e.target.value)}
                                         className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
                                     />
-                                    <span className="text-[10px] text-gray-500 mt-1 block">Earliest check-in is 3:00 PM (15:00)</span>
+                                    <span className="text-[10px] text-gray-500 mt-1 block">Earliest check-in is {isHall ? "8:00 AM (08:00)" : "3:00 PM (15:00)"}</span>
                                 </div>
 
                                 <div className="group">
@@ -859,7 +892,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         onChange={(e) => setCheckOutTime(e.target.value)}
                                         className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
                                     />
-                                    <span className="text-[10px] text-gray-500 mt-1 block">RM{room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5") ? '20' : '10'}/hour extra charge applies after 12:00 PM</span>
+                                    <span className="text-[10px] text-gray-500 mt-1 block">
+                                        {isHall
+                                            ? "Check-out time depends on selected package."
+                                            : `RM${room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5") ? '20' : '10'}/hour extra charge applies after 12:00 PM`}
+                                    </span>
                                 </div>
 
                                 <div className="md:col-span-2">

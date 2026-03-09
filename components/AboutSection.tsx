@@ -141,7 +141,7 @@ export default function AboutSection() {
                                 "Handpicked premium furnishings & linens",
                                 "24/7 concierge and guest support",
                                 "Strategic locations near top attractions",
-                                "Complimentary breakfast & amenities",
+                               
                             ].map((item) => (
                                 <div
                                     key={item}

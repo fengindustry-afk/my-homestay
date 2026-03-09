@@ -20,12 +20,12 @@ export default function BannerPopup() {
 
   return (
     <div className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-lg w-67 mx-4 relative">
+      <div className="rounded-lg max-w-lg w-67 mx-4 relative">
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute top-2 right-2 text-gray-1500 hover:text-gray-700 z-10"
+          className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 text-white shadow-lg transition-colors z-10"
         >
-          <X size={24} />
+          <X size={16} />
         </button>
         <div className="relative w-full h-95">
           <Image

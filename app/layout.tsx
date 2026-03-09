@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import BannerPopup from "@/components/BannerPopup";
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import Script from 'next/script';
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -57,6 +58,19 @@ export default function RootLayout({
           <BannerPopup />
           <SpeedInsights />
         </ThemeProvider>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-N4W8198R6K"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-N4W8198R6K');
+          `}
+        </Script>
       </body>
     </html>
   );

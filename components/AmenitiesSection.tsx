@@ -20,7 +20,7 @@ const amenities = [
         title: "Free Wi-Fi",
         desc: "High-speed internet throughout the entire property",
     },
-    {
+   /* {
         icon: (
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8h1a4 4 0 010 8h-1" />
@@ -32,7 +32,7 @@ const amenities = [
         ),
         title: "Breakfast Included",
         desc: "Complimentary local & continental breakfast daily",
-    },
+    },*/
     {
         icon: (
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

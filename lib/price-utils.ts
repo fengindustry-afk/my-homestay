@@ -50,17 +50,35 @@ export function calculatePrice({
 
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return 0;
 
+    const isHall = room.title.toLowerCase().includes("multipurpose hall");
     const diff = endDate.getTime() - startDate.getTime();
-    const nights = diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0;
+    let nights = diff > 0 ? Math.ceil(diff / (1000 * 60 * 60 * 24)) : 0;
+
+    // For the Hall, we allow same-day bookings (Day Rate)
+    if (isHall && diff === 0) {
+        nights = 1;
+    }
 
     if (nights === 0) return 0;
-
-    const isHomestay2 = room.title.toLowerCase().includes("homestay 2");
 
     let subtotal = 0;
     const roomTitle = room.title.toLowerCase();
 
-    if (roomTitle.includes("homestay 2")) {
+    if (isHall) {
+        const dayOfWeek = startDate.getDay();
+        const isActuallyWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
+
+        if (selectedPackage.includes("8 a.m. - 6 p.m.")) {
+            subtotal = isActuallyWeekend ? 900 : 800;
+        } else if (selectedPackage.includes("8 a.m. - 10 p.m.")) {
+            subtotal = isActuallyWeekend ? 1000 : 900;
+        } else if (selectedPackage.includes("Overnight Stay")) {
+            subtotal = isActuallyWeekend ? 1200 : 1000;
+        } else {
+            // Default to cheapest weekday day rate if no package selected
+            subtotal = isActuallyWeekend ? 900 : 800;
+        }
+    } else if (roomTitle.includes("homestay 2")) {
         const selected = (selectedUnit || "").split(", ").filter(Boolean);
         selected.forEach(u => {
             if (u.includes("1") || u.includes("2")) subtotal += 350;
@@ -85,22 +103,22 @@ export function calculatePrice({
         subtotal = basePrice * (unitsCount || 0);
     }
 
-    // Extra hours fee
-    let extraHours = 0;
-    if (checkOutTime) {
+    // Extra hours fee - only for homestays, not for the hall packages which have set times
+    let totalLateFee = 0;
+    if (!isHall && checkOutTime) {
+        let extraHours = 0;
         const [hours, mins] = checkOutTime.split(":").map(Number);
         if (hours > 12 || (hours === 12 && mins > 0)) {
             extraHours = hours - 12 + (mins > 0 ? 1 : 0);
         }
+        const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
+        const lateFeeRate = isHomestay3or5 ? 20 : 10;
+        totalLateFee = Math.max(0, extraHours * lateFeeRate);
     }
-
-    const isHomestay3or5 = room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5");
-    const lateFeeRate = isHomestay3or5 ? 20 : 10;
-    const totalLateFee = Math.max(0, extraHours * lateFeeRate);
 
     // Add-ons for Homestay 2
     let addOnsPrice = 0;
-    if (isHomestay2 && addOns) {
+    if (roomTitle.includes("homestay 2") && addOns) {
         if (addOns.bbq) addOnsPrice += 30;
         if (addOns.cradle) addOnsPrice += 10;
         if (addOns.karaoke === "hour") addOnsPrice += (25 * (addOns.karaokeHours || 0));

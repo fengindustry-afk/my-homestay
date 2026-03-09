@@ -283,7 +283,23 @@ export function BookingsPanel() {
     }
 
     let subtotal = 0;
-    if (roomTitle.includes("homestay 2")) {
+    const isHall = roomTitle.includes("multipurpose hall");
+
+    if (isHall) {
+      const start = new Date(form.check_in);
+      const dayOfWeek = start.getDay();
+      const isActuallyWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
+
+      if (form.package_name.includes("8 a.m. - 6 p.m.")) {
+        subtotal = isActuallyWeekend ? 900 : 800;
+      } else if (form.package_name.includes("8 a.m. - 10 p.m.")) {
+        subtotal = isActuallyWeekend ? 1000 : 900;
+      } else if (form.package_name.includes("Overnight Stay")) {
+        subtotal = isActuallyWeekend ? 1200 : 1000;
+      } else {
+        subtotal = isActuallyWeekend ? 900 : 800;
+      }
+    } else if (roomTitle.includes("homestay 2")) {
       const selected = form.unit_name.split(", ").filter(Boolean);
       selected.forEach((u) => {
         if (u.includes("1") || u.includes("2")) subtotal += 350; // Lower Floor units
@@ -315,7 +331,7 @@ export function BookingsPanel() {
 
     const isHomestay3or5 = roomTitle.includes("homestay 3") || roomTitle.includes("homestay 5");
     const lateFeeRate = isHomestay3or5 ? 20 : 10;
-    const totalLateFee = extraHours * lateFeeRate;
+    const totalLateFee = isHall ? 0 : extraHours * lateFeeRate;
 
     const computed = (subtotal * nights) + totalLateFee;
 
@@ -338,13 +354,16 @@ export function BookingsPanel() {
   // Ensure check-out is after check-in
   useEffect(() => {
     if (form.check_in && form.check_out) {
-      if (form.check_out <= form.check_in) {
+      const roomTitle = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
+      const isHall = roomTitle.includes("multipurpose hall");
+
+      if (form.check_out < form.check_in || (!isHall && form.check_out === form.check_in)) {
         const nextDay = new Date(form.check_in);
         nextDay.setDate(nextDay.getDate() + 1);
         setForm(prev => ({ ...prev, check_out: toKey(nextDay) }));
       }
     }
-  }, [form.check_in, form.check_out]);
+  }, [form.check_in, form.check_out, form.room_id]);
 
   const [wsText, setWsText] = useState("");
 
@@ -1167,10 +1186,9 @@ export function BookingsPanel() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
-                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Time In (Min 15:00)</span>
+                  <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Time In</span>
                   <input
                     type="time"
-                    min="15:00"
                     className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface-elevated)] px-4 py-3.5 text-base font-medium focus:border-[var(--primary)] outline-none transition-all"
                     value={form.check_in_time}
                     onChange={(e) => handleChange("check_in_time", e.target.value)}
@@ -1189,6 +1207,23 @@ export function BookingsPanel() {
                 </label>
               </div>
 
+              {/* Auto-set times for the Hall based on selected package */}
+              {useEffect(() => {
+                const roomTitle = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
+                if (roomTitle.includes("multipurpose hall") && form.package_name) {
+                  if (form.package_name.includes("8 a.m. - 6 p.m.")) {
+                    if (form.check_in_time !== "08:00") handleChange("check_in_time", "08:00");
+                    if (form.check_out_time !== "18:00") handleChange("check_out_time", "18:00");
+                  } else if (form.package_name.includes("8 a.m. - 10 p.m.")) {
+                    if (form.check_in_time !== "08:00") handleChange("check_in_time", "08:00");
+                    if (form.check_out_time !== "22:00") handleChange("check_out_time", "22:00");
+                  } else if (form.package_name.includes("Overnight Stay")) {
+                    if (form.check_in_time !== "08:00") handleChange("check_in_time", "08:00");
+                    if (form.check_out_time !== "12:00") handleChange("check_out_time", "12:00");
+                  }
+                }
+              }, [form.package_name, form.room_id]) as any}
+
               <div className="grid grid-cols-1">
                 <label className={`flex flex-col gap-1.5 ${(() => {
                   const title = rooms.find(r => r.id === Number(form.room_id))?.title.toLowerCase() || "";
@@ -1204,6 +1239,15 @@ export function BookingsPanel() {
                       const room = rooms.find(r => r.id === Number(form.room_id));
                       const title = room?.title.toLowerCase() || "";
                       if (title.includes("homestay 2")) return null;
+                      if (title.includes("multipurpose hall")) {
+                        return (
+                          <>
+                            <option value="Day Rate (8 a.m. - 6 p.m.)">Day Rate (8 a.m. - 6 p.m.)</option>
+                            <option value="Day Rate (8 a.m. - 10 p.m.)">Day Rate (8 a.m. - 10 p.m.)</option>
+                            <option value="Overnight Stay (8 a.m. - 12 p.m.)">Overnight Stay (8 a.m. - 12 p.m.)</option>
+                          </>
+                        );
+                      }
                       return (
                         <>
                           <option value="Basic Package">Basic Package</option>
