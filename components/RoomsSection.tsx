@@ -13,6 +13,7 @@ export interface Room {
     basic_price?: number;
     full_price?: number;
     badge: string | null;
+    rooms?: number;
     beds: number;
     baths: number;
     guests: number;
@@ -46,7 +47,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
 
             const { data, error } = await supabase
                 .from("rooms")
-                .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
+                .select("*")
                 .order("created_at", { ascending: false });
 
             if (!isMounted) return;
@@ -161,8 +162,9 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                                         <div className="room-card-footer">
                                             <div className="room-card-price">RM{room.price} <span>/ night</span></div>
                                             <div className="room-card-features">
-                                                <span>{room.beds} Beds</span>
-                                                <span>{room.baths} Baths</span>
+                                                {room.rooms != null && <span>{room.rooms} {room.rooms === 1 ? 'Room' : 'Rooms'}</span>}
+                                                <span>{room.beds} {room.beds === 1 ? 'Bed' : 'Beds'}</span>
+                                                <span>{room.baths} {room.baths === 1 ? 'Bath' : 'Baths'}</span>
                                             </div>
                                         </div>
                                     </div>

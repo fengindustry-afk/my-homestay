@@ -43,6 +43,7 @@ export type RoomRow = {
   basic_price: number | null;
   full_price: number | null;
   badge: string | null;
+  rooms: number | null;
   beds: number | null;
   baths: number | null;
   guests: number | null;

@@ -185,8 +185,8 @@ export default function HomestayDetail({ params }: { params: Promise<{ id: strin
             <section className="bg-[#16171d] py-16 border-y border-white/5 mt-10">
                 <div className="max-w-7xl mx-auto px-6 lg:px-20 grid grid-cols-2 md:grid-cols-4 gap-8">
                     {[
-                        { icon: <Home size={28} />, title: "Modern Setup", desc: "Contemporary aesthetic." },
-                        { icon: <BedDouble size={28} />, title: `${room.beds || 3} Bedrooms`, desc: "Comfortable layout." },
+                        { icon: <Home size={28} />, title: room.rooms ? `${room.rooms} ${room.rooms === 1 ? 'Room' : 'Rooms'}` : "Modern Setup", desc: room.rooms ? "Total space." : "Contemporary aesthetic." },
+                        { icon: <BedDouble size={28} />, title: `${room.beds || 3} ${(room.beds || 3) === 1 ? 'Bedroom' : 'Bedrooms'}`, desc: "Comfortable layout." },
                         { icon: <User size={28} />, title: `Up to ${room.guests || 8} Guests`, desc: "Spacious enough." },
                         { icon: <CheckCircle size={28} />, title: "Build Success", desc: "Smart solutions." }
                     ].map((item, i) => (

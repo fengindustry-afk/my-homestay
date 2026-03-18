@@ -36,9 +36,11 @@ export default function Footer() {
                     {/* Quick Links */}
                     <div>
                         <h4 className="footer-title">Quick Links</h4>
-                        {["Home", "About Us", "Our Rooms", "Amenities", "Gallery", "Contact"].map((l) => (
-                            <a key={l} href={`#${l.toLowerCase().replace(/\s/g, "")}`} className="footer-link">{l}</a>
-                        ))}
+                        <a href="#home" className="footer-link">Home</a>
+                        <a href="#rooms" className="footer-link">Our Homestays</a>
+                        <a href="#amenities" className="footer-link">Amenities</a>
+                        <a href="#gallery" className="footer-link">Gallery</a>
+                        <a href="#contact" className="footer-link">Contact</a>
                     </div>
 
                     {/* Homestay Types */}

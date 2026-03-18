@@ -13,6 +13,7 @@ type RoomFormState = {
   basic_price: string;
   full_price: string;
   badge: string;
+  rooms: string;
   beds: string;
   baths: string;
   guests: string;
@@ -29,6 +30,7 @@ const emptyRoom: RoomFormState = {
   basic_price: "",
   full_price: "",
   badge: "",
+  rooms: "",
   beds: "",
   baths: "",
   guests: "",
@@ -68,7 +70,7 @@ export function RoomsPanel() {
       setLoading(true);
       const { data, error } = await supabase
         .from("rooms")
-        .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
+        .select("*")
         .order("created_at", { ascending: false });
       if (!error && isMounted) {
         setRooms((data || []) as RoomRow[]);
@@ -99,6 +101,7 @@ export function RoomsPanel() {
       basic_price: String(room.basic_price ?? ""),
       full_price: String(room.full_price ?? ""),
       badge: room.badge ?? "",
+      rooms: String(room.rooms ?? ""),
       beds: String(room.beds ?? ""),
       baths: String(room.baths ?? ""),
       guests: String(room.guests ?? ""),
@@ -186,7 +189,7 @@ export function RoomsPanel() {
 
         const refreshed = await supabase
           .from("rooms")
-          .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
+          .select("*")
           .order("created_at", { ascending: false });
         if (!refreshed.error) {
           setRooms((refreshed.data || []) as RoomRow[]);
@@ -273,6 +276,7 @@ export function RoomsPanel() {
       basic_price: Number(form.basic_price || 0),
       full_price: Number(form.full_price || 0),
       badge: form.badge || null,
+      rooms: Number(form.rooms || 0) || null,
       beds: Number(form.beds || 0),
       baths: Number(form.baths || 0),
       guests: Number(form.guests || 0),
@@ -295,7 +299,7 @@ export function RoomsPanel() {
 
     const refreshed = await supabase
       .from("rooms")
-      .select("id,title,type,location,price,basic_price,full_price,badge,beds,baths,guests,image,description,amenities")
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (!refreshed.error) {
@@ -374,7 +378,7 @@ export function RoomsPanel() {
                     <td className="px-2 py-1.5">{room.location}</td>
                     <td className="px-2 py-1.5">{room.price}</td>
                     <td className="px-2 py-1.5">
-                      {room.guests} guests · {room.beds} beds · {room.baths} baths
+                      {room.guests} guests · {room.rooms || 0} {(room.rooms || 0) === 1 ? 'room' : 'rooms'} · {room.beds} {room.beds === 1 ? 'bed' : 'beds'} · {room.baths} {room.baths === 1 ? 'bath' : 'baths'}
                     </td>
                     <td className="px-2 py-1.5 text-right space-x-2">
                       <button
@@ -480,6 +484,17 @@ export function RoomsPanel() {
               value={form.badge}
               onChange={(e) => handleChange("badge", e.target.value)}
               placeholder="Popular, Best Value, Exclusive…"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5 text-xs">
+            <span className="font-bold text-[var(--text-muted)] uppercase tracking-wider text-[10px]">Rooms</span>
+            <input
+              type="number"
+              min="0"
+              className="rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--surface)] px-4 py-3 text-sm font-medium focus:border-[var(--primary)] outline-none transition-all"
+              value={form.rooms}
+              onChange={(e) => handleChange("rooms", e.target.value)}
             />
           </label>
 
