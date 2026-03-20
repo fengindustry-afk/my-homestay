@@ -1,199 +1,168 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
-import { supabase } from "@/lib/supabaseClient";
 
 export interface Room {
-    id: number;
-    title: string;
-    type: string;
-    location: string;
-    price: number;
-    basic_price?: number;
-    full_price?: number;
-    badge: string | null;
-    rooms?: number;
-    beds: number;
-    baths: number;
-    guests: number;
-    image: string;
-    description?: string;
-    amenities?: string;
+  id: number;
+  title: string;
+  type: string;
+  location: string;
+  price: number;
+  basic_price?: number;
+  full_price?: number;
+  badge: string | null;
+  rooms?: number;
+  beds: number;
+  baths: number;
+  guests: number;
+  image: string;
+  description?: string;
+  amenities?: string;
 }
 
 interface RoomsSectionProps {
-    filterCriteria?: {
-        roomType: string;
-        guests: string;
-    };
-    onSearch?: (criteria: any) => void;
-    onReset?: () => void;
+  filterCriteria?: { roomType: string; guests: string };
+  onSearch?: (criteria: any) => void;
+  onReset?: () => void;
 }
 
 export default function RoomsSection({ filterCriteria, onSearch, onReset }: RoomsSectionProps) {
-    const [rooms, setRooms] = useState<Room[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [loadError, setLoadError] = useState<string | null>(null);
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-        let isMounted = true;
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const { data, error } = await supabase
+          .from("rooms")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-        async function loadRooms() {
-            setLoading(true);
-            setLoadError(null);
+        if (error) throw error;
+        setRooms((data || []) as Room[]);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRooms();
+  }, []);
 
-            const { data, error } = await supabase
-                .from("rooms")
-                .select("*")
-                .order("created_at", { ascending: false });
+  const filteredRooms = useMemo(() => {
+    if (!filterCriteria) return rooms;
+    return rooms.filter((room) => {
+      const matchesType = filterCriteria.roomType === "All Types" || room.type.trim() === filterCriteria.roomType;
+      const matchesGuests = room.guests >= parseInt(filterCriteria.guests);
+      return matchesType && matchesGuests;
+    });
+  }, [rooms, filterCriteria]);
 
-            if (!isMounted) return;
+  const openBooking = (room: Room) => {
+    setSelectedRoom(room);
+    setIsModalOpen(true);
+  };
 
-            if (error) {
-                setLoadError(error.message);
-                setRooms([]);
-            } else {
-                setRooms((data || []) as Room[]);
-            }
-            setLoading(false);
-        }
+  return (
+    <section id="rooms" className="section bg-[var(--surface)]">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="text-center mb-16">
+          <p className="section-tag">Curated Inventory</p>
+          <h2 className="section-title">Boutique <span className="text-[var(--accent)]">Accommodations</span></h2>
+          <p className="text-[var(--text-muted)] max-w-2xl mx-auto">
+            From private beach-side villas to eco-friendly garden stays, discover our handpicked selection for your 2026 Selangor staycation.
+          </p>
+        </div>
 
-        void loadRooms();
+        <div className="mb-12">
+          <SearchBar onSearch={onSearch} />
+        </div>
 
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-    const filteredRooms = useMemo(() => {
-        if (!filterCriteria) return rooms;
-
-        return rooms.filter(room => {
-            const matchesType = filterCriteria.roomType === "All Types" || room.type.trim() === filterCriteria.roomType;
-
-            const guestCount = parseInt(filterCriteria.guests);
-            const matchesGuests = room.guests >= guestCount;
-
-            return matchesType && matchesGuests;
-        });
-    }, [filterCriteria, rooms]);
-
-    const handleBook = (room: Room) => {
-        setSelectedRoom(room);
-        setIsModalOpen(true);
-    };
-
-    return (
-        <>
-            <section id="rooms" className="section">
-                <div className="mx-auto max-w-7xl px-6">
-                    <div className="mb-14 text-center">
-                        <p className="section-tag">Our Homestays</p>
-
-                        <h2 className="section-title" style={{ maxWidth: 600, margin: "0 auto 16px" }}>
-                            {filterCriteria ? "Search Results" : "Handpicked Homestays for "}
-                            {!filterCriteria && <span style={{ color: "var(--accent)" }}>Every Taste</span>}
-                        </h2>
-
-                        {filterCriteria && (
-                            <div className="mb-6">
-                                <button
-                                    onClick={onReset}
-                                    className="text-sm font-medium text-[var(--accent)] hover:underline flex items-center justify-center gap-1 mx-auto"
-                                >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                                        <path d="M3 3v5h5" />
-                                    </svg>
-                                    Reset Search
-                                </button>
-                            </div>
-                        )}
-
-                        <p className="section-description" style={{ maxWidth: 520, margin: "0 auto" }}>
-                            {loading ? (
-                                "Searching our collection for the perfect homestays..."
-                            ) : filteredRooms.length > 0 ? (
-                                "Discover the perfect space for your stay. Every homestay is designed with comfort and style in mind."
-                            ) : filterCriteria ? (
-                                "No homestays match your search criteria. Please try different filters."
-                            ) : (
-                                "Our collection of featured homestays is being prepared. Please check back shortly!"
-                            )}
-                        </p>
-                    </div>
-
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {loading ? (
-                            <p className="text-center text-sm text-[var(--text-muted)] md:col-span-2 lg:col-span-3">
-                                Loading homestays…
-                            </p>
-                        ) : loadError ? (
-                            <p className="text-center text-sm text-red-500 md:col-span-2 lg:col-span-3">
-                                Could not load homestays: {loadError}
-                            </p>
-                        ) : (
-                            filteredRooms.map((room) => (
-                                <div key={room.id} className="room-card animate-scale-in" id={`room-card-${room.id}`} onClick={() => handleBook(room)}>
-                                    <div style={{ position: "relative", overflow: "hidden" }}>
-                                        <img src={room.image} alt={room.title} className="room-card-image" loading="lazy" />
-                                        <div className="room-card-overlay" />
-                                        {room.badge && <div className="room-card-badge">{room.badge}</div>}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 hover:opacity-100" style={{ background: "rgba(0,0,0,0.3)" }}>
-                                            <button className="rounded-full bg-white px-6 py-2 text-sm font-bold uppercase text-[var(--primary)] shadow-lg transition-transform hover:scale-105">
-                                                Book Now
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="room-card-content">
-                                        <div className="room-card-type">{room.type}</div>
-                                        <h3 className="room-card-title">{room.title}</h3>
-                                        <div className="room-card-location">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                                <circle cx="12" cy="10" r="3" />
-                                            </svg>
-                                            {room.location}
-                                        </div>
-                                        <div className="room-card-divider" />
-                                        <div className="room-card-footer">
-                                            <div className="room-card-price">RM{room.price} <span>/ night</span></div>
-                                            <div className="room-card-features">
-                                                {room.rooms != null && <span>{room.rooms} {room.rooms === 1 ? 'Room' : 'Rooms'}</span>}
-                                                <span>{room.beds} {room.beds === 1 ? 'Bed' : 'Beds'}</span>
-                                                <span>{room.baths} {room.baths === 1 ? 'Bath' : 'Baths'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-
-                    {filterCriteria && filteredRooms.length === 0 && (
-                        <div className="mt-12 text-center">
-                            <button onClick={onReset} className="btn-dark">
-                                Reset Filters
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="mt-16">
-                        <SearchBar onSearch={onSearch} />
-                    </div>
+        {loading ? (
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse bg-white h-96 rounded-[2rem]"></div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 text-red-500">Error loading rooms: {error}</div>
+        ) : (
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+            {filteredRooms.map((room) => (
+              <div key={room.id} className="bg-white organic-card shadow-sm hover:shadow-xl transition-all group cursor-pointer" onClick={() => openBooking(room)}>
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={room.image}
+                    alt={room.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  {room.badge && (
+                    <span className="absolute top-4 left-4 bg-[var(--accent)] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                      {room.badge}
+                    </span>
+                  )}
+                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl">
+                    <span className="text-sm font-bold text-[var(--primary)]">RM {room.price}</span>
+                    <span className="text-[10px] text-[var(--text-muted)] ml-1">/ night</span>
+                  </div>
                 </div>
-            </section>
+                <div className="p-8">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--accent)] mb-2">{room.type}</div>
+                  <h3 className="font-serif text-2xl mb-2 text-[var(--primary)]">{room.title}</h3>
+                  <p className="text-sm text-[var(--text-muted)] mb-6 line-clamp-2">
+                    {room.description || "A boutique experience designed for comfort and nature-distilled luxury in Banting."}
+                  </p>
+                  <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
+                    <div className="flex gap-4 text-[var(--text-muted)]">
+                      <span className="flex items-center gap-1 text-xs">
+                        <strong>{room.guests}</strong> Guests
+                      </span>
+                      <span className="flex items-center gap-1 text-xs">
+                        <strong>{room.beds}</strong> Beds
+                      </span>
+                    </div>
+                    <button
+                      className="text-[var(--accent)] font-bold text-sm hover:text-[var(--accent-dark)] transition-colors flex items-center gap-1"
+                    >
+                      Book Now
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-            {selectedRoom && (
-                <BookingModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    room={selectedRoom}
-                />
-            )}
-        </>
-    );
+        {filteredRooms.length === 0 && !loading && (
+          <div className="text-center py-20">
+            <p className="text-[var(--text-muted)] mb-4">No rooms match your criteria.</p>
+            <button onClick={onReset} className="text-[var(--accent)] font-bold underline">Reset Filters</button>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile-First Sticky Book Now Button */}
+      <div className="md:hidden mobile-book-now">
+        <a href="#rooms" className="w-full btn-primary justify-center rounded-full py-5 text-lg shadow-2xl">
+          Book Your 2026 Stay
+        </a>
+      </div>
+
+      {selectedRoom && (
+        <BookingModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          room={selectedRoom}
+        />
+      )}
+    </section>
+  );
 }
