@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import BannerPopup from "@/components/BannerPopup";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import Script from 'next/script';
 
@@ -69,7 +68,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <BannerPopup />
           <SpeedInsights />
         </ThemeProvider>
         <Script

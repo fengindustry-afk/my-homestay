@@ -39,6 +39,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Pin the workspace root to this project so Next.js doesn't infer it from a
+  // stray parent lockfile (D:\Project 1\package-lock.json).
+  turbopack: {
+    root: __dirname,
+  },
   // Hide the framework version (equivalent to Nginx 'server_tokens off').
   poweredByHeader: false,
   images: {
