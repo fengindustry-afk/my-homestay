@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { calculatePrice } from '@/lib/price-utils';
+import { readJsonBody } from '@/lib/readJsonBody';
 import crypto from 'crypto';
 
 const supabase = createClient(
@@ -10,7 +11,9 @@ const supabase = createClient(
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: body, error: bodyError } = await readJsonBody<any>(req);
+    if (bodyError) return bodyError;
     const {
       listingId,
       price: clientPrice, // We'll validate this

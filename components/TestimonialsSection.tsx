@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const testimonials = [
     {
         name: "Haqeem Noorazli",
@@ -55,11 +57,12 @@ export default function TestimonialsSection() {
                             </div>
                             <p className="testimonial-text">{t.text}</p>
                             <div className="testimonial-author">
-                                <img
+                                <Image
                                     src={t.avatar}
-                                    alt={t.name}
+                                    alt={`${t.name}, ${t.role} guest`}
+                                    width={48}
+                                    height={48}
                                     className="testimonial-avatar"
-                                    loading="lazy"
                                 />
                                 <div>
                                     <div className="testimonial-name">{t.name}</div>

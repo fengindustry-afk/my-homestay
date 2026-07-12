@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 
 export default function AboutSection() {
     const [showCert, setShowCert] = useState(false);
@@ -65,10 +66,12 @@ export default function AboutSection() {
                                 boxShadow: "var(--shadow-lg)",
                             }}
                         >
-                            <img
+                            <Image
                                 src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Langit.jpg"
-                                alt="Langit"
-                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                alt="Evening view of the Indah Morib homestay grounds"
+                                fill
+                                sizes="(max-width: 1024px) 65vw, 33vw"
+                                style={{ objectFit: "cover" }}
                             />
                         </div>
                         <div
@@ -84,10 +87,12 @@ export default function AboutSection() {
                                 border: "6px solid white",
                             }}
                         >
-                            <img
+                            <Image
                                 src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H5.jpg"
-                                alt="Homestay 5"
-                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                alt="Interior of a homestay unit at Indah Morib"
+                                fill
+                                sizes="(max-width: 1024px) 55vw, 28vw"
+                                style={{ objectFit: "cover" }}
                             />
                         </div>
 
@@ -270,7 +275,8 @@ export default function AboutSection() {
                     style={{
                         background: "#fff",
                         borderRadius: "var(--radius-md)",
-                        boxShadow: "var(--shadow-sm)",
+                        boxShadow: "var(--shadow-md)",
+                        border: "1px solid var(--border)",
                         padding: "16px 0",
                     }}
                 >

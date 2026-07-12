@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { verifyStaff } from '@/lib/auth-utils';
+import { readJsonBody } from '@/lib/readJsonBody';
 
 export async function GET() {
   try {
@@ -57,7 +58,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: body, error: bodyError } = await readJsonBody<any>(request);
+    if (bodyError) return bodyError;
 
     // Whitelist allowed fields to prevent object injection
     const payload = {
@@ -105,7 +108,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: body, error: bodyError } = await readJsonBody<any>(request);
+    if (bodyError) return bodyError;
     const { id } = body;
 
     if (!id) {

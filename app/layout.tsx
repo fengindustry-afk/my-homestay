@@ -19,6 +19,14 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://indahmoribhomestay.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   title: "Indah Morib Homestay — Your Home Away From Home",
   description:
     "Experience luxurious homestay living in Malaysia. Beautifully designed rooms, world-class amenities, and unforgettable memories await you at Indah Morib Homestay.",
@@ -48,6 +56,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        {/* Without JS, scroll-reveal can't fire — show everything up front. */}
+        <noscript>
+          <style>{`.reveal{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
+      </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
         <ThemeProvider
           attribute="class"

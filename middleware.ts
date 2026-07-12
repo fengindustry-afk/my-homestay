@@ -1,8 +1,35 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { rateLimit, sweepExpired } from '@/lib/rateLimit';
+
+// Best-effort edge rate limit on the server API surface (mirrors the rawsec
+// Nginx `limit_req` zones). 60 requests / minute per IP across /api/*.
+const API_LIMIT = 60;
+const API_WINDOW_MS = 60_000;
+
+function clientIp(request: NextRequest): string {
+  const xff = request.headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+  return request.headers.get('x-real-ip') ?? 'unknown';
+}
 
 export async function middleware(request: NextRequest) {
-  console.log(`[Middleware] Request for: ${request.nextUrl.pathname}`);
+  const { pathname } = request.nextUrl;
+
+  // --- Rate limit the API surface ---
+  if (pathname.startsWith('/api/')) {
+    sweepExpired();
+    const result = rateLimit(`${clientIp(request)}:api`, API_LIMIT, API_WINDOW_MS);
+    if (!result.ok) {
+      return new NextResponse('Too Many Requests', {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+        },
+      });
+    }
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -18,8 +45,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          console.log(`[Middleware] Setting ${cookiesToSet.length} cookies`);
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({
             request: {
               headers: request.headers,
@@ -33,41 +59,30 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  console.log(`[Middleware] Cookies present:`, request.cookies.getAll().map(c => c.name));
-
-  console.log(`[Middleware] Getting session...`);
   const { data: { session } } = await supabase.auth.getSession();
-  console.log(`[Middleware] Session: ${session ? 'exists' : 'null'}`);
 
   // Protect /finest-touch routes
-  if (request.nextUrl.pathname.startsWith('/finest-touch')) {
+  if (pathname.startsWith('/finest-touch')) {
     const isAuthPage =
-      request.nextUrl.pathname === '/finest-touch/login' ||
-      request.nextUrl.pathname.startsWith('/finest-touch/forgot') ||
-      request.nextUrl.pathname.startsWith('/finest-touch/reset');
-
-    console.log(`[Middleware] Path: ${request.nextUrl.pathname}, isAuthPage: ${isAuthPage}`);
+      pathname === '/finest-touch/login' ||
+      pathname.startsWith('/finest-touch/forgot') ||
+      pathname.startsWith('/finest-touch/reset');
 
     if (!session && !isAuthPage) {
-      console.log(`[Middleware] No session and not auth page, redirecting to login`);
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/finest-touch/login';
-      redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname);
+      redirectUrl.searchParams.set('redirectedFrom', pathname);
       return NextResponse.redirect(redirectUrl);
     }
 
     if (session && !isAuthPage) {
-      console.log(`[Middleware] Session exists, checking role for user ${session.user.id}`);
-      const { data: userData, error: roleError } = await supabase
+      const { data: userData } = await supabase
         .from('users')
         .select('role')
         .eq('id', session.user.id)
         .single();
 
-      console.log(`[Middleware] User record:`, userData, roleError ? roleError.message : 'ok');
-
       if (!userData || (userData.role !== 'admin' && userData.role !== 'staff')) {
-        console.log(`[Middleware] Unauthorized role or no user record, signing out and redirecting`);
         await supabase.auth.signOut();
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = '/finest-touch/login';
@@ -77,7 +92,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  console.log(`[Middleware] Proceeding to ${request.nextUrl.pathname}`);
   return response;
 }
 

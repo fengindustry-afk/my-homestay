@@ -1,23 +1,25 @@
+import Image from "next/image";
+
 const images = [
     {
         src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H3.jpg",
-        alt: "Homestay 3",
+        alt: "Interior of a homestay unit at Indah Morib",
     },
     {
         src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H4.jpg",
-        alt: "Dewan",
+        alt: "The dewan (multipurpose hall) at Indah Morib",
     },
     {
         src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Event.jpg",
-        alt: "Event",
+        alt: "Hall set up for a family event",
     },
     {
         src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Wdding.jpg",
-        alt: "Wedding",
+        alt: "Wedding reception held at the compound",
     },
     {
         src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Pool3.jpg",
-        alt: "Pool H3",
+        alt: "Private pool area at the homestay",
     },
 ];
 
@@ -46,10 +48,11 @@ export default function GallerySection() {
                 <div className="gallery-grid">
                     {images.map((img, i) => (
                         <div key={i} className="gallery-item" id={`gallery-item-${i}`}>
-                            <img
+                            <Image
                                 src={img.src}
                                 alt={img.alt}
-                                loading="lazy"
+                                fill
+                                sizes={i === 0 ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 25vw"}
                             />
                         </div>
                     ))}

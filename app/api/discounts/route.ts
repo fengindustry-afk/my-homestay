@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { verifyAdmin } from '@/lib/auth-utils';
+import { readJsonBody } from '@/lib/readJsonBody';
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,7 +39,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: body, error: bodyError } = await readJsonBody<any>(request);
+    if (bodyError) return bodyError;
     const { discount_date, percentage } = body;
     const room_id = Number(body.room_id);
 
@@ -103,7 +106,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: body, error: bodyError } = await readJsonBody<any>(request);
+    if (bodyError) return bodyError;
     const { discount_date } = body;
     const room_id = Number(body.room_id);
 

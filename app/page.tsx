@@ -11,6 +11,7 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import Reveal from "@/components/Reveal";
 
 export default function Home() {
   const [filterCriteria, setFilterCriteria] = useState<{ roomType: string; guests: string } | undefined>(undefined);
@@ -23,16 +24,26 @@ export default function Home() {
     <>
       <Navbar />
       <HeroSection />
-      <AboutSection />
+      <Reveal>
+        <AboutSection />
+      </Reveal>
       <RoomsSection
         filterCriteria={filterCriteria}
         onSearch={handleSearch}
         onReset={() => setFilterCriteria(undefined)}
       />
-      <AmenitiesSection />
-      <GallerySection />
-      <TestimonialsSection />
-      <CTASection />
+      <Reveal>
+        <AmenitiesSection />
+      </Reveal>
+      <Reveal>
+        <GallerySection />
+      </Reveal>
+      <Reveal>
+        <TestimonialsSection />
+      </Reveal>
+      <Reveal>
+        <CTASection />
+      </Reveal>
       <Footer />
       <ScrollToTop />
     </>

@@ -27,11 +27,12 @@ export default function Footer() {
                         </p>
                         <div className="footer-social">
                             <a href="https://facebook.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Facebook">Fb</a>
-                            <a href="https://instagram.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Ig</a>
-                            <a href="https://x.com/indahmorib" target="_blank" rel="noopener noreferrer" aria-label="X">X</a>
-                            <a href="https://youtube.com/@indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="YouTube">Yt</a>
                         </div>
                     </div>
+                    {/*<a href="https://instagram.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Ig</a>
+                    //<a href="https://x.com/indahmorib" target="_blank" rel="noopener noreferrer" aria-label="X">X</a>
+                    //<a href="https://youtube.com/@indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="YouTube">Yt</a>
+                    */}
 
                     {/* Quick Links */}
                     <div>
@@ -61,6 +62,7 @@ export default function Footer() {
                         </p>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.8 }}>
                             +60 11-5757 2001<br />
+                            +60 11-5504 3280<br />
                             indahmoribhomestay@gmail.com
                         </p>
                     </div>

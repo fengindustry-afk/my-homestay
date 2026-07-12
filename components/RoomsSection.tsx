@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
@@ -137,15 +138,35 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                             </p>
                         ) : (
                             filteredRooms.map((room) => (
-                                <div key={room.id} className="room-card animate-scale-in" id={`room-card-${room.id}`} onClick={() => handleBook(room)}>
-                                    <div style={{ position: "relative", overflow: "hidden" }}>
-                                        <img src={room.image} alt={room.title} className="room-card-image" loading="lazy" />
+                                <div
+                                    key={room.id}
+                                    className="room-card animate-scale-in"
+                                    id={`room-card-${room.id}`}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`Book ${room.title} — RM${room.price} per night`}
+                                    onClick={() => handleBook(room)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            handleBook(room);
+                                        }
+                                    }}
+                                >
+                                    <div className="room-card-media">
+                                        <Image
+                                            src={room.image}
+                                            alt={room.title}
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                            className="room-card-image"
+                                        />
                                         <div className="room-card-overlay" />
                                         {room.badge && <div className="room-card-badge">{room.badge}</div>}
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 hover:opacity-100" style={{ background: "rgba(0,0,0,0.3)" }}>
-                                            <button className="rounded-full bg-white px-6 py-2 text-sm font-bold uppercase text-[var(--primary)] shadow-lg transition-transform hover:scale-105">
+                                            <span className="rounded-full bg-white px-6 py-2 text-sm font-bold uppercase text-[var(--primary)] shadow-lg" aria-hidden="true">
                                                 Book Now
-                                            </button>
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="room-card-content">
