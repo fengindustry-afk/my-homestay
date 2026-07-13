@@ -23,7 +23,11 @@ function verifySignature(params: URLSearchParams, signature: string) {
   const hmac = crypto.createHmac('sha256', secret);
   const hash = hmac.update(sortedParams).digest('hex');
 
-  return hash === signature;
+  // Constant-time comparison to avoid leaking the signature via timing.
+  const hashBuf = Buffer.from(hash, 'utf8');
+  const sigBuf = Buffer.from(signature, 'utf8');
+  if (hashBuf.length !== sigBuf.length) return false;
+  return crypto.timingSafeEqual(hashBuf, sigBuf);
 }
 
 export async function POST(req: Request) {

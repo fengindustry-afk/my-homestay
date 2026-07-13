@@ -169,17 +169,7 @@ export async function POST(req: Request) {
         .digest('hex');
 
       billPayload.x_signature = signature;
-      console.log("Generated X-Signature for bill creation:", signature);
     }
-
-    console.log(`Initializing Billplz ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} payment with:`, {
-      url: billplzUrl,
-      collection_id: collectionId,
-      mobile: guestPhone,
-      name: guestName,
-      amount: billPayload.amount,
-      hasSignature: !!billPayload.x_signature
-    });
 
     const res = await fetch(billplzUrl, {
       method: 'POST',
@@ -194,11 +184,8 @@ export async function POST(req: Request) {
 
     if (!bill.url) {
       console.error("Billplz Initialization Failed:", bill);
-      const errorMessage = bill.error?.message || "Unknown Billplz error";
       return NextResponse.json({
-        error: "Failed to initialize payment",
-        detail: errorMessage,
-        billplz_response: bill
+        error: "Failed to initialize payment. Please try again."
       }, { status: 500 });
     }
 

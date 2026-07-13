@@ -42,10 +42,10 @@ export async function GET() {
       rooms: roomsData || [],
       bookings: bookingsData || []
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Final API Error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch bookings' },
+      { error: 'Failed to fetch bookings' },
       { status: 500 }
     );
   }
@@ -92,10 +92,10 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json({ data: data[0] });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating booking:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to create booking' },
+      { error: 'Failed to create booking' },
       { status: 500 }
     );
   }
@@ -145,10 +145,10 @@ export async function PUT(request: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json({ data: data[0] });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating booking:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to update booking' },
+      { error: 'Failed to update booking' },
       { status: 500 }
     );
   }

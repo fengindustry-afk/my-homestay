@@ -2,7 +2,6 @@
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
@@ -11,7 +10,6 @@ function PaymentStatusContent() {
 
     // Billplz typically appends billplz[id] and billplz[paid]
     const billId = searchParams.get("billplz[id]");
-    const isPaid = searchParams.get("billplz[paid]") === "true";
 
     useEffect(() => {
         async function verifyStatus() {
@@ -20,37 +18,31 @@ function PaymentStatusContent() {
                 return;
             }
 
-            if (isPaid) {
-                // 1. Mark as paid immediately in the UI/DB as a fast-track update
-                const { data, error: updateError } = await supabase
-                    .from("bookings")
-                    .update({ payment_status: "paid" })
-                    .eq("billplz_id", billId)
-                    .select("*, rooms(title)")
-                    .single();
+            // Confirmation is verified server-side against Billplz. The client no
+            // longer touches the bookings table directly (payment status is owned
+            // by the signed webhook), so guest PII is never exposed to the anon key.
+            try {
+                const res = await fetch("/api/booking-status", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ billId }),
+                });
+                const result = await res.json();
 
-                if (updateError) {
-                    console.error("Fast-track update error:", updateError);
-                    // If update fails but it was paid according to URL, we still show success
-                    // but we might not have booking details.
+                if (res.ok && result.status === "success") {
+                    if (result.booking) setBookingDetails(result.booking);
+                    setStatus("success");
+                } else {
+                    setStatus("failed");
                 }
-
-                if (data) setBookingDetails(data);
-                setStatus("success");
-            } else {
+            } catch (error) {
+                console.error("Payment verification failed:", error);
                 setStatus("failed");
-                // IMPORTANT: Delete the pending booking if it failed/was cancelled
-                // to keep the database clean as requested ("booking slot should be empty")
-                await supabase
-                    .from("bookings")
-                    .delete()
-                    .eq("billplz_id", billId)
-                    .eq("payment_status", "awaiting_payment");
             }
         }
 
         verifyStatus();
-    }, [billId, isPaid]);
+    }, [billId]);
 
     if (status === "loading") {
         return (

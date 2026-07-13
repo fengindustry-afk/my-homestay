@@ -32,10 +32,8 @@ export async function verifyAdmin() {
     });
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log('[verifyAdmin] User result:', { hasUser: !!user, error: userError });
 
     if (userError || !user) {
-        console.log('[verifyAdmin] No user or error');
         return { authenticated: false, role: null, isAdmin: false };
     }
 
@@ -46,11 +44,8 @@ export async function verifyAdmin() {
         .select('role')
         .eq('id', user.id)
         .single();
-    
-    console.log('[verifyAdmin] User data check:', { userData, roleError });
 
     if (roleError || !userData || userData.role !== 'admin') {
-        console.log('[verifyAdmin] Not an admin or error:', { role: userData?.role, roleError });
         return { authenticated: true, role: userData?.role || null, isAdmin: false };
     }
 

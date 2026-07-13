@@ -43,3 +43,9 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# throwaway dev/debug scripts (never commit — may touch the DB or hold keys)
+check_*.mjs
+debug_*.mjs
+tmp_*.mjs
+mock_*.mjs
