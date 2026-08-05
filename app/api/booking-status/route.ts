@@ -20,6 +20,8 @@ interface BillplzBill {
   id: string;
   paid: boolean;
   state: string;
+  paid_amount?: string;
+  amount?: string;
 }
 
 export async function POST(req: Request) {
@@ -67,8 +69,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ status: 'failed' });
   }
 
-  // 3. Paid -> return ONLY the fields the confirmation UI needs. Never IC
-  //    number or internal/payment columns.
+  // 3. Paid -> fall back to writing payment_status ourselves, since the
+  //    webhook (/api/callback) can be delayed or fail to arrive. We've just
+  //    confirmed payment authoritatively with Billplz above, so this is safe.
+  const amountCents = parseInt(bill.paid_amount || bill.amount || '0');
+  await supabase
+    .from('bookings')
+    .update({
+      payment_status: 'paid',
+      amount_paid: amountCents / 100,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('billplz_id', billId)
+    .eq('payment_status', 'awaiting_payment');
+
+  // Return ONLY the fields the confirmation UI needs. Never IC number or
+  // internal/payment columns.
   const { data: booking, error } = await supabase
     .from('bookings')
     .select('unit_name, guest_name, guest_email, check_in, check_out, package_name, total_price, rooms(title)')
