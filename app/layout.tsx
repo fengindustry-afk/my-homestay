@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
 
 const inter = Inter({
@@ -69,6 +70,7 @@ export default function RootLayout({
         >
           {children}
           <SpeedInsights />
+          <Analytics />
         </ThemeProvider>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-N4W8198R6K"
