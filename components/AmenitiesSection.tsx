@@ -2,13 +2,16 @@ const amenities = [
     {
         icon: (
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-3.57.5-5C12.5 6 14 8 13.5 10c-.307 1.226-1.5 2-1.5 3a2.5 2.5 0 002.5 2.5" />
-                <path d="M12 14.5V20" />
-                <circle cx="12" cy="12" r="10" />
+                {/* lucide waves-ladder: pool ladder over water */}
+                <path d="M19 5a2 2 0 0 0-2 2v11" />
+                <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                <path d="M7 13h10" />
+                <path d="M7 9h10" />
+                <path d="M9 5a2 2 0 0 0-2 2v11" />
             </svg>
         ),
-        title: "Swimming Pool",
-        desc: "Relax in our stunning infinity pool with panoramic views",
+        title: "Swimming Pools",
+        desc: "Several pools on the compound, and some are covered for privacy",
     },
     {
         icon: (
@@ -97,25 +100,21 @@ export default function AmenitiesSection() {
             style={{ background: "var(--surface)" }}
         >
             <div className="mx-auto max-w-7xl px-6">
-                <div className="mb-14 text-center">
-                    <p className="section-tag">Amenities</p>
-                    <h2
-                        className="section-title"
-                        style={{ maxWidth: 500, margin: "0 auto 16px" }}
-                    >
-                        Everything You{" "}
-                        <span style={{ color: "var(--accent)" }}>Need</span>
-                    </h2>
-                    <p
-                        className="section-description"
-                        style={{ maxWidth: 520, margin: "0 auto" }}
-                    >
-                        We&apos;ve thought of every detail to make your stay perfect.
-                        From premium amenities to thoughtful touches.
-                    </p>
+                <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
+                    <div className="lg:col-span-7" data-reveal>
+                        <p className="section-tag">03 &nbsp;/&nbsp; Amenities</p>
+                        <h2 className="section-title" style={{ maxWidth: 560 }}>
+                            Everything you <em style={{ color: "var(--accent)" }}>need</em>, already here
+                        </h2>
+                    </div>
+                    <div className="lg:col-span-5" data-reveal data-reveal-delay="120">
+                        <p className="section-description">
+                            The details that decide whether a stay is comfortable or merely adequate.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-stagger>
                     {amenities.map((a) => (
                         <div key={a.title} className="amenity-card" id={`amenity-${a.title.toLowerCase().replace(/\s+/g, "-")}`}>
                             <div className="amenity-icon">{a.icon}</div>

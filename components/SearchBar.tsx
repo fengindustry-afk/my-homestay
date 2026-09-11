@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
 
+import type { SearchCriteria } from "./RoomsSection";
+
 interface SearchBarProps {
-    onSearch?: (criteria: any) => void;
+    onSearch?: (criteria: SearchCriteria) => void;
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
@@ -21,8 +23,8 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     };
 
     return (
-        <div className="mx-auto max-w-6xl px-6 mb-10">
-            <div className="search-bar animate-fade-up delay-400">
+        <div className="mx-auto max-w-6xl">
+            <div className="search-bar">
                 <div className="search-bar-field">
                     <label className="search-bar-label">Check-in</label>
                     <input type="date" className="search-bar-input" defaultValue={new Date().toISOString().split('T')[0]} />

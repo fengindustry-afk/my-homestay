@@ -1,56 +1,122 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   Tokens
+
+   Dark is the default, so :root carries the dark values and .light overrides.
+   The other way round would flash cream on every load: next-themes can only
+   put the class on <html> after hydration, and :root is what SSR ships with.
+   =========================================================================== */
+
 :root {
-  --background: #FDFAF6;
-  --foreground: #1A2318;
-  --primary: #1A2318;
-  --primary-light: #4A5548;
-  --accent: #C4993E;
-  --accent-dark: #A07E2F;
-  --accent-light: #E8D49A;
-  --forest: #2D4A3A;
+  /* Lifted off pure black on purpose. A near-black ground pushes body copy past
+     14:1, and that much contrast makes light text bloom against the background
+     (halation) — it reads as harsh and is tiring over a long page. Sitting the
+     black point around #141714 brings body copy into the 7-9:1 range, which is
+     the comfortable band for dark themes, and lets the surface steps actually
+     be visible instead of all reading as "black".
+     The faint green cast stays: the compound is riverside, and it keeps the
+     greens in the photography from looking like a colour cast. */
+  --background: #141714;
+  --surface: #1B1F1B;
+  --surface-dark: #222722;
+  --surface-raised: #2A302A;
+
+  --foreground: #E9E6E0;
+  --primary: #E9E6E0;
+  --primary-light: #C5C1B9;
+  /* Neutral-warm rather than green-tinted. Saturated grey-green at low
+     lightness is what made the muted copy look muddy. 7.7:1 on --background,
+     7.1:1 on --surface. */
+  --text-muted: #A6ABA4;
+
+  /* Champagne rather than brass. The old #D4AF61 was saturated enough to
+     vibrate against a very dark ground. */
+  --accent: #D9BE7E;
+  --accent-dark: #BFA05C;
+  --accent-light: #EBD9AE;
+  --accent-contrast: #141714;
+
+  --forest: #1F2E25;
   --water: #4F7B72;
-  --surface: #F4EFE8;
-  --surface-dark: #EDE8DF;
-  --text-muted: #8A9488;
-  --border: #D9D2C8;
-  --overlay: rgba(26, 35, 24, 0.50);
-  --shadow-sm: 0 1px 4px rgba(26, 35, 24, 0.08);
-  --shadow-md: 0 4px 16px rgba(26, 35, 24, 0.10);
-  --shadow-lg: 0 12px 40px rgba(26, 35, 24, 0.14);
-  --shadow-xl: 0 24px 64px rgba(26, 35, 24, 0.18);
-  --shadow-gold: 0 8px 28px rgba(196, 153, 62, 0.30);
+  --border: #2E332E;
+  --border-strong: #3F453F;
+  --overlay: rgba(10, 12, 10, 0.78);
+
+  /* Fed into the WebGL background so it re-tints with the theme. */
+  --shader-base: #141714;
+  --shader-deep: #1E2A24;
+  --shader-glow: #D9BE7E;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.50);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.58);
+  --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.65);
+  --shadow-gold: 0 10px 34px rgba(212, 175, 97, 0.26);
+
   --radius-sm: 4px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+
+  /* Shared geometry for the fixed floating buttons. They used to hardcode their
+     own offsets independently, which is how the scroll-top button ended up
+     sitting on top of the WhatsApp one. */
+  --float-inset: 20px;
+  --float-size: 58px;
+  --float-gap: 12px;
+
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-medium: 0.26s cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-slow: 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 0.15s var(--ease);
+  --transition-medium: 0.26s var(--ease);
+  --transition-slow: 0.42s var(--ease);
 }
 
-.dark {
-  --background: #0D1410;
-  --foreground: #E4E0D8;
-  --primary: #E4E0D8;
-  --primary-light: #B0ACA4;
-  --accent: #D4A94E;
-  --accent-dark: #C4993E;
-  --accent-light: #3A2D18;
-  --forest: #152018;
-  --water: #3D6B62;
-  --surface: #141C11;
-  --surface-dark: #1A2118;
-  --text-muted: #7A8478;
-  --border: #2A3228;
-  --overlay: rgba(0, 0, 0, 0.72);
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.30);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.50);
-  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.60);
-  --shadow-gold: 0 8px 28px rgba(212, 169, 78, 0.20);
+.light {
+  --background: #FDFAF6;
+  --surface: #F4EFE8;
+  --surface-dark: #EDE8DF;
+  --surface-raised: #FFFFFF;
+
+  --foreground: #1A2318;
+  --primary: #1A2318;
+  --primary-light: #414B3F;
+  /* Both of these are measured against --surface (#F4EFE8), not --background.
+     Most body copy and every card sits on the surface tone, so checking against
+     the lighter page ground overstates the contrast by roughly half a point. */
+  --text-muted: #5F6A5E;
+  /* 4.9:1 on --surface */
+
+  --accent: #8A6717;
+  /* 4.6:1 on --surface — small uppercase labels use this */
+  --accent-dark: #6E5212;
+  --accent-light: #C4993E;
+  --accent-contrast: #FFFFFF;
+
+  --forest: #2D4A3A;
+  --water: #4F7B72;
+  --border: #D9D2C8;
+  --border-strong: #C4BCAE;
+  --overlay: rgba(26, 35, 24, 0.50);
+
+  /* The light shader runs a different lighting model, so these three mean
+     something different than they do on dark. There, --glow is emitted light
+     added on top of a dark ground. Here it is the sunlit highlight and --deep
+     is the shade the ripples cast, with --base the lit floor between them:
+     bright lanes over warm shade, the way caustics actually look on a pale
+     pool floor. --base sits close to --background so the hero panel does not
+     read as a lighter box pasted onto the page. */
+  --shader-base: #F2EADA;
+  --shader-deep: #D2C1A0;
+  --shader-glow: #FFFFFC;
+
+  --shadow-sm: 0 1px 4px rgba(26, 35, 24, 0.08);
+  --shadow-md: 0 4px 16px rgba(26, 35, 24, 0.10);
+  --shadow-lg: 0 12px 40px rgba(26, 35, 24, 0.14);
+  --shadow-xl: 0 24px 64px rgba(26, 35, 24, 0.18);
+  --shadow-gold: 0 8px 28px rgba(168, 127, 34, 0.24);
 }
 
 @theme inline {
@@ -65,6 +131,7 @@
   --color-water: var(--water);
   --color-surface: var(--surface);
   --color-surface-dark: var(--surface-dark);
+  --color-surface-raised: var(--surface-raised);
   --color-text-muted: var(--text-muted);
   --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
@@ -72,15 +139,22 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* ===== Base Reset ===== */
+/* ===== Base ===== */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/* No scroll-behavior:smooth — Lenis drives scrolling and the two fight. */
 html {
-  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* Safety net: reveal states that start offset on the x-axis would otherwise
+     widen the document and let the page scroll sideways. Note `clip` would be
+     the better primitive here, but Lightning CSS drops it at this project's
+     browser targets, so it silently does nothing. `hidden` survives.
+     Safe here because the nav is `fixed`, not `sticky`. */
+  overflow-x: hidden;
 }
 
 body {
@@ -93,7 +167,19 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== Typography utilities ===== */
+::selection {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+/* One focus treatment for the whole site. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ===== Typography ===== */
 .font-display {
   font-family: var(--font-playfair, Georgia, serif);
 }
@@ -106,18 +192,42 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* ===== Prefers reduced motion ===== */
+/* Small caps label used above every section heading. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ===========================================================================
+   Motion
+   =========================================================================== */
+
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* ===== Keyframes ===== */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -176,16 +286,6 @@ body {
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
-}
-
 @keyframes float {
 
   0%,
@@ -198,19 +298,43 @@ body {
   }
 }
 
-@keyframes pulse-glow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(200, 169, 126, 0.4);
+/* Headline lines wiping up from behind their own edge. */
+@keyframes lineRise {
+  from {
+    transform: translateY(110%);
   }
 
-  50% {
-    box-shadow: 0 0 20px 6px rgba(200, 169, 126, 0.15);
+  to {
+    transform: translateY(0);
   }
 }
 
-/* ===== Utility Animations ===== */
+@keyframes btn-ripple {
+  from {
+    opacity: 0.45;
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.6);
+  }
+}
+
+@keyframes scrollHint {
+
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.25;
+  }
+
+  50% {
+    transform: translateY(9px);
+    opacity: 1;
+  }
+}
+
 .animate-fade-up {
   animation: fadeInUp 0.7s ease-out both;
 }
@@ -268,35 +392,232 @@ body {
   scrollbar-width: none;
 }
 
-/* ===== Navigation ===== */
+/* Clip window for a line that rises into place. */
+.line-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.line-mask>span {
+  display: block;
+  animation: lineRise 1s var(--ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line-mask>span {
+    animation: none;
+  }
+}
+
+/* ===========================================================================
+   Buttons
+
+   Shared surface for every variant: magnetic offset (fed by ButtonFX), a
+   sweeping highlight on hover, a click ripple, and real press depth.
+   =========================================================================== */
+
+.btn-primary,
+.btn-dark,
+.btn-outline,
+.search-btn,
+.btn-ghost {
+  --btn-x: 0px;
+  --btn-y: 0px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 15px 32px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  white-space: nowrap;
+  transform: translate3d(var(--btn-x), var(--btn-y), 0);
+  transition:
+    transform 0.35s var(--ease),
+    background 0.3s var(--ease),
+    color 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    box-shadow 0.35s var(--ease);
+}
+
+/* Sweeping highlight. */
+.btn-primary::before,
+.btn-dark::before,
+.btn-outline::before,
+.search-btn::before,
+.btn-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.22) 50%,
+      transparent 80%);
+  transform: translateX(-110%);
+  transition: transform 0.7s var(--ease);
+}
+
+.btn-primary:hover::before,
+.btn-dark:hover::before,
+.btn-outline:hover::before,
+.search-btn:hover::before,
+.btn-ghost:hover::before {
+  transform: translateX(110%);
+}
+
+/* Click ripple, positioned at the pointer by ButtonFX. */
+.btn-primary::after,
+.btn-dark::after,
+.btn-outline::after,
+.search-btn::after,
+.btn-ghost::after {
+  content: '';
+  position: absolute;
+  top: var(--ripple-y, 50%);
+  left: var(--ripple-x, 50%);
+  z-index: -1;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+}
+
+.is-rippling::after {
+  animation: btn-ripple 0.62s var(--ease) forwards;
+}
+
+.btn-primary:active,
+.btn-dark:active,
+.btn-outline:active,
+.search-btn:active,
+.btn-ghost:active {
+  transform: translate3d(var(--btn-x), var(--btn-y), 0) scale(0.97);
+  transition-duration: 0.08s;
+}
+
+/* Variants */
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-dark {
+  background: var(--surface-raised);
+  color: var(--foreground);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-dark:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-outline:hover {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+
+/* On top of imagery the outline needs its own light-on-dark treatment. */
+.on-media .btn-outline {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.on-media .btn-outline:hover {
+  background: #fff;
+  color: #111;
+  border-color: #fff;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 10px 16px;
+}
+
+.btn-ghost:hover {
+  color: var(--accent);
+}
+
+.search-btn {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 15px 36px;
+}
+
+.search-btn:hover {
+  background: var(--accent-light);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Arrow inside a button nudges forward on hover. */
+.btn-primary svg,
+.btn-dark svg,
+.btn-outline svg,
+.btn-ghost svg {
+  transition: transform 0.35s var(--ease);
+}
+
+.btn-primary:hover svg,
+.btn-dark:hover svg,
+.btn-outline:hover svg,
+.btn-ghost:hover svg {
+  transform: translateX(4px);
+}
+
+/* ===========================================================================
+   Navigation
+   =========================================================================== */
+
 .nav-glass {
-  background: rgba(253, 250, 246, 0.90);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(26, 35, 24, 0.07);
-  transition: background var(--transition-medium), box-shadow var(--transition-medium);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition:
+    background var(--transition-medium),
+    border-color var(--transition-medium),
+    backdrop-filter var(--transition-medium);
 }
 
 .nav-glass.scrolled {
-  background: rgba(253, 250, 246, 0.97);
-  box-shadow: var(--shadow-sm);
-}
-
-.dark .nav-glass {
-  background: rgba(13, 20, 16, 0.90);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
-.dark .nav-glass.scrolled {
-  background: rgba(13, 20, 16, 0.97);
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom-color: var(--border);
 }
 
 .nav-link {
   position: relative;
   color: var(--primary);
   font-weight: 500;
-  font-size: 0.8125rem;
-  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   padding: 6px 0;
   transition: color var(--transition-fast);
@@ -308,14 +629,13 @@ body {
   bottom: -2px;
   left: 0;
   width: 0;
-  height: 1.5px;
+  height: 1px;
   background: var(--accent);
   transition: width var(--transition-medium);
-  border-radius: 1px;
 }
 
 .nav-link:hover {
-  color: var(--accent-dark);
+  color: var(--accent);
 }
 
 .nav-link:hover::after,
@@ -323,13 +643,87 @@ body {
   width: 100%;
 }
 
-.nav-link:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 4px;
-  border-radius: 2px;
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  /* 44px box: the bars stay 24px wide but the hit area is thumb-sized. */
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  background: none;
+  border: none;
 }
 
-/* ===== Hero Section ===== */
+.mobile-menu-toggle span {
+  width: 24px;
+  height: 1.5px;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: all var(--transition-fast);
+}
+
+/* ===========================================================================
+   Sections
+   =========================================================================== */
+
+.section {
+  position: relative;
+  padding: 128px 0;
+}
+
+.section-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-tag::before {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: clamp(2.1rem, 4.2vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+.section-description {
+  font-size: 1.02rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  max-width: 580px;
+}
+
+/* Hairline that draws itself in as the section arrives. */
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform-origin: left;
+}
+
+/* ===========================================================================
+   Hero
+   =========================================================================== */
+
 .hero-section {
   position: relative;
   min-height: 100vh;
@@ -339,43 +733,24 @@ body {
   overflow: hidden;
 }
 
-.hero-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg,
-      rgba(13, 20, 16, 0.10) 0%,
-      rgba(13, 20, 16, 0.28) 45%,
-      rgba(13, 20, 16, 0.62) 100%);
-  z-index: 1;
-}
-
-.hero-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  color: #fff;
-}
-
 .hero-subtitle {
-  font-size: 0.72rem;
-  letter-spacing: 0.22em;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--accent);
   margin-bottom: 1.25rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .hero-subtitle::before {
   content: '';
   display: inline-block;
-  width: 24px;
-  height: 1.5px;
+  width: 28px;
+  height: 1px;
   background: var(--accent);
-  border-radius: 1px;
 }
 
 .hero-title {
@@ -384,116 +759,101 @@ body {
   font-style: italic;
   font-weight: 700;
   line-height: 1.05;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   margin-bottom: 1.5rem;
 }
 
 .hero-description {
   font-size: 1.05rem;
   max-width: 480px;
-  margin: 0 auto 2.5rem;
   opacity: 0.88;
   line-height: 1.75;
 }
 
-/* ===== Buttons ===== */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
+/* Slow drift on the hero photograph. */
+.hero-media img {
+  transform: scale(1.06);
+}
+
+/* Scrim behind hero copy.
+   The shader sits inset-0 but the photograph covers the right half, so the
+   only place the caustics show is the exact column the text occupies. Measured
+   against real rendered pixels, unscrimmed text lands at 1.1:1 against the
+   bright caustic lanes in dark mode and 4.1:1 in light — both unreadable or
+   borderline. This lifts the copy onto near-solid background while fading to
+   nothing well before the panel edge, so the ripples still read around it. */
+.hero-copy {
+  position: relative;
+  /* Guarantees the -1 pseudo-element stays behind this block's own content and
+     in front of the canvas, without depending on whatever z-index the markup
+     happens to carry. */
+  isolation: isolate;
+}
+
+.hero-copy::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+}
+
+@media (min-width: 1024px) {
+  .hero-copy::before {
+    /* Bleeds past the panel so the falloff finishes off-panel rather than
+       ending on a visible edge. */
+    inset: -10% -22% -10% -40%;
+    background: radial-gradient(ellipse 72% 62% at 42% 50%,
+        color-mix(in srgb, var(--background) 94%, transparent) 0%,
+        color-mix(in srgb, var(--background) 88%, transparent) 42%,
+        color-mix(in srgb, var(--background) 42%, transparent) 70%,
+        transparent 100%);
+  }
+}
+
+.scroll-hint {
+  width: 24px;
+  height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.scroll-hint::before {
+  content: '';
+  width: 2px;
+  height: 7px;
+  border-radius: 2px;
   background: var(--accent);
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-medium), box-shadow var(--transition-medium);
-  text-decoration: none;
+  animation: scrollHint 1.9s var(--ease) infinite;
 }
 
-.btn-primary:hover {
-  background: var(--accent-dark);
-  box-shadow: var(--shadow-gold);
-}
+/* ===========================================================================
+   Search bar
+   =========================================================================== */
 
-.btn-primary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
-
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 31px;
-  background: transparent;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-medium), border-color var(--transition-medium);
-  text-decoration: none;
-}
-
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.85);
-}
-
-.btn-outline:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.7);
-  outline-offset: 3px;
-}
-
-.btn-dark {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  background: var(--forest);
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-medium), box-shadow var(--transition-medium);
-  text-decoration: none;
-}
-
-.btn-dark:hover {
-  background: var(--primary);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-dark:focus-visible {
-  outline: 2px solid var(--forest);
-  outline-offset: 3px;
-}
-
-/* ===== Search Bar ===== */
 .search-bar {
-  background: var(--background);
+  background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xl);
-  padding: 20px 28px;
+  padding: 22px 28px;
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: 18px;
   flex-wrap: wrap;
   position: relative;
   z-index: 10;
+  transition: border-color var(--transition-medium), box-shadow var(--transition-medium);
+}
+
+.search-bar:focus-within {
+  border-color: var(--accent);
 }
 
 .search-bar-field {
@@ -503,176 +863,105 @@ body {
 
 .search-bar-label {
   display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
-.search-bar-input {
-  width: 100%;
-  padding: 10px 0;
-  border: none;
-  border-bottom: 2px solid var(--border);
-  background: transparent;
-  font-size: 0.95rem;
-  color: var(--primary);
-  font-weight: 500;
-  outline: none;
-  transition: border-color var(--transition-fast);
-}
-
-.search-bar-input:focus {
-  border-color: var(--accent);
-}
-
-.search-bar-input::placeholder {
-  color: #bbb;
-}
-
+.search-bar-input,
 .search-bar-select {
   width: 100%;
   padding: 10px 0;
   border: none;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 1px solid var(--border-strong);
   background: transparent;
   font-size: 0.95rem;
   color: var(--primary);
   font-weight: 500;
   outline: none;
-  appearance: none;
-  cursor: pointer;
   transition: border-color var(--transition-fast);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23636e72' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 4px center;
-  padding-right: 24px;
 }
 
+.search-bar-input:focus,
 .search-bar-select:focus {
   border-color: var(--accent);
 }
 
-.search-btn {
-  padding: 12px 32px;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-medium);
-  white-space: nowrap;
-}
-
-.search-btn:hover {
-  background: var(--accent-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-gold);
-}
-
-/* ===== Section Styles ===== */
-.section {
-  padding: 100px 0;
-}
-
-.section-tag {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--forest);
-  margin-bottom: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-tag::before {
-  content: '';
-  display: inline-block;
-  width: 20px;
-  height: 2px;
-  background: var(--accent);
-  flex-shrink: 0;
-  border-radius: 1px;
-}
-
-.dark .section-tag {
-  color: var(--accent-light);
-}
-
-.section-title {
-  font-family: var(--font-playfair, Georgia, serif);
-  font-size: clamp(2rem, 4vw, 2.875rem);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--primary);
-  margin-bottom: 20px;
-}
-
-.section-description {
-  font-size: 1.05rem;
+.search-bar-input::placeholder {
   color: var(--text-muted);
-  line-height: 1.75;
-  max-width: 580px;
 }
 
-/* ===== Homestay Cards ===== */
+.search-bar-select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239AA39B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+}
+
+.search-bar-select option {
+  background: var(--surface-raised);
+  color: var(--primary);
+}
+
+/* Native date pickers render a dark glyph that vanishes on a dark ground. */
+:root .search-bar-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.55);
+  cursor: pointer;
+}
+
+.light .search-bar-input::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+/* ===========================================================================
+   Room cards
+   =========================================================================== */
+
 .room-card {
   position: relative;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--background);
+  background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-medium);
   cursor: pointer;
+  transition:
+    transform 0.5s var(--ease),
+    border-color 0.4s var(--ease),
+    box-shadow 0.5s var(--ease);
 }
 
-.room-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--accent-light);
-}
-
+.room-card:hover,
 .room-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  transform: translateY(-4px);
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   box-shadow: var(--shadow-lg);
 }
 
-/* Fixed-ratio media frame so next/image fill has dimensions to fill. */
 .room-card-media {
   position: relative;
-  height: 260px;
+  height: 280px;
   overflow: hidden;
 }
 
 .room-card-image {
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform 0.9s var(--ease);
 }
 
 .room-card:hover .room-card-image {
-  transform: scale(1.03);
+  transform: scale(1.07);
 }
 
 .room-card-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 280px;
-  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.4) 100%);
-  opacity: 0;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.72) 100%);
+  opacity: 0.85;
   transition: opacity var(--transition-medium);
 }
 
@@ -682,36 +971,57 @@ body {
 
 .room-card-badge {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  background: var(--forest);
-  color: #fff;
-  padding: 4px 12px;
+  top: 16px;
+  left: 16px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  padding: 5px 12px;
   border-radius: var(--radius-sm);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   z-index: 2;
 }
 
+/* Price sits on the image, bottom-right, like a listing sheet. */
+.room-card-price-tag {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+.room-card-price-tag span {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+}
+
 .room-card-content {
-  padding: 24px;
+  padding: 26px;
 }
 
 .room-card-type {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--water);
-  margin-bottom: 6px;
+  color: var(--accent);
+  margin-bottom: 10px;
 }
 
 .room-card-title {
   font-family: var(--font-playfair, Georgia, serif);
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.35rem;
+  font-weight: 500;
   line-height: 1.25;
   color: var(--primary);
   margin-bottom: 8px;
@@ -722,49 +1032,104 @@ body {
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 18px;
 }
 
 .room-card-divider {
   height: 1px;
   background: var(--border);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .room-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.room-card-price {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--forest);
-  font-variant-numeric: tabular-nums;
-}
-
-.room-card-price span {
-  font-size: 0.78rem;
-  font-weight: 400;
-  color: var(--text-muted);
+  gap: 12px;
 }
 
 .room-card-features {
   display: flex;
-  gap: 14px;
-  font-size: 0.82rem;
+  gap: 16px;
+  font-size: 0.8rem;
   color: var(--text-muted);
 }
 
 .room-card-features span {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
-/* ===== Stats Section ===== */
+/* Stretched link: the title's hit area covers the whole card, so the card
+   navigates to the detail page without wrapping everything in an anchor. */
+.room-card-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.room-card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.room-card:hover .room-card-link {
+  color: var(--accent);
+}
+
+/* Keyboard focus lands on the link, so the ring has to be drawn on the card. */
+.room-card:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.room-card-link:focus-visible {
+  outline: none;
+}
+
+/* Sits above the stretched link so Book stays independently clickable. */
+.room-card-book {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-medium);
+}
+
+.room-card-book svg {
+  transition: transform var(--transition-medium);
+}
+
+.room-card-book:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.room-card-book:hover svg {
+  transform: translateX(3px);
+}
+
+/* ===========================================================================
+   Stats / amenities / testimonials
+   =========================================================================== */
+
 .stat-item {
   text-align: center;
   padding: 30px 20px;
@@ -776,131 +1141,192 @@ body {
 }
 
 .stat-icon {
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
   margin: 0 auto 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
+  background: var(--surface-dark);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  color: var(--forest);
-  transition: background var(--transition-medium), color var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-medium);
+  color: var(--accent);
+  transition: all var(--transition-medium);
 }
 
 .stat-item:hover .stat-icon {
   background: var(--accent);
-  color: #fff;
-  box-shadow: var(--shadow-gold);
+  color: var(--accent-contrast);
   border-color: var(--accent);
+  box-shadow: var(--shadow-gold);
 }
 
 .stat-number {
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 2.4rem;
+  font-weight: 500;
   color: var(--primary);
   line-height: 1;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
-  font-size: 0.88rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* ===== Amenities ===== */
 .amenity-card {
-  padding: 32px 24px;
-  background: var(--background);
+  position: relative;
+  padding: 34px 26px;
+  background: var(--surface);
   border-radius: var(--radius-md);
-  text-align: center;
-  transition: transform var(--transition-medium), box-shadow var(--transition-medium), border-color var(--transition-medium);
   border: 1px solid var(--border);
+  overflow: hidden;
+  transition:
+    transform var(--transition-medium),
+    border-color var(--transition-medium),
+    background var(--transition-medium);
 }
 
 .amenity-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent-light);
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--surface-dark);
+}
+
+/* Gold wash that grows from the corner the pointer enters. */
+.amenity-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease);
+}
+
+.amenity-card:hover::before {
+  transform: scaleX(1);
 }
 
 .amenity-icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 18px;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
+  background: var(--surface-dark);
   border-radius: var(--radius-md);
-  color: var(--forest);
+  color: var(--accent);
   border: 1px solid var(--border);
-  transition: background var(--transition-medium), color var(--transition-medium), border-color var(--transition-medium);
+  transition: all var(--transition-medium);
 }
 
 .amenity-card:hover .amenity-icon {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   border-color: var(--accent);
+  transform: scale(1.06) rotate(-4deg);
 }
 
 .amenity-title {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.02rem;
+  font-weight: 600;
   color: var(--primary);
   margin-bottom: 8px;
-  letter-spacing: 0.01em;
 }
 
 .amenity-desc {
   font-size: 0.875rem;
   color: var(--text-muted);
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
-/* ===== Testimonials ===== */
-.testimonial-card {
-  padding: 32px;
-  background: var(--background);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+/* Accreditation chip */
+.badge-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 8px 8px;
+  background: var(--surface-dark);
   border: 1px solid var(--border);
-  transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-medium);
+}
+
+.badge-chip:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.badge-chip-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.badge-chip-media img {
+  transition: transform var(--transition-medium);
+}
+
+.badge-chip:hover .badge-chip-media img {
+  transform: scale(1.08);
+}
+
+.testimonial-card {
+  padding: 34px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: transform var(--transition-medium), border-color var(--transition-medium);
   position: relative;
 }
 
 .testimonial-card::before {
   content: '\201C';
   position: absolute;
-  top: 18px;
-  right: 24px;
-  font-size: 4rem;
+  top: 16px;
+  right: 26px;
+  font-size: 4.5rem;
   color: var(--accent);
   font-family: var(--font-playfair, Georgia, serif);
   line-height: 1;
-  opacity: 0.25;
+  opacity: 0.18;
 }
 
 .testimonial-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .testimonial-stars {
-  color: #f5a623;
-  font-size: 1rem;
-  letter-spacing: 2px;
-  margin-bottom: 16px;
+  display: flex;
+  gap: 3px;
+  color: var(--accent);
+  margin-bottom: 18px;
 }
 
 .testimonial-text {
-  font-size: 1rem;
-  color: var(--primary);
-  line-height: 1.8;
-  font-style: italic;
-  margin-bottom: 20px;
+  font-size: 0.95rem;
+  color: var(--primary-light);
+  line-height: 1.85;
+  margin-bottom: 22px;
 }
 
 .testimonial-author {
@@ -910,30 +1336,34 @@ body {
 }
 
 .testimonial-avatar {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--accent-light);
+  border: 1px solid var(--border-strong);
 }
 
 .testimonial-name {
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 600;
+  font-size: 0.92rem;
   color: var(--primary);
 }
 
 .testimonial-role {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
+  letter-spacing: 0.06em;
 }
 
-/* ===== Gallery ===== */
+/* ===========================================================================
+   Gallery
+   =========================================================================== */
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(2, 260px);
-  gap: 16px;
+  grid-template-rows: repeat(2, 280px);
+  gap: 14px;
 }
 
 .gallery-item {
@@ -952,18 +1382,18 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform 1s var(--ease), filter 0.5s var(--ease);
 }
 
 .gallery-item:hover img {
-  transform: scale(1.08);
+  transform: scale(1.07);
 }
 
 .gallery-item::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
   opacity: 0;
   transition: opacity var(--transition-medium);
 }
@@ -972,132 +1402,227 @@ body {
   opacity: 1;
 }
 
-/* ===== Contact / CTA ===== */
+.gallery-caption {
+  position: absolute;
+  left: 20px;
+  bottom: 18px;
+  z-index: 2;
+  color: #fff;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--transition-medium), transform var(--transition-medium);
+}
+
+.gallery-item:hover .gallery-caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===========================================================================
+   CTA
+   =========================================================================== */
+
 .cta-section {
   position: relative;
-  padding: 120px 0;
+  padding: 140px 0;
   overflow: hidden;
 }
 
-.cta-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, rgba(26, 35, 24, 0.88) 0%, rgba(45, 74, 58, 0.88) 100%);
-  z-index: 1;
+.contact-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 16px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  transition: all var(--transition-medium);
 }
 
-/* ===== Footer ===== */
+.contact-chip:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===========================================================================
+   Footer
+   =========================================================================== */
+
 .footer {
-  background: var(--forest);
-  color: rgba(255, 255, 255, 0.65);
-  padding: 80px 0 30px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 88px 0 32px;
 }
 
 .footer-title {
-  font-size: 1.1rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 20px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 22px;
 }
 
 .footer-link {
   display: block;
-  color: rgba(255, 255, 255, 0.50);
+  color: var(--text-muted);
   text-decoration: none;
   font-size: 0.875rem;
-  padding: 4px 0;
-  transition: color var(--transition-fast);
+  padding: 5px 0;
+  width: fit-content;
+  transition: color var(--transition-fast), transform var(--transition-fast);
 }
 
 .footer-link:hover {
-  color: var(--accent-light);
-}
-
-.footer-link:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 2px;
+  color: var(--accent);
+  transform: translateX(4px);
 }
 
 .footer-social {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .footer-social a {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.55);
-  transition: background var(--transition-medium), border-color var(--transition-medium), color var(--transition-medium);
+  color: var(--text-muted);
+  transition: all var(--transition-medium);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .footer-social a:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
-}
-
-.footer-social a:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 2px;
+  color: var(--accent-contrast);
+  transform: translateY(-2px);
 }
 
 .footer-bottom {
-  margin-top: 50px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 56px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.82rem;
+  color: var(--text-muted);
 }
 
-/* ===== Mobile Menu ===== */
-.mobile-menu-toggle {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  cursor: pointer;
-  padding: 4px;
-  background: none;
-  border: none;
+/* ===========================================================================
+   Homestay detail page
+   =========================================================================== */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: color var(--transition-fast);
 }
 
-.mobile-menu-toggle span {
-  width: 24px;
-  height: 2px;
-  background: var(--primary);
-  border-radius: 2px;
-  transition: all var(--transition-fast);
+.back-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-strong);
+  transition: all var(--transition-medium);
 }
 
-/* ===== Scroll to top ===== */
+.back-link:hover {
+  color: var(--accent);
+}
+
+.back-link:hover .back-link-icon {
+  border-color: var(--accent);
+  transform: translateX(-3px);
+}
+
+.detail-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-dark);
+}
+
+.detail-photo img {
+  transition: transform 0.9s var(--ease);
+}
+
+.detail-photo:hover img {
+  transform: scale(1.06);
+}
+
+/* ===========================================================================
+   Utilities
+   =========================================================================== */
+
+/* WhatsApp sits at the bottom of the stack; scroll-top stacks above it. */
+.whatsapp-float {
+  position: fixed;
+  right: var(--float-inset);
+  bottom: var(--float-inset);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--float-size);
+  height: var(--float-size);
+  border-radius: var(--radius-full);
+  background: #25D366;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4);
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+}
+
+.whatsapp-float:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(37, 211, 102, 0.5);
+}
+
 .scroll-top-btn {
   position: fixed;
-  bottom: 28px;
-  right: 28px;
+  /* Stacked directly above the WhatsApp button and centred against it. */
+  bottom: calc(var(--float-inset) + var(--float-size) + var(--float-gap));
+  right: calc(var(--float-inset) + (var(--float-size) - 44px) / 2);
   width: 44px;
   height: 44px;
-  background: var(--forest);
-  color: #fff;
-  border: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  color: var(--foreground);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  transition: background var(--transition-medium), opacity var(--transition-medium), transform var(--transition-medium);
+  transition: all var(--transition-medium);
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
@@ -1112,36 +1637,15 @@ body {
 
 .scroll-top-btn:hover {
   background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
   box-shadow: var(--shadow-gold);
 }
 
-.scroll-top-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-}
+/* ===========================================================================
+   Responsive
+   =========================================================================== */
 
-/* ===== Scroll reveal ===== */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
-  will-change: opacity, transform;
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-}
-
-/* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .gallery-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1172,25 +1676,16 @@ body {
     display: none;
   }
 
-  .nav-links.open {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    padding: 24px;
-    box-shadow: var(--shadow-lg);
-    gap: 16px;
+  .section {
+    padding: 72px 0;
   }
 
-  .section {
-    padding: 60px 0;
+  .cta-section {
+    padding: 88px 0;
   }
 
   .hero-title {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
   }
 
   .gallery-grid {
@@ -1203,12 +1698,24 @@ body {
   }
 
   .gallery-item {
-    height: 220px;
+    height: 240px;
   }
 
   .footer-bottom {
     flex-direction: column;
     gap: 12px;
     text-align: center;
+  }
+
+  /* Comfortable tap targets on phones. */
+  .btn-primary,
+  .btn-dark,
+  .btn-outline,
+  .search-btn {
+    padding: 15px 26px;
+  }
+
+  .room-card-book {
+    padding: 12px 18px;
   }
 }

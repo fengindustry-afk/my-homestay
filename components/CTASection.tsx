@@ -1,81 +1,107 @@
+import ShaderBackground from "./ShaderBackground";
+
+const CONTACTS = [
+    { label: "Phone", value: "+60 11-5757 2001", href: "tel:+601157572001" },
+    { label: "Email", value: "indahmoribhomestay", href: "mailto:indahmoribhomestay@gmail.com" },
+    { label: "Location", value: "Banting, Selangor", href: "https://maps.google.com/?q=Indah+Morib+Homestay+Banting+Selangor" },
+];
+
 export default function CTASection() {
     return (
-        <section id="contact" className="cta-section">
+        <section id="contact" className="cta-section on-media">
+            {/* Second and last WebGL moment. Run hotter than the hero: there is
+                no photograph competing with it here. */}
+            <ShaderBackground intensity={1.5} className="absolute inset-0 z-0" />
+
+            {/* Scrim keeps the copy legible over the brightest caustics. */}
             <div
+                className="absolute inset-0 z-[1]"
                 style={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundImage:
-                        "url('https://lh3.googleusercontent.com/p/AF1QipPty9u5kMCQPo75CtQRG4mg0zScwNdeW3BrLSRD=s1024-v1')",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
+                    background:
+                        "radial-gradient(ellipse at center, color-mix(in srgb, var(--background) 55%, transparent) 0%, color-mix(in srgb, var(--background) 88%, transparent) 75%)",
                 }}
             />
-            <div
-                className="mx-auto max-w-4xl px-6 text-center"
-                style={{ position: "relative", zIndex: 2 }}
-            >
-                <p className="section-tag" style={{ color: "var(--accent-light)" }}>
-                    Ready to Experience Indahmorib?
+
+            <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+                <p className="section-tag" style={{ justifyContent: "center" }} data-reveal>
+                    06 &nbsp;/&nbsp; Ready when you are
                 </p>
+
                 <h2
+                    className="text-display"
                     style={{
-                        fontSize: "clamp(2rem, 5vw, 3.2rem)",
-                        fontWeight: 700,
-                        color: "#fff",
-                        lineHeight: 1.2,
-                        marginBottom: 20,
+                        fontSize: "clamp(2.1rem, 5vw, 3.5rem)",
+                        color: "var(--primary)",
+                        marginBottom: 22,
                     }}
+                    data-reveal
+                    data-reveal-delay="100"
                 >
-                    Book Your Stay Today &amp; Create{" "}
-                    <span style={{ color: "var(--accent-light)" }}>
-                        Unforgettable Memories
-                    </span>
+                    Book your stay and let the day{" "}
+                    <span style={{ color: "var(--accent)" }}>run itself</span>
                 </h2>
+
                 <p
+                    className="mx-auto"
                     style={{
-                        fontSize: "1.1rem",
-                        color: "rgba(255,255,255,0.75)",
+                        fontSize: "1.05rem",
+                        color: "var(--text-muted)",
                         maxWidth: 520,
-                        margin: "0 auto 36px",
-                        lineHeight: 1.7,
+                        lineHeight: 1.8,
+                        marginBottom: 40,
                     }}
+                    data-reveal
+                    data-reveal-delay="180"
                 >
-                    Contact us directly for the best rates, special packages, and
-                    personalised assistance.
+                    Message us directly for current rates, package pricing for large
+                    groups, and event bookings.
                 </p>
-                <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 48 }}>
-                    <a href="https://wa.me/601157572001" className="btn-primary" id="whatsapp-btn">
-                        WhatsApp Us
+
+                <div
+                    className="mb-14 flex flex-wrap justify-center gap-4"
+                    data-reveal
+                    data-reveal-delay="260"
+                >
+                    <a
+                        href="https://wa.me/601157572001"
+                        className="btn-primary"
+                        id="whatsapp-btn"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        WhatsApp us
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
                     </a>
                     <a href="mailto:indahmoribhomestay@gmail.com" className="btn-outline" id="email-btn">
-                        Email Us
+                        Email us
                     </a>
                 </div>
-                <div className="grid gap-6 sm:grid-cols-3" style={{ maxWidth: 700, margin: "0 auto" }}>
-                    {[
-                        { label: "Phone", value: "+60 11-5757 2001" },
-                        { label: "Email", value: "indahmoribhomestay" },
-                        { label: "Location", value: "Selangor, MY" },
-                    ].map((item) => (
-                        <div
+
+                <div className="mx-auto grid gap-4 sm:grid-cols-3" style={{ maxWidth: 700 }} data-stagger>
+                    {CONTACTS.map((item) => (
+                        <a
                             key={item.label}
-                            style={{
-                                background: "rgba(255,255,255,0.08)",
-                                backdropFilter: "blur(10px)",
-                                border: "1px solid rgba(255,255,255,0.12)",
-                                borderRadius: "var(--radius-md)",
-                                padding: "20px 16px",
-                                textAlign: "center",
-                            }}
+                            href={item.href}
+                            target={item.href.startsWith("http") ? "_blank" : undefined}
+                            rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                            className="contact-chip"
                         >
-                            <div style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>
+                            <span
+                                style={{
+                                    fontSize: "0.62rem",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.18em",
+                                    color: "var(--text-muted)",
+                                }}
+                            >
                                 {item.label}
-                            </div>
-                            <div style={{ fontSize: "0.95rem", color: "#fff", fontWeight: 600 }}>
+                            </span>
+                            <span style={{ fontSize: "0.92rem", color: "var(--primary)", fontWeight: 600 }}>
                                 {item.value}
-                            </div>
-                        </div>
+                            </span>
+                        </a>
                     ))}
                 </div>
             </div>
