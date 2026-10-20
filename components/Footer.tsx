@@ -57,7 +57,7 @@ export default function Footer() {
                     <div>
                         <h4 className="footer-title">Homestay Types</h4>
                         {["Bungalow Unit", "Studio Unit", "Family Room", "Holiday Home", "Tiny House", "Event Hall"].map((r) => (
-                            <a key={r} href="#rooms" className="footer-link">{r}</a>
+                            <span key={r} className="footer-link" style={{ cursor: "default" }}>{r}</span>
                         ))}
                     </div>
 
@@ -79,11 +79,6 @@ export default function Footer() {
 
                 <div className="footer-bottom">
                     <span>&copy; 2026 Indahmorib Homestay. All rights reserved.</span>
-                    <span>
-                        <a href="#" className="footer-link" style={{ display: "inline", padding: 0 }}>Privacy</a>
-                        {" · "}
-                        <a href="#" className="footer-link" style={{ display: "inline", padding: 0 }}>Terms</a>
-                    </span>
                 </div>
             </div>
         </footer>

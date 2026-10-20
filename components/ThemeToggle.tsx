@@ -14,7 +14,7 @@ export function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)] hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all">
+            <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)] hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all">
                 <span className="sr-only">Toggle theme</span>
             </button>
         );
@@ -25,7 +25,7 @@ export function ThemeToggle() {
     return (
         <button
             onClick={() => setTheme(isDark ? "light" : "dark")}
-            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)] hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all shadow-sm"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)] hover:bg-[var(--surface-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all shadow-sm"
         >
             <Moon
                 className={`absolute h-[1.2rem] w-[1.2rem] transition-all ${isDark ? "scale-0 opacity-0 rotate-90" : "scale-100 opacity-100 rotate-0"}`}

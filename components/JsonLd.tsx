@@ -7,7 +7,7 @@ const schema = {
     "@type": "LodgingBusiness",
     name: "Indah Morib Homestay",
     description:
-        "Luxurious homestay living in Malaysia. Beautifully designed rooms, world-class amenities, and unforgettable memories.",
+        "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
     url: SITE_URL,
     image: `${SITE_URL}/og-image.jpg`,
     telephone: ["+60 11-5757 2001", "+60 11-5504 3280"],

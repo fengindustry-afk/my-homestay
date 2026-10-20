@@ -1422,7 +1422,6 @@ body {
   position: relative;
   border-radius: var(--radius-md);
   overflow: hidden;
-  cursor: pointer;
 }
 
 .gallery-item:nth-child(1) {
@@ -1472,6 +1471,14 @@ body {
 .gallery-item:hover .gallery-caption {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Touch screens have no hover, so captions stay visible there. */
+@media (hover: none) {
+  .gallery-caption {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ===========================================================================

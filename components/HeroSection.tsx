@@ -88,7 +88,7 @@ export default function HeroSection() {
             <div className="relative z-10 w-full lg:w-[48%] min-h-[58vh] lg:min-h-screen flex-shrink-0 overflow-hidden">
                 <div className="hero-media absolute inset-0 -top-[8%] h-[116%]" data-parallax="0.12">
                     <Image
-                        src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/backgrounds/Pool%20Hm3.png"
+                        src="/images/hero-pool.jpg"
                         alt="The pool area at Indah Morib Homestay, Selangor"
                         fill
                         priority

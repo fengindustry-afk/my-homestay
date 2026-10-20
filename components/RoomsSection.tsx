@@ -27,6 +27,8 @@ export interface Room {
 export interface SearchCriteria {
     roomType: string;
     guests: string;
+    checkIn?: string;
+    checkOut?: string;
 }
 
 interface RoomsSectionProps {
@@ -55,6 +57,39 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
     const [loadError, setLoadError] = useState<string | null>(null);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // Remounting the search bar on reset restores its default dates and selects.
+    const [searchKey, setSearchKey] = useState(0);
+    const [bookedRoomIds, setBookedRoomIds] = useState<Set<number>>(new Set());
+
+    const checkInDate = filterCriteria?.checkIn;
+    const checkOutDate = filterCriteria?.checkOut;
+
+    // Whole-room paid bookings that overlap the requested stay. Unit-level
+    // bookings are not counted here; the booking modal checks each unit.
+    useEffect(() => {
+        if (!checkInDate || !checkOutDate) return;
+        let active = true;
+        supabase
+            .from("bookings")
+            .select("room_id, unit_name")
+            .eq("payment_status", "paid")
+            .lt("check_in", checkOutDate)
+            .gt("check_out", checkInDate)
+            .then(({ data, error }) => {
+                if (!active) return;
+                if (error) {
+                    console.error("Availability check failed:", error.message);
+                    setBookedRoomIds(new Set());
+                    return;
+                }
+                setBookedRoomIds(
+                    new Set((data ?? []).filter((b) => !b.unit_name).map((b) => b.room_id as number))
+                );
+            });
+        return () => {
+            active = false;
+        };
+    }, [checkInDate, checkOutDate]);
 
     useEffect(() => {
         let isMounted = true;
@@ -71,6 +106,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
             if (!isMounted) return;
 
             if (error) {
+                console.error("Homestay load failed:", error.message);
                 setLoadError(error.message);
                 setRooms([]);
             } else {
@@ -94,10 +130,16 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
 
             const guestCount = parseInt(filterCriteria.guests);
             const matchesGuests = room.guests >= guestCount;
+            const matchesDates = !(checkInDate && checkOutDate) || !bookedRoomIds.has(room.id);
 
-            return matchesType && matchesGuests;
+            return matchesType && matchesGuests && matchesDates;
         });
-    }, [filterCriteria, rooms]);
+    }, [filterCriteria, rooms, bookedRoomIds, checkInDate, checkOutDate]);
+
+    const handleReset = () => {
+        onReset?.();
+        setSearchKey((k) => k + 1);
+    };
 
     const handleBook = (room: Room) => {
         setSelectedRoom(room);
@@ -136,7 +178,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                             </p>
 
                             {filterCriteria && (
-                                <button onClick={onReset} className="btn-ghost mt-3" style={{ paddingLeft: 0 }}>
+                                <button onClick={handleReset} className="btn-ghost mt-3" style={{ paddingLeft: 0 }}>
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                         <path d="M3 3v5h5" />
@@ -149,12 +191,14 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
 
                     {/* Search precedes the results it filters. */}
                     <div className="mb-14" data-reveal data-reveal-delay="180">
-                        <SearchBar onSearch={onSearch} />
+                        <SearchBar key={searchKey} onSearch={onSearch} />
                     </div>
 
                     {loadError ? (
                         <p className="text-center text-sm" style={{ color: "#F87171" }} role="alert">
-                            Could not load homestays: {loadError}
+                            Homestays are taking longer than usual.{" "}
+                            <a href="https://wa.me/601157572001" target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
+                            and we will send you the list.
                         </p>
                     ) : (
                         <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3" data-stagger>
@@ -206,6 +250,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                                                     )}
                                                     <span>{room.beds} {room.beds === 1 ? "Bed" : "Beds"}</span>
                                                     <span>{room.baths} {room.baths === 1 ? "Bath" : "Baths"}</span>
+                                                    <span>Sleeps {room.guests}</span>
                                                 </div>
 
                                                 <button
@@ -225,13 +270,6 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                         </div>
                     )}
 
-                    {filterCriteria && !loading && filteredRooms.length === 0 && (
-                        <div className="mt-12 text-center">
-                            <button onClick={onReset} className="btn-dark">
-                                Reset filters
-                            </button>
-                        </div>
-                    )}
                 </div>
             </section>
 
