@@ -184,12 +184,14 @@ body {
   font-family: var(--font-playfair, Georgia, serif);
 }
 
+/* Display headings: roman, semibold, tight tracking as size grows.
+   Italic is reserved for the eyebrow, so headings carry no blanket slant. */
 .text-display {
   font-family: var(--font-playfair, Georgia, serif);
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
 }
 
 /* Small caps label used above every section heading. */
@@ -298,16 +300,6 @@ body {
   }
 }
 
-/* Headline lines wiping up from behind their own edge. */
-@keyframes lineRise {
-  from {
-    transform: translateY(110%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
 
 @keyframes btn-ripple {
   from {
@@ -398,16 +390,6 @@ body {
   overflow: hidden;
 }
 
-.line-mask>span {
-  display: block;
-  animation: lineRise 1s var(--ease) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .line-mask>span {
-    animation: none;
-  }
-}
 
 /* ===========================================================================
    Buttons

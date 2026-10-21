@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { gsap, ScrollTrigger, SplitText } from "@/lib/gsap";
 
 /**
  * Attribute-driven scroll choreography. One controller for the whole site;
@@ -54,6 +54,32 @@ export default function ScrollFX() {
                     delay,
                     ease: "power3.out",
                     scrollTrigger: { trigger: el, start: "top 88%", once: true },
+                });
+            });
+
+            // Headlines: each line rises out of its own mask. "load" plays on
+            // mount (hero); anything else plays when it scrolls into view.
+            // Returning the tween from onSplit lets SplitText re-sync it when
+            // fonts settle and the line breaks move.
+            root.querySelectorAll<HTMLElement>(`[data-split]:not([${READY}])`).forEach((el) => {
+                el.setAttribute(READY, "");
+                const onLoad = el.dataset.split === "load";
+
+                SplitText.create(el, {
+                    type: "lines",
+                    mask: "lines",
+                    autoSplit: true,
+                    onSplit(self) {
+                        return gsap.from(self.lines, {
+                            yPercent: 110,
+                            duration: 1,
+                            ease: "power4.out",
+                            stagger: 0.09,
+                            scrollTrigger: onLoad
+                                ? undefined
+                                : { trigger: el, start: "top 88%", once: true },
+                        });
+                    },
                 });
             });
 

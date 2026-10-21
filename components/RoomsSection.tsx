@@ -112,7 +112,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                     <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
                         <div className="lg:col-span-7" data-reveal>
                             <p className="section-tag">02 &nbsp;/&nbsp; Our Homestays</p>
-                            <h2 className="section-title" style={{ maxWidth: 620 }}>
+                            <h2 className="section-title" data-split style={{ maxWidth: 620 }}>
                                 {filterCriteria ? (
                                     "Search results"
                                 ) : (

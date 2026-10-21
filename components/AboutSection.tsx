@@ -135,7 +135,7 @@ export default function AboutSection() {
                         state would widen the document. */}
                     <div data-reveal>
                         <p className="section-tag">01 &nbsp;/&nbsp; About</p>
-                        <h2 className="section-title">
+                        <h2 className="section-title" data-split>
                             A unique balance of <em style={{ color: "var(--accent)" }}>luxury</em> &amp; comfort
                         </h2>
 

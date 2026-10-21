@@ -96,7 +96,7 @@ export default function GallerySection() {
                 <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
                     <div className="lg:col-span-7" data-reveal>
                         <p className="section-tag">04 &nbsp;/&nbsp; Gallery</p>
-                        <h2 className="section-title" style={{ maxWidth: 560 }}>
+                        <h2 className="section-title" data-split style={{ maxWidth: 560 }}>
                             A glimpse of <em style={{ color: "var(--accent)" }}>Indahmorib</em>
                         </h2>
                     </div>

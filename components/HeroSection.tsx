@@ -16,17 +16,18 @@ export default function HeroSection() {
 
             {/* Left: editorial text panel */}
             <div className="hero-copy relative z-20 w-full lg:w-[52%] flex flex-col justify-center px-8 md:px-14 lg:px-16 xl:px-24 py-28 lg:py-0">
-                <p className="hero-subtitle line-mask">
-                    <span style={{ animationDelay: "0.1s" }}>Morib, Selangor</span>
-                </p>
+                <p className="hero-subtitle animate-fade-up">Morib, Selangor</p>
 
+                {/* data-split="load": SplitText rises each line on mount. */}
                 <h1
                     className="text-display text-[var(--primary)] mb-7"
+                    data-split="load"
                     style={{ fontSize: "clamp(2.75rem, 5.5vw, 5rem)" }}
                 >
                     {HEADLINE.map((line, i) => (
-                        <span key={line} className="line-mask">
-                            <span style={{ animationDelay: `${0.2 + i * 0.11}s` }}>{line}</span>
+                        <span key={line}>
+                            {line}
+                            {i < HEADLINE.length - 1 && <br />}
                         </span>
                     ))}
                 </h1>

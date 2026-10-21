@@ -129,19 +129,16 @@ export default function HomestayDetail({ params }: { params: Promise<{ id: strin
                             All homestays
                         </Link>
 
-                        <p className="hero-subtitle line-mask mt-10">
-                            <span style={{ animationDelay: "0.1s" }}>
-                                {room.type || "Exclusive Homestay"}
-                            </span>
+                        <p className="hero-subtitle animate-fade-up mt-10">
+                            {room.type || "Exclusive Homestay"}
                         </p>
 
                         <h1
                             className="text-display mb-7"
+                            data-split="load"
                             style={{ fontSize: "clamp(2.4rem, 5vw, 4.25rem)", color: "var(--primary)" }}
                         >
-                            <span className="line-mask">
-                                <span style={{ animationDelay: "0.2s" }}>{room.title}</span>
-                            </span>
+                            {room.title}
                         </h1>
 
                         {room.location && (
