@@ -46,6 +46,14 @@ function Stars({ count }: { count: number }) {
     );
 }
 
+/** Cut at a word boundary near `limit`; the remainder sits behind a disclosure. */
+function splitReview(text: string, limit = 220) {
+    if (text.length <= limit) return { head: text, rest: "" };
+    const space = text.lastIndexOf(" ", limit);
+    const at = space > 0 ? space : limit;
+    return { head: text.slice(0, at), rest: text.slice(at).trimStart() };
+}
+
 export default function TestimonialsSection() {
     return (
         <section id="testimonials" className="section" style={{ background: "var(--surface)" }}>
@@ -74,7 +82,21 @@ export default function TestimonialsSection() {
                             id={`testimonial-${t.name.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                             <Stars count={t.stars} />
-                            <blockquote className="testimonial-text">{t.text}</blockquote>
+                            <blockquote className="testimonial-text">
+                                {(() => {
+                                    const { head, rest } = splitReview(t.text);
+                                    if (!rest) return t.text;
+                                    return (
+                                        <>
+                                            {head}
+                                            <details className="testimonial-more">
+                                                <summary>Read full review</summary>
+                                                {rest}
+                                            </details>
+                                        </>
+                                    );
+                                })()}
+                            </blockquote>
                             <figcaption className="testimonial-author">
                                 <Image
                                     src={t.avatar}

@@ -1430,6 +1430,81 @@ body {
   transform: translateY(0);
 }
 
+/* Long testimonials: native disclosure, keyboard operable, full text in DOM. */
+.testimonial-more {
+  display: block;
+}
+
+.testimonial-more summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-style: normal;
+  list-style: none;
+}
+
+.testimonial-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.testimonial-more summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Amenities: typographic list with hairline rules. No stock icons. */
+.amenity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 900px) {
+  .amenity-list {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 64px;
+  }
+}
+
+.amenity-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 4px 12px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.amenity-num {
+  padding-top: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+}
+
+.amenity-list .amenity-title {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+  margin: 0 0 6px;
+}
+
+.amenity-list .amenity-desc {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
 /* Thumbnails are real buttons now (lightbox trigger). Strip button chrome. */
 .gallery-item {
   appearance: none;
