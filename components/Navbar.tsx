@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
-import { ScrollTrigger } from "@/lib/gsap";
 
 const links = [
     { href: "#home", label: "Home" },
@@ -36,6 +35,15 @@ export default function Navbar() {
             if (progressRef.current) {
                 progressRef.current.style.transform = `scaleX(${ratio})`;
             }
+
+            // Current section: the one crossing 45% of the viewport. Read from
+            // live geometry, so pin spacers can't leave a stale position behind.
+            const line = window.innerHeight * 0.45;
+            for (const link of links) {
+                const id = link.href.slice(1);
+                const r = document.getElementById(id)?.getBoundingClientRect();
+                if (r && r.top <= line && r.bottom >= line) setActiveId(id);
+            }
         };
 
         const onScroll = () => {
@@ -50,27 +58,6 @@ export default function Navbar() {
             window.removeEventListener("scroll", onScroll);
             window.removeEventListener("resize", onScroll);
         };
-    }, []);
-
-    // Active section: one trigger per linked section. Only the section crossing
-    // the middle of the viewport counts as current.
-    useEffect(() => {
-        const triggers = links.flatMap((link) => {
-            const id = link.href.slice(1);
-            const el = document.getElementById(id);
-            if (!el) return [];
-            return [
-                ScrollTrigger.create({
-                    trigger: el,
-                    start: "top 45%",
-                    end: "bottom 45%",
-                    onToggle: (self) => {
-                        if (self.isActive) setActiveId(id);
-                    },
-                }),
-            ];
-        });
-        return () => triggers.forEach((t) => t.kill());
     }, []);
 
     // Mobile menu: focus moves in on open, Tab cycles inside, Escape closes,

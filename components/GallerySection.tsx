@@ -90,7 +90,11 @@ export default function GallerySection() {
         { scope: sectionRef }
     );
 
+    // The lightbox sits outside the section on purpose: the pin wraps the
+    // section in a spacer, which detaches any dialog inside it and drops it
+    // out of the top layer (modal behaviour and Escape both depend on it).
     return (
+        <>
         <section id="gallery" className="section gallery-section" ref={sectionRef}>
             <div className="mx-auto max-w-7xl px-6">
                 <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
@@ -134,7 +138,8 @@ export default function GallerySection() {
                 </div>
             </div>
 
-            <GalleryLightbox images={images} index={active} onIndex={setActive} />
         </section>
+            <GalleryLightbox images={images} index={active} onIndex={setActive} />
+        </>
     );
 }

@@ -22,7 +22,7 @@ export default function HeroSection() {
                 <h1
                     className="text-display text-[var(--primary)] mb-7"
                     data-split="load"
-                    style={{ fontSize: "clamp(2.75rem, 5.5vw, 5rem)" }}
+                    style={{ fontSize: "clamp(2.75rem, 5vw, 4.5rem)" }}
                 >
                     {HEADLINE.map((line, i) => (
                         <span key={line}>

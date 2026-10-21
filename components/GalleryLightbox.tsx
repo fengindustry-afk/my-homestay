@@ -20,11 +20,15 @@ export default function GalleryLightbox({ images, index, onIndex }: Props) {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const stageRef = useRef<HTMLDivElement>(null);
 
-    // Open / close the native dialog to match state.
+    // Open / close the native dialog to match state. Focus goes inside on open
+    // so the arrow keys and Escape reach the dialog.
     useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) return;
-        if (index !== null && !dialog.open) dialog.showModal();
+        if (index !== null && !dialog.open) {
+            dialog.showModal();
+            dialog.querySelector<HTMLButtonElement>(".gallery-lightbox-btn:last-child")?.focus();
+        }
         if (index === null && dialog.open) dialog.close();
     }, [index]);
 
