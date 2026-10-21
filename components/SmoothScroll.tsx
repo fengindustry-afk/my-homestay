@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import "lenis/dist/lenis.css";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 /**
  * Smooth scrolling, wired so GSAP and Lenis share one RAF loop.
