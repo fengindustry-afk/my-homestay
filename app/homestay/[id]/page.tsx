@@ -1,49 +1,53 @@
 import type { Metadata } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { cache } from "react";
+import { notFound } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import type { Room } from "@/components/RoomsSection";
 import RoomDetail from "./RoomDetail";
-
-const baseUrl = "https://indahmoribhomestay.vercel.app";
 
 type Props = { params: Promise<{ id: string }> };
 
-async function getRoom(id: string) {
-    const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-    );
-    const { data } = await supabase
-        .from("rooms")
-        .select("title, type, location, description, image")
-        .eq("id", id)
-        .single();
-    return data;
-}
+// Deduped per request: generateMetadata and the page share one query.
+const getRoom = cache(async (id: string): Promise<Room | null> => {
+  const { data } = await supabaseAdmin.from("rooms").select("*").eq("id", id).single();
+  return (data as Room | null) ?? null;
+});
+
+const getPhotos = cache(async (id: string): Promise<string[]> => {
+  const { data } = await supabaseAdmin
+    .from("room_photos")
+    .select("url")
+    .eq("room_id", id)
+    .order("created_at", { ascending: false });
+  return (data ?? []).map((p) => p.url as string);
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { id } = await params;
-    const room = await getRoom(id);
-    // Unknown room: fall back to the site-wide metadata in the root layout.
-    if (!room) return {};
+  const { id } = await params;
+  const room = await getRoom(id);
 
-    const description =
-        room.description?.slice(0, 155) ||
-        `${room.title}, a ${room.type} in ${room.location}, at Indah Morib Homestay.`;
-    const path = `/homestay/${id}`;
+  if (!room) {
+    return { robots: { index: false, follow: false } };
+  }
 
-    return {
-        title: `${room.title} | Indah Morib Homestay`,
-        description,
-        alternates: { canonical: path },
-        openGraph: {
-            title: room.title,
-            description,
-            url: `${baseUrl}${path}`,
-            images: room.image ? [room.image] : undefined,
-        },
-    };
+  const title = `${room.title} — Indah Morib Homestay`;
+  const description =
+    room.description ?? `${room.title} at Indah Morib Homestay${room.location ? `, ${room.location}` : ""}.`;
+  const path = `/homestay/${id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: { title, description, url: path },
+  };
 }
 
-export default async function Page({ params }: Props) {
-    const { id } = await params;
-    return <RoomDetail id={id} />;
+export default async function HomestayPage({ params }: Props) {
+  const { id } = await params;
+  const room = await getRoom(id);
+  if (!room) notFound();
+
+  const photos = await getPhotos(id);
+  return <RoomDetail room={room} photos={photos} />;
 }

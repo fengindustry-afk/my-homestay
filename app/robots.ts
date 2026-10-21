@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/finest-touch/", "/reserved-bookings/"],
+      disallow: ["/api/", "/finest-touch/"],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };

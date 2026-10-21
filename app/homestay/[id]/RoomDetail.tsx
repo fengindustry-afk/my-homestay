@@ -1,8 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
 import { ArrowLeft, User, Bath, BedDouble, CheckCircle, ChefHat, Wifi, MonitorPlay, Car, Home } from "lucide-react";
 import BookingModal from "@/components/BookingModal";
 import ShaderBackground from "@/components/ShaderBackground";
@@ -19,72 +18,8 @@ function amenityIcon(amenity: string) {
     return <CheckCircle size={22} />;
 }
 
-export default function RoomDetail({ id }: { id: string }) {
-    const [room, setRoom] = useState<Room | null>(null);
-    const [photos, setPhotos] = useState<string[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function RoomDetail({ room, photos }: { room: Room; photos: string[] }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    useEffect(() => {
-        async function fetchRoom() {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from("rooms")
-                .select("*")
-                .eq("id", id)
-                .single();
-
-            if (error || !data) {
-                setLoading(false);
-                return;
-            }
-
-            setRoom(data);
-
-            const { data: photosData } = await supabase
-                .from("room_photos")
-                .select("url")
-                .eq("room_id", id)
-                .order("created_at", { ascending: false });
-
-            if (photosData) setPhotos(photosData.map((p) => p.url));
-            setLoading(false);
-        }
-
-        fetchRoom();
-    }, [id]);
-
-    if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center" style={{ background: "var(--background)" }}>
-                <div
-                    className="h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
-                    style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}
-                    role="status"
-                    aria-label="Loading homestay"
-                />
-            </div>
-        );
-    }
-
-    if (!room) {
-        return (
-            <div
-                className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center"
-                style={{ background: "var(--background)", color: "var(--foreground)" }}
-            >
-                <h1 className="text-display" style={{ fontSize: "2.25rem" }}>
-                    Homestay not found
-                </h1>
-                <p style={{ color: "var(--text-muted)" }}>
-                    This listing may have been removed or the link is out of date.
-                </p>
-                <Link href="/" className="btn-primary">
-                    Return home
-                </Link>
-            </div>
-        );
-    }
 
     const mainImage = room.image || photos[0] || "/placeholder.jpg";
     const amenitiesList: string[] = room.amenities

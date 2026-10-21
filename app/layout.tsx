@@ -24,9 +24,6 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://indahmoribhomestay.vercel.app"),
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,
