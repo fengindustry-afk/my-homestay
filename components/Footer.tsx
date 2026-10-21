@@ -9,15 +9,24 @@ export default function Footer() {
                             <div
                                 style={{
                                     width: 36, height: 36,
-                                    background: "linear-gradient(135deg, #c8a97e, #b08d5b)",
-                                    borderRadius: 8,
+                                    background: "linear-gradient(135deg, var(--accent), var(--accent-dark))",
+                                    borderRadius: "var(--radius-sm)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
-                                    color: "#fff", fontWeight: 800, fontSize: "1rem",
+                                    color: "var(--accent-contrast)",
+                                    fontFamily: "var(--font-playfair), Georgia, serif",
+                                    fontWeight: 700, fontSize: "1rem",
                                 }}
                             >
                                 I
                             </div>
-                            <span style={{ fontSize: "1.2rem", fontWeight: 700, color: "#fff" }}>
+                            <span
+                                style={{
+                                    fontFamily: "var(--font-playfair), Georgia, serif",
+                                    fontSize: "1.2rem",
+                                    fontWeight: 600,
+                                    color: "var(--primary)",
+                                }}
+                            >
                                 Indahmorib
                             </span>
                         </div>

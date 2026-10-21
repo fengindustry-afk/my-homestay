@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
@@ -23,13 +24,29 @@ export interface Room {
     amenities?: string;
 }
 
+export interface SearchCriteria {
+    roomType: string;
+    guests: string;
+}
+
 interface RoomsSectionProps {
-    filterCriteria?: {
-        roomType: string;
-        guests: string;
-    };
-    onSearch?: (criteria: any) => void;
+    filterCriteria?: SearchCriteria;
+    onSearch?: (criteria: SearchCriteria) => void;
     onReset?: () => void;
+}
+
+/** Placeholder cards so the grid has structure while Supabase responds. */
+function RoomSkeleton() {
+    return (
+        <div className="room-card" aria-hidden="true">
+            <div className="room-card-media" style={{ background: "var(--surface-dark)" }} />
+            <div className="room-card-content">
+                <div style={{ height: 10, width: "35%", background: "var(--surface-dark)", borderRadius: 4, marginBottom: 14 }} />
+                <div style={{ height: 20, width: "72%", background: "var(--surface-dark)", borderRadius: 4, marginBottom: 12 }} />
+                <div style={{ height: 12, width: "50%", background: "var(--surface-dark)", borderRadius: 4 }} />
+            </div>
+        </div>
+    );
 }
 
 export default function RoomsSection({ filterCriteria, onSearch, onReset }: RoomsSectionProps) {
@@ -91,120 +108,130 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
         <>
             <section id="rooms" className="section">
                 <div className="mx-auto max-w-7xl px-6">
-                    <div className="mb-14 text-center">
-                        <p className="section-tag">Our Homestays</p>
+                    {/* Header: index left, copy right — asymmetric rather than centred. */}
+                    <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
+                        <div className="lg:col-span-7" data-reveal>
+                            <p className="section-tag">02 &nbsp;/&nbsp; Our Homestays</p>
+                            <h2 className="section-title" style={{ maxWidth: 620 }}>
+                                {filterCriteria ? (
+                                    "Search results"
+                                ) : (
+                                    <>
+                                        Handpicked homestays for{" "}
+                                        <em style={{ color: "var(--accent)" }}>every gathering</em>
+                                    </>
+                                )}
+                            </h2>
+                        </div>
 
-                        <h2 className="section-title" style={{ maxWidth: 600, margin: "0 auto 16px" }}>
-                            {filterCriteria ? "Search Results" : "Handpicked Homestays for "}
-                            {!filterCriteria && <span style={{ color: "var(--accent)" }}>Every Taste</span>}
-                        </h2>
+                        <div className="lg:col-span-5" data-reveal data-reveal-delay="120">
+                            <p className="section-description">
+                                {loading
+                                    ? "Bringing up the current collection…"
+                                    : filteredRooms.length > 0
+                                        ? "Every unit sleeps a different size of group. Pick the one that fits yours."
+                                        : filterCriteria
+                                            ? "Nothing matches those filters. Try widening the guest count or type."
+                                            : "The collection is being updated. Please check back shortly."}
+                            </p>
 
-                        {filterCriteria && (
-                            <div className="mb-6">
-                                <button
-                                    onClick={onReset}
-                                    className="text-sm font-medium text-[var(--accent)] hover:underline flex items-center justify-center gap-1 mx-auto"
-                                >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            {filterCriteria && (
+                                <button onClick={onReset} className="btn-ghost mt-3" style={{ paddingLeft: 0 }}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                         <path d="M3 3v5h5" />
                                     </svg>
-                                    Reset Search
+                                    Reset search
                                 </button>
-                            </div>
-                        )}
-
-                        <p className="section-description" style={{ maxWidth: 520, margin: "0 auto" }}>
-                            {loading ? (
-                                "Searching our collection for the perfect homestays..."
-                            ) : filteredRooms.length > 0 ? (
-                                "Discover the perfect space for your stay. Every homestay is designed with comfort and style in mind."
-                            ) : filterCriteria ? (
-                                "No homestays match your search criteria. Please try different filters."
-                            ) : (
-                                "Our collection of featured homestays is being prepared. Please check back shortly!"
                             )}
-                        </p>
+                        </div>
                     </div>
 
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {loading ? (
-                            <p className="text-center text-sm text-[var(--text-muted)] md:col-span-2 lg:col-span-3">
-                                Loading homestays…
-                            </p>
-                        ) : loadError ? (
-                            <p className="text-center text-sm text-red-500 md:col-span-2 lg:col-span-3">
-                                Could not load homestays: {loadError}
-                            </p>
-                        ) : (
-                            filteredRooms.map((room) => (
-                                <div
-                                    key={room.id}
-                                    className="room-card animate-scale-in"
-                                    id={`room-card-${room.id}`}
-                                    role="button"
-                                    tabIndex={0}
-                                    aria-label={`Book ${room.title} — RM${room.price} per night`}
-                                    onClick={() => handleBook(room)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
-                                            handleBook(room);
-                                        }
-                                    }}
-                                >
-                                    <div className="room-card-media">
-                                        <Image
-                                            src={room.image}
-                                            alt={room.title}
-                                            fill
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                            className="room-card-image"
-                                        />
-                                        <div className="room-card-overlay" />
-                                        {room.badge && <div className="room-card-badge">{room.badge}</div>}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 hover:opacity-100" style={{ background: "rgba(0,0,0,0.3)" }}>
-                                            <span className="rounded-full bg-white px-6 py-2 text-sm font-bold uppercase text-[var(--primary)] shadow-lg" aria-hidden="true">
-                                                Book Now
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="room-card-content">
-                                        <div className="room-card-type">{room.type}</div>
-                                        <h3 className="room-card-title">{room.title}</h3>
-                                        <div className="room-card-location">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                                <circle cx="12" cy="10" r="3" />
-                                            </svg>
-                                            {room.location}
-                                        </div>
-                                        <div className="room-card-divider" />
-                                        <div className="room-card-footer">
-                                            <div className="room-card-price">RM{room.price} <span>/ night</span></div>
-                                            <div className="room-card-features">
-                                                {room.rooms != null && <span>{room.rooms} {room.rooms === 1 ? 'Room' : 'Rooms'}</span>}
-                                                <span>{room.beds} {room.beds === 1 ? 'Bed' : 'Beds'}</span>
-                                                <span>{room.baths} {room.baths === 1 ? 'Bath' : 'Baths'}</span>
+                    {/* Search precedes the results it filters. */}
+                    <div className="mb-14" data-reveal data-reveal-delay="180">
+                        <SearchBar onSearch={onSearch} />
+                    </div>
+
+                    {loadError ? (
+                        <p className="text-center text-sm" style={{ color: "#F87171" }} role="alert">
+                            Could not load homestays: {loadError}
+                        </p>
+                    ) : (
+                        <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3" data-stagger>
+                            {loading
+                                ? Array.from({ length: 3 }, (_, i) => <RoomSkeleton key={i} />)
+                                : filteredRooms.map((room) => (
+                                    <article key={room.id} className="room-card" id={`room-card-${room.id}`}>
+                                        <div className="room-card-media">
+                                            <Image
+                                                src={room.image}
+                                                alt={room.title}
+                                                fill
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                className="room-card-image"
+                                            />
+                                            <div className="room-card-overlay" />
+                                            {room.badge && <div className="room-card-badge">{room.badge}</div>}
+                                            <div className="room-card-price-tag">
+                                                RM{room.price} <span>/ night</span>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
 
-                    {filterCriteria && filteredRooms.length === 0 && (
-                        <div className="mt-12 text-center">
-                            <button onClick={onReset} className="btn-dark">
-                                Reset Filters
-                            </button>
+                                        <div className="room-card-content">
+                                            <div className="room-card-type">{room.type}</div>
+
+                                            <h3 className="room-card-title">
+                                                {/* Stretched link: the whole card navigates to the detail
+                                                    page, while the Book button below stays independently
+                                                    clickable. No nested interactive elements. */}
+                                                <Link href={`/homestay/${room.id}`} className="room-card-link">
+                                                    {room.title}
+                                                </Link>
+                                            </h3>
+
+                                            <div className="room-card-location">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                                    <circle cx="12" cy="10" r="3" />
+                                                </svg>
+                                                {room.location}
+                                            </div>
+
+                                            <div className="room-card-divider" />
+
+                                            <div className="room-card-footer">
+                                                <div className="room-card-features">
+                                                    {room.rooms != null && (
+                                                        <span>{room.rooms} {room.rooms === 1 ? "Room" : "Rooms"}</span>
+                                                    )}
+                                                    <span>{room.beds} {room.beds === 1 ? "Bed" : "Beds"}</span>
+                                                    <span>{room.baths} {room.baths === 1 ? "Bath" : "Baths"}</span>
+                                                </div>
+
+                                                <button
+                                                    className="room-card-book"
+                                                    onClick={() => handleBook(room)}
+                                                    aria-label={`Book ${room.title}, RM${room.price} per night`}
+                                                >
+                                                    Book
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M5 12h14M12 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </article>
+                                ))}
                         </div>
                     )}
 
-                    <div className="mt-16">
-                        <SearchBar onSearch={onSearch} />
-                    </div>
+                    {filterCriteria && !loading && filteredRooms.length === 0 && (
+                        <div className="mt-12 text-center">
+                            <button onClick={onReset} className="btn-dark">
+                                Reset filters
+                            </button>
+                        </div>
+                    )}
                 </div>
             </section>
 

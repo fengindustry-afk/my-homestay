@@ -4,6 +4,11 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import Script from 'next/script';
+import WhatsAppFloat from "@/components/WhatsAppFloat";
+import JsonLd from "@/components/JsonLd";
+import SmoothScroll from "@/components/SmoothScroll";
+import ScrollFX from "@/components/ScrollFX";
+import ButtonFX from "@/components/ButtonFX";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -54,20 +59,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    // No scroll-smooth class here: Lenis owns scrolling and the two conflict.
+    <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Without JS, scroll-reveal can't fire — show everything up front. */}
+        {/* GSAP drives the reveals, so without JS nothing would ever animate in. */}
         <noscript>
-          <style>{`.reveal{opacity:1!important;transform:none!important}`}</style>
+          <style>{`[data-reveal],[data-stagger]>*{opacity:1!important;transform:none!important}`}</style>
         </noscript>
+        <JsonLd />
       </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
+          <SmoothScroll />
+          <ScrollFX />
+          <ButtonFX />
           {children}
+          <WhatsAppFloat />
           <SpeedInsights />
         </ThemeProvider>
         <Script
