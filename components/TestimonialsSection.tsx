@@ -48,7 +48,7 @@ function Stars({ count }: { count: number }) {
 
 export default function TestimonialsSection() {
     return (
-        <section className="section" style={{ background: "var(--surface)" }}>
+        <section id="testimonials" className="section" style={{ background: "var(--surface)" }}>
             <div className="mx-auto max-w-7xl px-6">
                 <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
                     <div className="lg:col-span-7" data-reveal>

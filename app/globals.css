@@ -214,6 +214,27 @@ body {
   flex-shrink: 0;
 }
 
+/* Skip link: hidden until focused, first Tab stop on the page. */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus-visible {
+  top: 12px;
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
 /* ===========================================================================
    Motion
    =========================================================================== */
@@ -621,8 +642,13 @@ body {
 }
 
 .nav-link:hover::after,
-.nav-link:focus-visible::after {
+.nav-link:focus-visible::after,
+.nav-link.is-active::after {
   width: 100%;
+}
+
+.nav-link.is-active {
+  color: var(--accent);
 }
 
 .mobile-menu-toggle {

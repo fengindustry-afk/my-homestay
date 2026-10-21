@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
+import { ScrollTrigger } from "@/lib/gsap";
 
 const links = [
     { href: "#home", label: "Home" },
@@ -9,13 +10,17 @@ const links = [
     { href: "#rooms", label: "Homestays" },
     { href: "#amenities", label: "Amenities" },
     { href: "#gallery", label: "Gallery" },
+    { href: "#testimonials", label: "Reviews" },
     { href: "#contact", label: "Contact" },
 ];
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [activeId, setActiveId] = useState("home");
     const progressRef = useRef<HTMLDivElement>(null);
+    const toggleRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         let frame = 0;
@@ -47,18 +52,64 @@ export default function Navbar() {
         };
     }, []);
 
-    // Escape closes the menu; body scroll locks while it's open.
+    // Active section: one trigger per linked section. Only the section crossing
+    // the middle of the viewport counts as current.
+    useEffect(() => {
+        const triggers = links.flatMap((link) => {
+            const id = link.href.slice(1);
+            const el = document.getElementById(id);
+            if (!el) return [];
+            return [
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: "top 45%",
+                    end: "bottom 45%",
+                    onToggle: (self) => {
+                        if (self.isActive) setActiveId(id);
+                    },
+                }),
+            ];
+        });
+        return () => triggers.forEach((t) => t.kill());
+    }, []);
+
+    // Mobile menu: focus moves in on open, Tab cycles inside, Escape closes,
+    // and focus returns to the toggle on close. Body scroll locks while open.
     useEffect(() => {
         if (!menuOpen) return;
+
+        const opener = toggleRef.current;
+        menuRef.current?.querySelector<HTMLElement>("a")?.focus();
+
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === "Escape") setMenuOpen(false);
+            if (e.key === "Escape") {
+                setMenuOpen(false);
+                return;
+            }
+            if (e.key !== "Tab" || !menuRef.current) return;
+
+            const focusable = [
+                ...(opener ? [opener] : []),
+                ...menuRef.current.querySelectorAll<HTMLElement>("a, button"),
+            ];
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
         };
+
         document.addEventListener("keydown", onKey);
         const previous = document.body.style.overflow;
         document.body.style.overflow = "hidden";
         return () => {
             document.removeEventListener("keydown", onKey);
             document.body.style.overflow = previous;
+            opener?.focus({ preventScroll: true });
         };
     }, [menuOpen]);
 
@@ -98,11 +149,19 @@ export default function Navbar() {
                 </Link>
 
                 <div className="hidden items-center gap-8 md:flex">
-                    {links.map((link) => (
-                        <a key={link.href} href={link.href} className="nav-link">
-                            {link.label}
-                        </a>
-                    ))}
+                    {links.map((link) => {
+                        const current = activeId === link.href.slice(1);
+                        return (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                className={`nav-link${current ? " is-active" : ""}`}
+                                aria-current={current ? "location" : undefined}
+                            >
+                                {link.label}
+                            </a>
+                        );
+                    })}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -116,6 +175,7 @@ export default function Navbar() {
                     </a>
 
                     <button
+                        ref={toggleRef}
                         className="mobile-menu-toggle md:hidden"
                         onClick={() => setMenuOpen(!menuOpen)}
                         aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -141,6 +201,7 @@ export default function Navbar() {
             {menuOpen && (
                 <div
                     id="mobile-menu"
+                    ref={menuRef}
                     className="fixed inset-0 top-[69px] md:hidden animate-fade-in"
                     style={{ background: "var(--background)" }}
                 >

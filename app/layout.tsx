@@ -75,6 +75,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <a href="#main" className="skip-link">Skip to content</a>
           <SmoothScroll />
           <ScrollFX />
           <ButtonFX />
