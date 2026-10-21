@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 const stats = [
@@ -54,6 +54,16 @@ const promises = [
 
 export default function AboutSection() {
     const [showCert, setShowCert] = useState(false);
+
+    // Escape closes the certificate, as the close button does.
+    useEffect(() => {
+        if (!showCert) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setShowCert(false);
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [showCert]);
 
     return (
         <section id="about" className="section" style={{ background: "var(--surface)" }}>
@@ -195,14 +205,17 @@ export default function AboutSection() {
 
                             <div className="flex flex-wrap gap-4">
                                 {[
-                                    { src: "/TCC Badge.png", title: "TCC Compliant", sub: "Verified 2026" },
-                                    { src: "/MuslimFriendly.png", title: "Muslim Friendly", sub: null },
-                                ].map((badge) => (
-                                    <button
+                                    { src: "/TCC Badge.png", title: "TCC Compliant", sub: "Verified 2026", cert: true },
+                                    { src: "/MuslimFriendly.png", title: "Muslim Friendly", sub: null, cert: false },
+                                ].map((badge) => {
+                                    // Only the TCC badge opens a document. The other is a plain label.
+                                    const Tag = badge.cert ? "button" : "span";
+                                    return (
+                                    <Tag
                                         key={badge.title}
-                                        onClick={() => setShowCert(true)}
+                                        onClick={badge.cert ? () => setShowCert(true) : undefined}
                                         className="badge-chip"
-                                        aria-label={`View ${badge.title} certification`}
+                                        aria-label={badge.cert ? `View ${badge.title} certification` : undefined}
                                     >
                                         <span className="badge-chip-media">
                                             <Image
@@ -223,8 +236,9 @@ export default function AboutSection() {
                                                 </span>
                                             )}
                                         </span>
-                                    </button>
-                                ))}
+                                    </Tag>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

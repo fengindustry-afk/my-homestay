@@ -31,14 +31,15 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  title: "Indah Morib Homestay — Your Home Away From Home",
+  title: "Indah Morib Homestay: Your Home Away From Home",
   description:
-    "Experience luxurious homestay living in Malaysia. Beautifully designed rooms, world-class amenities, and unforgettable memories await you at Indah Morib Homestay.",
+    "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
   keywords:
-    "homestay, Malaysia, vacation rental, luxury accommodation, holiday home",
+    "homestay Morib, homestay Selangor, family homestay Malaysia, private pool homestay, Banting homestay",
   openGraph: {
     title: "Indah Morib Homestay",
-    description: "Experience luxurious homestay living in Malaysia. Your perfect home away from home.",
+    description:
+      "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
     url: "https://indahmoribhomestay.vercel.app",
     siteName: "Indah Morib Homestay",
     images: [

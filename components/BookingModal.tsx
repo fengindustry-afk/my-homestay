@@ -36,6 +36,52 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const [checkOut, setCheckOut] = useState<Date | null>(null);
     const [discounts, setDiscounts] = useState<{ [key: string]: { roomId: number, percentage: number } }>({});
 
+    // `render` keeps the modal mounted long enough to play its exit. `visible`
+    // drives the CSS transition toward open or closed.
+    const [render, setRender] = useState(isOpen);
+    const [visible, setVisible] = useState(false);
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+    // Adjust state while rendering when isOpen flips, instead of inside an
+    // effect. React re-runs this component straight away with the new values.
+    if (prevIsOpen !== isOpen) {
+        setPrevIsOpen(isOpen);
+        if (isOpen) setRender(true);
+        else setVisible(false);
+    }
+
+    // Opening: wait two frames so the closed styles are painted first, or the
+    // browser skips the transition entirely.
+    useEffect(() => {
+        if (!isOpen || !room) return;
+        let inner = 0;
+        const outer = requestAnimationFrame(() => {
+            inner = requestAnimationFrame(() => setVisible(true));
+        });
+        return () => {
+            cancelAnimationFrame(outer);
+            cancelAnimationFrame(inner);
+        };
+    }, [isOpen, room]);
+
+    // Escape closes the modal, as the close button does.
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") onClose();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [isOpen, onClose]);
+
+    // Closing: unmount once the 260ms exit (matched in globals.css) has played.
+    // Reopening before it fires clears this timer, so the modal stays mounted.
+    useEffect(() => {
+        if (isOpen) return;
+        const timer = window.setTimeout(() => setRender(false), 260);
+        return () => window.clearTimeout(timer);
+    }, [isOpen]);
+
     const [selectedUnit, setSelectedUnit] = useState<string>("");
     const [selectedPackage, setSelectedPackage] = useState<string>("");
     const [unitsCount, setUnitsCount] = useState<number>(1);
@@ -441,7 +487,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
         };
     }, [room?.id, cover]);
 
-    if (!isOpen || !room) return null;
+    if (!render || !room) return null;
 
     const handlePay = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -487,7 +533,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                 window.location.href = data.url;
             } else {
                 const detail = data.detail || (typeof data.error === 'string' ? data.error : null);
-                setError(detail ? `Payment Error: ${detail}` : "Failed to initialize payment. Please try again.");
+                console.error("Payment init failed:", detail);
+                setError("Payment could not start. Please try again, or WhatsApp us to confirm your booking.");
             }
         } catch (err) {
             console.error("handlePay error:", err);
@@ -504,18 +551,18 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${visible ? "" : "pointer-events-none"}`}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                className={`modal-backdrop absolute inset-0 ${visible ? "is-visible" : ""}`}
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-5xl max-h-[95vh] scale-100 transform overflow-y-auto rounded-3xl bg-white p-0 shadow-2xl transition-all animate-scale-in">
+            <div className={`light modal-panel relative w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-3xl bg-white p-0 shadow-2xl ${visible ? "is-visible" : ""}`}>
                 <button
                     onClick={onClose}
-                    className="absolute right-6 top-6 z-20 rounded-full bg-white/80 p-2 text-gray-500 hover:text-gray-800 shadow-md backdrop-blur-md transition-all hover:scale-110"
+                    aria-label="Close booking" className="absolute right-6 top-6 z-20 rounded-full bg-white/80 p-2 text-gray-500 hover:text-gray-800 shadow-md backdrop-blur-md transition-all hover:scale-110"
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -572,7 +619,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </a>
                             </div>
                             <p className="text-sm text-[var(--text-muted)] mb-6" style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-                                {room.description || "Serene accommodation with premium amenities."}
+                                {room.description || "Room details will be added soon."}
                             </p>
 
                             {room.amenities && (
