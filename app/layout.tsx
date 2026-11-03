@@ -28,7 +28,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  title: "Indah Morib Homestay: Your Home Away From Home",
+  title: {
+    default: "Indah Morib Homestay: Your Home Away From Home",
+    template: "%s | Indah Morib Homestay",
+  },
   description:
     "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
   keywords:
