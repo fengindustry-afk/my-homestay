@@ -6,6 +6,7 @@ import { ArrowLeft, User, Bath, BedDouble, CheckCircle, ChefHat, Wifi, MonitorPl
 import BookingModal from "@/components/BookingModal";
 import ShaderBackground from "@/components/ShaderBackground";
 import type { Room } from "@/components/RoomsSection";
+import { BUSINESS, waLink } from "@/lib/site";
 
 /** Maps a free-text amenity to the closest icon in the set. */
 function amenityIcon(amenity: string) {
@@ -63,9 +64,9 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                             All homestays
                         </Link>
 
-                        <p className="hero-subtitle line-mask mt-10">
+                        <p className="hero-subtitle line-mask mt-10" lang="ms">
                             <span style={{ animationDelay: "0.1s" }}>
-                                {room.type || "Exclusive Homestay"}
+                                {room.type?.trim() || "Homestay"} di Morib, Banting
                             </span>
                         </p>
 
@@ -186,7 +187,7 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                             >
                                 <Image
                                     src={p}
-                                    alt={`${room.title}, view ${i + 1}`}
+                                    alt={`${room.title} di Morib, Banting, gambar ${i + 1}`}
                                     fill
                                     sizes="(max-width: 1024px) 50vw, 33vw"
                                     className="object-cover"
@@ -228,7 +229,7 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                         Check availability
                     </button>
                     <a
-                        href="https://wa.me/601157572001"
+                        href={waLink(`Hi ${BUSINESS.name}, saya nak tanya tentang ${room.title} (dari website)`)}
                         className="btn-outline"
                         target="_blank"
                         rel="noopener noreferrer"
