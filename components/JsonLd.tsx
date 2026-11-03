@@ -1,26 +1,25 @@
-const SITE_URL = "https://indahmoribhomestay.vercel.app";
+import { BUSINESS, SITE_URL } from "@/lib/site";
 
 // LodgingBusiness structured data — lets Google surface rich results
 // (name, address, phone, rating) for the homestay in local/Maps search.
 const schema = {
     "@context": "https://schema.org",
     "@type": "LodgingBusiness",
-    name: "Indah Morib Homestay",
+    name: BUSINESS.name,
     description:
         "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
     url: SITE_URL,
     image: `${SITE_URL}/og-image.jpg`,
-    telephone: ["+60 11-5757 2001", "+60 11-5504 3280"],
-    email: "indahmoribhomestay@gmail.com",
+    telephone: BUSINESS.phones,
+    email: BUSINESS.email,
     priceRange: "$$",
     address: {
         "@type": "PostalAddress",
-        streetAddress:
-            "Pt 704, Jalan Perdana 2 Indah Perdana, Kampung Endah",
-        addressLocality: "Banting",
-        postalCode: "42700",
-        addressRegion: "Selangor",
-        addressCountry: "MY",
+        streetAddress: BUSINESS.address.street,
+        addressLocality: BUSINESS.address.locality,
+        postalCode: BUSINESS.address.postalCode,
+        addressRegion: BUSINESS.address.region,
+        addressCountry: BUSINESS.address.country,
     },
     sameAs: ["https://facebook.com/indahmoribhomestay"],
 };

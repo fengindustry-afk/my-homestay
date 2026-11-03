@@ -1,4 +1,7 @@
+import { BUSINESS } from "@/lib/site";
+
 export default function Footer() {
+    const { address } = BUSINESS;
     return (
         <footer className="footer">
             <div className="mx-auto max-w-7xl px-6">
@@ -27,7 +30,7 @@ export default function Footer() {
                                     color: "var(--primary)",
                                 }}
                             >
-                                Indahmorib
+                                {BUSINESS.name}
                             </span>
                         </div>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.7, marginBottom: 20 }}>
@@ -65,20 +68,21 @@ export default function Footer() {
                     <div>
                         <h4 className="footer-title">Contact Info</h4>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.8, marginBottom: 8 }}>
-                            Pt 704, Jalan Perdana 2 Indah Perdana, Kampung Endah<br />
-                            Banting 42700,<br />
-                            Selangor
+                            {address.street}<br />
+                            {address.locality} {address.postalCode},<br />
+                            {address.region}
                         </p>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.8 }}>
-                            +60 11-5757 2001<br />
-                            +60 11-5504 3280<br />
-                            indahmoribhomestay@gmail.com
+                            {BUSINESS.phones.map((p) => (
+                                <span key={p}>{p}<br /></span>
+                            ))}
+                            {BUSINESS.email}
                         </p>
                     </div>
                 </div>
 
                 <div className="footer-bottom">
-                    <span>&copy; 2026 Indahmorib Homestay. All rights reserved.</span>
+                    <span>&copy; 2026 {BUSINESS.name}. All rights reserved.</span>
                 </div>
             </div>
         </footer>

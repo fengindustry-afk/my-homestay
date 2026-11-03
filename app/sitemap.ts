@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const baseUrl = "https://indahmoribhomestay.vercel.app";
+import { SITE_URL as baseUrl } from "@/lib/site";
 
 // No lastModified: rooms have no updated_at column, and a new Date() on every
 // request is noise that search engines ignore.
