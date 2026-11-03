@@ -1,5 +1,14 @@
 import { BUSINESS } from "@/lib/site";
 
+// Absolute so they also work from pages other than the homepage.
+const QUICK_LINKS = [
+    ["/#home", "Home"],
+    ["/#rooms", "Our Homestays"],
+    ["/#amenities", "Amenities"],
+    ["/#gallery", "Gallery"],
+    ["/#contact", "Contact"],
+] as const;
+
 export default function Footer() {
     const { address } = BUSINESS;
     return (
@@ -49,11 +58,10 @@ export default function Footer() {
                     {/* Quick Links */}
                     <div>
                         <h4 className="footer-title">Quick Links</h4>
-                        <a href="#home" className="footer-link">Home</a>
-                        <a href="#rooms" className="footer-link">Our Homestays</a>
-                        <a href="#amenities" className="footer-link">Amenities</a>
-                        <a href="#gallery" className="footer-link">Gallery</a>
-                        <a href="#contact" className="footer-link">Contact</a>
+                        {QUICK_LINKS.map(([href, label]) => (
+                            // Plain <a>, not next/link: Lenis smooth-scrolls same-page anchors with the navbar offset.
+                            <a key={href} href={href} className="footer-link">{label}</a>
+                        ))}
                     </div>
 
                     {/* Homestay Types */}

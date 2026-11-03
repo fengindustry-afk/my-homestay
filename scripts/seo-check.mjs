@@ -78,6 +78,11 @@ function inspectPage(path, html, { room = false } = {}) {
         check("jsonld", `${path} JSON-LD block ${i + 1} has no aggregateRating`, !block.includes("aggregateRating"));
     }
 
+    // WhatsApp links carry a "(dari website)" tag so the owner sees which chats the site sent.
+    const waLinks = [...html.matchAll(/href="(https:\/\/wa\.me\/[^"]*)"/g)].map((m) => decode(m[1]));
+    const untagged = waLinks.filter((href) => !decodeURIComponent(href).includes("(dari website)"));
+    check("wa-tag", `${path} WhatsApp links are tagged "(dari website)"`, untagged.length === 0, `${untagged.length} of ${waLinks.length} untagged`);
+
     if (room) {
         check("og-image", `${path} has og:image`, attr(html, /<meta property="og:image" content="([^"]*)"/) !== null);
         check("room-h1", `${path} renders its <h1> on the server`, /<h1[\s>]/.test(withoutScripts(html)));

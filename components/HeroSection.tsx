@@ -1,5 +1,6 @@
 import Image from "next/image";
 import ShaderBackground from "./ShaderBackground";
+import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 const HEADLINE = ["Where family", "gathers, and", "the day unwinds."];
 
@@ -47,7 +48,7 @@ export default function HeroSection() {
                         </svg>
                     </a>
                     <a
-                        href="https://wa.me/601157572001"
+                        href={waLink(WA_DEFAULT_MESSAGE)}
                         className="btn-outline"
                         target="_blank"
                         rel="noopener noreferrer"

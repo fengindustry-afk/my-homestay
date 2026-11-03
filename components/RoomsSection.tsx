@@ -5,6 +5,7 @@ import Link from "next/link";
 import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
+import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 export interface Room {
     id: number;
@@ -204,7 +205,7 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                     {loadError ? (
                         <p className="text-center text-sm" style={{ color: "#F87171" }} role="alert">
                             Homestays are taking longer than usual.{" "}
-                            <a href="https://wa.me/601157572001" target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
+                            <a href={waLink(WA_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
                             and we will send you the list.
                         </p>
                     ) : (

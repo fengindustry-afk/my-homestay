@@ -1,10 +1,15 @@
 import ShaderBackground from "./ShaderBackground";
-import { BUSINESS } from "@/lib/site";
+import { BUSINESS, WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 const CONTACTS = [
     { label: "Phone", value: BUSINESS.phones[0], href: `tel:${BUSINESS.phones[0].replace(/[^+\d]/g, "")}` },
     { label: "Email", value: BUSINESS.email.split("@")[0], href: `mailto:${BUSINESS.email}` },
-    { label: "Location", value: `${BUSINESS.address.locality}, ${BUSINESS.address.region}`, href: "https://maps.google.com/?q=Indah+Morib+Homestay+Banting+Selangor" },
+    {
+        label: "Location",
+        value: `${BUSINESS.address.locality}, ${BUSINESS.address.region}`,
+        // The main Google profile's share link once known; a Maps search until then.
+        href: BUSINESS.mapsUrl ?? "https://maps.google.com/?q=Indah+Morib+Homestay+Banting+Selangor",
+    },
 ];
 
 export default function CTASection() {
@@ -64,7 +69,7 @@ export default function CTASection() {
                     data-reveal-delay="260"
                 >
                     <a
-                        href="https://wa.me/601157572001"
+                        href={waLink(WA_DEFAULT_MESSAGE)}
                         className="btn-primary"
                         id="whatsapp-btn"
                         target="_blank"

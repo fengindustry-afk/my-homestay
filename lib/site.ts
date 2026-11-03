@@ -41,6 +41,9 @@ export const BUSINESS = {
 // Google Search Console HTML-tag token. Empty renders no tag.
 export const GOOGLE_SITE_VERIFICATION = "";
 
+// The "(dari website)" tag lets the owner see in WhatsApp which chats the site sent.
+export const WA_DEFAULT_MESSAGE = `Hi ${BUSINESS.name}, saya nak tanya tentang tempahan (dari website)`;
+
 export function waLink(message: string): string {
     return `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(message)}`;
 }
