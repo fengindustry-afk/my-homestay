@@ -116,6 +116,52 @@ export function roomJsonLd(room: RoomSeoInput, photos: string[], siteUrl: string
     return [place, breadcrumb];
 }
 
+// Matches BUSINESS in lib/site.ts; passed in because this file has no imports.
+export type LodgingInput = {
+    name: string;
+    phones: string[];
+    email: string;
+    address: { street: string; locality: string; postalCode: string; region: string; country: string };
+    geo: { lat: number; lng: number } | null;
+    mapsUrl: string | null;
+    checkIn: string;
+    checkOut: string;
+    priceRange: string;
+    amenities: string[];
+    sameAs: string[];
+};
+
+// The business entity every page carries. Room JSON-LD points at its @id.
+export function lodgingJsonLd(business: LodgingInput, siteUrl: string, description: string): Record<string, unknown> {
+    const ld: Record<string, unknown> = {
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        "@id": `${siteUrl}/#lodging`,
+        name: business.name,
+        description,
+        url: siteUrl,
+        image: [`${siteUrl}/images/hero-pool.jpg`, `${siteUrl}/og-image.jpg`],
+        telephone: business.phones,
+        email: business.email,
+        priceRange: business.priceRange,
+        checkinTime: business.checkIn,
+        checkoutTime: business.checkOut,
+        address: {
+            "@type": "PostalAddress",
+            streetAddress: business.address.street,
+            addressLocality: business.address.locality,
+            postalCode: business.address.postalCode,
+            addressRegion: business.address.region,
+            addressCountry: business.address.country,
+        },
+        amenityFeature: business.amenities.map((name) => ({ "@type": "LocationFeatureSpecification", name, value: true })),
+        sameAs: business.sameAs,
+    };
+    if (business.geo) ld.geo = { "@type": "GeoCoordinates", latitude: business.geo.lat, longitude: business.geo.lng };
+    if (business.mapsUrl) ld.hasMap = business.mapsUrl;
+    return ld;
+}
+
 // JSON for a <script type="application/ld+json"> tag. Escaping "<" stops
 // admin-entered text such as "</script>" from closing the tag early.
 export function toJsonLd(data: unknown): string {

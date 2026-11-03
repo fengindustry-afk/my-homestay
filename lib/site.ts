@@ -23,6 +23,18 @@ export const BUSINESS = {
     checkIn: "15:00",
     checkOut: "12:00",
     priceRange: "RM150 - RM1,800",
+    // Compound-wide facts backed by the room data and guest reviews.
+    amenities: [
+        "Swimming pool",
+        "Muslimah-friendly covered pool",
+        "Children's pool",
+        "Free Wi-Fi",
+        "Air conditioning",
+        "Free parking",
+        "Barbecue pit",
+        "Prayer room",
+        "Event hall",
+    ],
     sameAs: ["https://facebook.com/indahmoribhomestay", "https://indahmorib.orderla.my"],
 };
 

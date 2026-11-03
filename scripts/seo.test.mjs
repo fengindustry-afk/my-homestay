@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BUSINESS, SITE_URL, waLink } from "../lib/site.ts";
-import { isHall, roomDescription, roomJsonLd, roomTitle, toJsonLd } from "../lib/seo.ts";
+import { isHall, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd } from "../lib/seo.ts";
 
 // Fixtures copied from rooms.json (the DB snapshot), images shortened.
 const h3 = { id: 6, title: "Homestay 3", type: "Holiday Home", price: 1500, beds: 5, baths: 4, guests: 10,
@@ -121,4 +121,39 @@ test("toJsonLd escapes < so admin text cannot close the script tag", () => {
     const s = toJsonLd(value);
     assert.ok(!s.includes("</script>"), s);
     assert.deepEqual(JSON.parse(s), value);
+});
+
+test("lodging JSON-LD takes name, address, phones, times and price range from BUSINESS", () => {
+    const ld = lodgingJsonLd(BUSINESS, SITE_URL, "desc");
+    assert.equal(ld["@type"], "LodgingBusiness");
+    assert.equal(ld["@id"], `${SITE_URL}/#lodging`);
+    assert.equal(ld.name, BUSINESS.name);
+    assert.deepEqual(ld.telephone, BUSINESS.phones);
+    assert.equal(ld.address.streetAddress, BUSINESS.address.street);
+    assert.equal(ld.address.postalCode, "42700");
+    assert.equal(ld.checkinTime, "15:00");
+    assert.equal(ld.checkoutTime, "12:00");
+    assert.equal(ld.priceRange, BUSINESS.priceRange);
+    assert.deepEqual(ld.sameAs, BUSINESS.sameAs);
+    assert.equal(ld.image[0], `${SITE_URL}/images/hero-pool.jpg`);
+});
+
+test("lodging JSON-LD lists the compound's amenities as true features", () => {
+    const names = lodgingJsonLd(BUSINESS, SITE_URL, "d").amenityFeature.map((f) => f.value === true && f.name);
+    for (const a of ["Swimming pool", "Muslimah-friendly covered pool", "Children's pool", "Prayer room", "Event hall"]) {
+        assert.ok(names.includes(a), `missing ${a}`);
+    }
+});
+
+test("lodging JSON-LD leaves out geo and hasMap until each is known", () => {
+    const unknown = lodgingJsonLd(BUSINESS, SITE_URL, "d");
+    assert.equal(unknown.geo, undefined);
+    assert.equal(unknown.hasMap, undefined);
+    const known = lodgingJsonLd({ ...BUSINESS, geo: { lat: 2.8, lng: 101.5 }, mapsUrl: "https://maps.app.goo.gl/x" }, SITE_URL, "d");
+    assert.deepEqual(known.geo, { "@type": "GeoCoordinates", latitude: 2.8, longitude: 101.5 });
+    assert.equal(known.hasMap, "https://maps.app.goo.gl/x");
+});
+
+test("lodging JSON-LD never carries review or rating markup", () => {
+    assert.doesNotMatch(JSON.stringify(lodgingJsonLd(BUSINESS, SITE_URL, "d")), /aggregateRating|"review"/);
 });
