@@ -93,7 +93,8 @@ async function main() {
     if (home.status === 200) {
         const roomLinks = [...home.html.matchAll(/href="(\/homestay\/\d+)"/g)].map((m) => m[1]);
         check("room-links", "/ links to room pages in its HTML", roomLinks.length > 0, "0 links to /homestay/*");
-        if (roomLinks.length) roomPath = roomLinks[0];
+        // Prefer a unit page: the hall (/homestay/13) is always checked separately.
+        roomPath = roomLinks.find((p) => p !== "/homestay/13") ?? roomPath;
         check("kolam", "/ has Malay text (\"kolam\")", /kolam/i.test(withoutScripts(home.html)));
         inspectPage("/", home.html);
     }
