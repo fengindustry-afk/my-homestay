@@ -107,13 +107,15 @@ export default function Navbar() {
 
                 <div className="flex items-center gap-3">
                     <ThemeToggle />
-                    <a
-                        href="#rooms"
-                        className="btn-primary hidden md:inline-flex"
-                        style={{ padding: "11px 22px", fontSize: "0.72rem" }}
-                    >
-                        Book Now
-                    </a>
+                    <div className="hidden md:block">
+                        <a
+                            href="#rooms"
+                            className="btn-primary"
+                            style={{ padding: "11px 22px", fontSize: "0.72rem" }}
+                        >
+                            Book Now
+                        </a>
+                    </div>
 
                     <button
                         className="mobile-menu-toggle md:hidden"

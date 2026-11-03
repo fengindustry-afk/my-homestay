@@ -551,7 +551,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--accent-light);
+  background: var(--accent-dark);
   box-shadow: var(--shadow-gold);
 }
 
@@ -1776,5 +1776,6 @@ body {
 
   .room-card-book {
     padding: 12px 18px;
+    min-height: 44px;
   }
 }
