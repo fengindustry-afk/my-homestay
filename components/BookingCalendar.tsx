@@ -286,7 +286,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
             {/* Legend */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-6 border-t border-[var(--border)] pt-4 text-xs font-medium text-[var(--text-muted)]">
                 <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[var(--primary)]" />
+                    <div className="h-3 w-3 rounded-full border border-[var(--primary)]" />
                     <span>Available</span>
                 </div>
                 <div className="flex items-center gap-2">
