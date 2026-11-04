@@ -31,34 +31,38 @@ const images = [
 export default function GallerySection() {
     return (
         <section id="gallery" className="section">
-            <div className="mx-auto max-w-7xl px-6">
-                <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
-                    <div className="lg:col-span-7" data-reveal>
-                        <p className="section-tag">04 &nbsp;/&nbsp; Gallery</p>
-                        <h2 className="section-title" style={{ maxWidth: 560 }}>
-                            A glimpse of <em style={{ color: "var(--accent)" }}>Indahmorib</em>
-                        </h2>
-                    </div>
-                    <div className="lg:col-span-5" data-reveal data-reveal-delay="120">
-                        <p className="section-description">
-                            The grounds, the halls, and the water. Photographed as they are.
-                        </p>
-                    </div>
+            <div className="wrap gallery-head" data-reveal>
+                <div>
+                    <p className="section-tag">Gallery</p>
+                    <h2 className="section-title gallery-title">
+                        <span className="title-italic">A glimpse of Indah Morib</span>
+                    </h2>
                 </div>
+                <p className="section-description">
+                    The grounds, the halls, and the water. Photographed as they are.
+                </p>
+            </div>
 
-                <div className="gallery-grid" data-stagger>
-                    {images.map((img, i) => (
-                        <div key={img.src} className="gallery-item" id={`gallery-item-${i}`}>
-                            <Image
-                                src={img.src}
-                                alt={img.alt}
-                                fill
-                                sizes={i === 0 ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 25vw"}
-                            />
-                            <span className="gallery-caption">{img.caption}</span>
-                        </div>
-                    ))}
-                </div>
+            {/* Full bleed. On phones it scrolls sideways, so it is a focusable,
+                labelled region the keyboard can reach. */}
+            <div
+                className="gallery-strip"
+                role="region"
+                aria-label="Photos of Indah Morib"
+                tabIndex={0}
+                data-stagger
+            >
+                {images.map((img, i) => (
+                    <figure key={img.src} className="gallery-item" id={`gallery-item-${i}`}>
+                        <Image
+                            src={img.src}
+                            alt={img.alt}
+                            fill
+                            sizes="(max-width: 768px) 78vw, 20vw"
+                        />
+                        <figcaption className="gallery-caption">{img.caption}</figcaption>
+                    </figure>
+                ))}
             </div>
         </section>
     );
