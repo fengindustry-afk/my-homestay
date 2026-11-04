@@ -240,6 +240,11 @@ body {
   display: block;
 }
 
+/* Italic word inside a roman line. */
+.title-em {
+  font-style: italic;
+}
+
 .title-indent {
   padding-left: clamp(1.25rem, 4.5vw, 4.5rem);
 }
@@ -707,7 +712,7 @@ body {
 }
 
 .nav-glass.scrolled {
-  background: color-mix(in srgb, var(--background) 82%, transparent);
+  background: color-mix(in srgb, var(--background) 94%, transparent);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border-bottom-color: var(--border);
@@ -769,14 +774,17 @@ body {
   gap: 24px;
 }
 
+/* From lg the wordmark sits in the middle column even when the links are
+   hidden: the left column stays empty below xl, so the centre never drifts. */
 @media (min-width: 1024px) {
   .nav-bar {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   }
 }
 
 .nav-wordmark {
+  grid-column: 2;
   font-family: var(--font-playfair, Georgia, serif);
   font-size: 1.5rem;
   font-weight: 400;
@@ -789,23 +797,26 @@ body {
 .nav-links {
   display: none;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
+}
+
+.nav-links-start {
+  grid-column: 1;
+  justify-self: start;
 }
 
 .nav-end {
+  grid-column: 3;
   display: flex;
   align-items: center;
   gap: 12px;
   justify-self: end;
 }
 
-@media (min-width: 1024px) {
+/* Full link row only from xl. Below that the hamburger takes over. */
+@media (min-width: 1280px) {
   .nav-links {
     display: flex;
-  }
-
-  .nav-links-start {
-    justify-self: start;
   }
 }
 
@@ -1028,10 +1039,12 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg,
+  background:
+    radial-gradient(ellipse 60% 48% at 50% 55%, rgba(0, 0, 0, 0.42), transparent 72%),
+    linear-gradient(180deg,
       rgba(0, 0, 0, 0.5) 0%,
-      rgba(0, 0, 0, 0.12) 34%,
-      rgba(0, 0, 0, 0.2) 60%,
+      rgba(0, 0, 0, 0.2) 40%,
+      rgba(0, 0, 0, 0.3) 62%,
       rgba(0, 0, 0, 0.72) 100%);
 }
 
@@ -1483,6 +1496,53 @@ body {
   line-height: 1.6;
 }
 
+/* Intro: heading left, copy right, both aligned to the top of the heading. */
+.about-intro {
+  display: grid;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .about-intro {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 80px;
+  }
+
+  .about-intro .section-title {
+    font-size: clamp(2.375rem, 4.2vw, 3.75rem);
+  }
+}
+
+.promise-list {
+  list-style: none;
+  margin: 28px 0 36px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promise-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: var(--primary-light);
+}
+
+.promise-tick {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+}
+
 /* Accreditation chip: a hairline pill with the mark in a small circle. */
 .badge-chip {
   display: flex;
@@ -1786,6 +1846,15 @@ body {
       rgba(0, 0, 0, 0.8) 0%,
       rgba(0, 0, 0, 0.35) 50%,
       rgba(0, 0, 0, 0.45) 100%);
+}
+
+.cta-inner {
+  position: relative;
+  width: 100%;
+}
+
+.recognition-inner {
+  position: relative;
 }
 
 .cta-top {
@@ -2159,7 +2228,7 @@ body {
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
   .mobile-menu-toggle {
     display: flex;
   }

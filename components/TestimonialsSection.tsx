@@ -53,8 +53,7 @@ export default function TestimonialsSection() {
                 <div className="mb-16 text-center" data-reveal>
                     <p className="section-tag">Testimonials</p>
                     <h2 className="section-title">
-                        <span className="title-italic">What our guests</span>
-                        <span className="title-roman">say</span>
+                        <span className="title-roman">What our <em className="title-em">guests</em> say</span>
                     </h2>
                     <p className="section-description mx-auto mt-6">
                         Unedited reviews from families and companies who booked the compound.

@@ -77,7 +77,7 @@ const amenities = [
             </svg>
         ),
         title: "Parking",
-        desc: "Free private parking space for every guest",
+        desc: "Free private parking for every guest",
     },
    /* {
         icon: (

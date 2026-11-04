@@ -52,7 +52,7 @@ export default function AboutSection() {
                             <p className="section-description" style={{ marginBottom: 16 }}>
                                 Nestled in the heart of Malaysia, Indah Morib Homestay offers a
                                 blend of modern comfort and warm hospitality. Each room is
-                                designed around how families actually use a space together.
+                                designed around how families actually use a home together.
                             </p>
                             <p className="section-description">
                                 Whether you&apos;re here for a family getaway, a celebration, or a

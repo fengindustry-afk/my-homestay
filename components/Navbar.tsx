@@ -12,9 +12,9 @@ const links = [
     { href: "#contact", label: "Contact" },
 ];
 
-// Split across the wordmark on wide screens: three links each side.
-const leftLinks = links.slice(0, 3);
-const rightLinks = links.slice(3);
+// Split across the wordmark on wide screens: five links left, Contact right.
+const leftLinks = links.slice(0, 5);
+const rightLinks = links.slice(5);
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -127,11 +127,11 @@ export default function Navbar() {
                 style={{ background: "var(--accent)", transform: "scaleX(0)" }}
             />
 
-            {/* Below lg: full-height overlay under the bar, links entering in sequence */}
+            {/* Below xl: full-height overlay under the bar, links entering in sequence */}
             {menuOpen && (
                 <div
                     id="mobile-menu"
-                    className="absolute inset-x-0 top-full h-[calc(100dvh-4.75rem)] overflow-y-auto lg:hidden animate-fade-in"
+                    className="absolute inset-x-0 top-full h-[calc(100dvh-4.75rem)] overflow-y-auto xl:hidden animate-fade-in"
                     style={{ background: "var(--background)" }}
                 >
                     <div className="flex flex-col px-8 pt-10">
