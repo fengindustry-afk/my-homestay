@@ -148,7 +148,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                     {showPrev && (
                         <button
                             onClick={() => setCurrentDate(addMonths(currentDate, -1))}
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--accent)]">
                                 <polyline points="15 18 9 12 15 6" />
@@ -156,14 +156,14 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                         </button>
                     )}
                 </div>
-                <h3 className="text-lg font-semibold text-[var(--primary)]">
+                <h3 className="font-display text-xl font-normal text-[var(--primary)]">
                     {format(monthDate, "MMMM yyyy")}
                 </h3>
                 <div className="w-8">
                     {showNext && (
                         <button
                             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--accent)]">
                                 <polyline points="9 18 15 12 9 6" />
@@ -228,7 +228,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
               ${!isCurrentMonth ? "text-transparent pointer-events-none" : ""}
               ${isBooked ? "bg-gray-100 text-gray-300 cursor-not-allowed line-through" : ""}
               ${isPastDay ? "text-gray-200 cursor-not-allowed" : ""}
-              ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-white shadow-md scale-110" : "hover:bg-gray-50 text-[var(--primary)]"}
+              ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-[var(--accent-contrast)] scale-110" : "hover:bg-[var(--surface)] text-[var(--primary)]"}
               ${isBooked && "hover:bg-transparent"}
               ${discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
             `}>
@@ -263,7 +263,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     };
 
     return (
-        <div className="w-full bg-white rounded-xl">
+        <div className="w-full bg-[var(--surface-raised)] rounded-[var(--radius-md)]">
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent)] border-t-transparent" />

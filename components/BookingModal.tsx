@@ -559,10 +559,10 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             />
 
             {/* Modal Content */}
-            <div className={`light modal-panel relative w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-3xl bg-white p-0 shadow-2xl ${visible ? "is-visible" : ""}`}>
+            <div className={`light modal-panel relative w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-raised)] p-0 shadow-2xl ${visible ? "is-visible" : ""}`}>
                 <button
                     onClick={onClose}
-                    aria-label="Close booking" className="absolute right-6 top-6 z-20 rounded-full bg-white/80 p-2 text-gray-500 hover:text-gray-800 shadow-md backdrop-blur-md transition-all hover:scale-110"
+                    aria-label="Close booking" className="absolute right-6 top-6 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--primary)] transition-colors hover:bg-[var(--surface-dark)]"
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -609,7 +609,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
                         <div className="p-8">
                             <div className="flex items-start justify-between mb-2 gap-4">
-                                <h2 className="text-2xl font-bold text-[var(--primary)] leading-tight">{room.title}</h2>
+                                <h2 className="font-display text-3xl font-normal text-[var(--primary)] leading-tight">{room.title}</h2>
                                 <a
                                     href={`/homestay/${room.id}`}
                                     className="text-xs font-bold text-white bg-[var(--primary)] hover:bg-[var(--accent)] transition-colors px-4 py-2 rounded-full whitespace-nowrap shadow-md flex items-center gap-1"
@@ -637,7 +637,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                             )}
 
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between rounded-2xl bg-[var(--surface)] p-5 border border-[var(--border)] transition-all hover:shadow-inner">
+                                <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--surface)] p-5 border border-[var(--border)] transition-all">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Base Price</span>
                                         <span className="text-lg font-bold text-[var(--primary)]">
@@ -653,7 +653,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl bg-[var(--primary)] p-5 text-white shadow-xl shadow-[var(--primary)]/20">
+                                <div className="rounded-[var(--radius-md)] bg-[var(--primary)] p-5 text-white">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Total Amount</span>
                                         <span className="text-xs px-2 py-0.5 bg-white/20 rounded-full font-medium">Auto-calculated</span>
@@ -663,7 +663,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
                                 {/* Discount Display */}
                                 {discountDetails.percentage > 0 && (
-                                    <div className="rounded-2xl bg-green-50 border-2 border-green-200 p-4 shadow-lg">
+                                    <div className="rounded-[var(--radius-md)] bg-green-50 border border-green-200 p-4">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
@@ -702,7 +702,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-[var(--primary)]">Select Stay Dates</h3>
+                                    <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Select Stay Dates</h3>
                                     <p className="text-sm text-[var(--text-muted)]">Check availability for {selectedUnit || "this homestay"}</p>
                                 </div>
                             </div>
@@ -724,7 +724,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-[var(--primary)]">Select Package</h3>
+                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Select Package</h3>
                                         <p className="text-sm text-[var(--text-muted)]">Choose a package for your stay</p>
                                     </div>
                                 </div>
@@ -734,9 +734,9 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                             key={pkg.name}
                                             type="button"
                                             onClick={() => setSelectedPackage(pkg.name)}
-                                            className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${selectedPackage === pkg.name
-                                                ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
-                                                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                            className={`flex flex-col items-center justify-center p-4 rounded-[var(--radius-md)] border transition-all ${selectedPackage === pkg.name
+                                                ? "border-[var(--accent)] bg-[var(--accent-light)] text-[var(--accent-dark)] translate-y-[-2px]"
+                                                : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]"
                                                 }`}
                                         >
                                             <span className="text-sm font-bold">{pkg.name}</span>
@@ -750,13 +750,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
                         {/* Moved Unit Selection to Top */}
                         {units.length > 1 && (
-                            <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-3xl border border-[var(--border)] shadow-sm">
+                            <div className="mb-10 bg-[var(--surface-dark)] p-6 rounded-[var(--radius-lg)] border border-[var(--border)]">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[var(--primary)] shadow-sm">
+                                    <div className="h-10 w-10 rounded-xl bg-[var(--surface-raised)] flex items-center justify-center text-[var(--primary)] shadow-sm">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-[var(--primary)]">Choose Unit</h3>
+                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Choose Unit</h3>
                                         <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
                                     </div>
                                 </div>
@@ -781,11 +781,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                     // Don't reset dates when switching units, 
                                                     // because availability is already checked
                                                 }}
-                                                className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all ${isSelected
-                                                    ? "border-[var(--accent)] bg-white text-[var(--accent-dark)] shadow-md translate-y-[-2px]"
+                                                className={`flex flex-col items-center justify-center p-5 rounded-[var(--radius-md)] border transition-all ${isSelected
+                                                    ? "border-[var(--accent)] bg-[var(--surface-raised)] text-[var(--accent-dark)] translate-y-[-2px]"
                                                     : unavailableUnits.includes(u)
                                                         ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
-                                                        : "border-transparent bg-white/50 text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-white"
+                                                        : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-raised)]"
                                                     }`}
                                             >
                                                 <span className="text-sm font-black uppercase tracking-tight">{u}</span>
@@ -803,7 +803,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
                         {isMultiUnitRoom && (
                             <div className="mb-10 text-center">
-                                <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-2xl border border-[var(--border)] shadow-sm">
+                                <div className="inline-flex items-center gap-3 bg-[var(--surface-dark)] px-6 py-3 rounded-[var(--radius-md)] border border-[var(--border)] shadow-sm">
                                     <div className="h-8 w-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center text-sm font-black">
                                         {unitsCount}
                                     </div>
@@ -821,19 +821,19 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-[var(--primary)]">Select Add Ons</h3>
+                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Select Add Ons</h3>
                                         <p className="text-sm text-[var(--text-muted)]">Enhance your stay</p>
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
+                                    <label className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] cursor-pointer transition-all">
                                         <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.bbq} onChange={(e) => setAddOns({ ...addOns, bbq: e.target.checked })} />
                                         <div>
                                             <div className="text-sm font-bold text-[var(--primary)]">Barbecue Pit</div>
                                             <div className="text-xs text-[var(--text-muted)]">+RM30</div>
                                         </div>
                                     </label>
-                                    <label className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:bg-white cursor-pointer transition-all">
+                                    <label className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] cursor-pointer transition-all">
                                         <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.cradle} onChange={(e) => setAddOns({ ...addOns, cradle: e.target.checked })} />
                                         <div>
                                             <div className="text-sm font-bold text-[var(--primary)]">Cradle</div>
@@ -841,13 +841,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         </div>
                                     </label>
 
-                                    <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
+                                    <div className="p-4 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)]">
                                         <div className="flex items-center justify-between mb-3">
                                             <div>
                                                 <div className="text-sm font-bold text-[var(--primary)]">Karaoke Set</div>
                                                 <div className="text-xs text-[var(--text-muted)]">RM25/hour or RM150/day</div>
                                             </div>
-                                            <select className="border border-[var(--border)] rounded-lg p-2 text-sm bg-white" value={addOns.karaoke} onChange={(e) => setAddOns({ ...addOns, karaoke: e.target.value })}>
+                                            <select className="border border-[var(--border)] rounded-[var(--radius-sm)] p-2 text-sm bg-[var(--surface-raised)]" value={addOns.karaoke} onChange={(e) => setAddOns({ ...addOns, karaoke: e.target.value })}>
                                                 <option value="none">None</option>
                                                 <option value="hour">Per Hour</option>
                                                 <option value="day">Per Day</option>
@@ -856,13 +856,13 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         {addOns.karaoke === 'hour' && (
                                             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
                                                 <span className="text-xs text-[var(--text-muted)]">Number of hours:</span>
-                                                <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeHours} onChange={(e) => setAddOns({ ...addOns, karaokeHours: parseInt(e.target.value) || 1 })} />
+                                                <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-[var(--radius-sm)] p-1 text-sm bg-[var(--surface-raised)]" value={addOns.karaokeHours} onChange={(e) => setAddOns({ ...addOns, karaokeHours: parseInt(e.target.value) || 1 })} />
                                             </div>
                                         )}
                                         {addOns.karaoke === 'day' && (
                                             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
                                                 <span className="text-xs text-[var(--text-muted)]">Number of days:</span>
-                                                <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-md p-1 text-sm bg-white" value={addOns.karaokeDays} onChange={(e) => setAddOns({ ...addOns, karaokeDays: parseInt(e.target.value) || 1 })} />
+                                                <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-[var(--radius-sm)] p-1 text-sm bg-[var(--surface-raised)]" value={addOns.karaokeDays} onChange={(e) => setAddOns({ ...addOns, karaokeDays: parseInt(e.target.value) || 1 })} />
                                             </div>
                                         )}
                                     </div>
@@ -877,7 +877,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                                 </div>
-                                <h3 className="text-xl font-bold text-[var(--primary)]">Guest Information</h3>
+                                <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Guest Information</h3>
                             </div>
 
                             <form onSubmit={handlePay} className="grid md:grid-cols-2 gap-6">
@@ -888,7 +888,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         required
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                         placeholder="Enter your name"
                                     />
                                 </div>
@@ -898,7 +898,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <input
                                         type="text"
                                         required
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                         placeholder="000000000000"
                                         value={icNumber}
                                         onChange={(e) => setIcNumber(e.target.value)}
@@ -912,7 +912,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         required
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                         placeholder="0123456789"
                                     />
                                 </div>
@@ -925,7 +925,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         min={isHall ? "08:00" : "15:00"}
                                         value={checkInTime}
                                         onChange={(e) => setCheckInTime(e.target.value)}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                     />
                                     <span className="text-[10px] text-gray-500 mt-1 block">Earliest check-in is {isHall ? "8:00 AM (08:00)" : "3:00 PM (15:00)"}</span>
                                 </div>
@@ -937,7 +937,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         required
                                         value={checkOutTime}
                                         onChange={(e) => setCheckOutTime(e.target.value)}
-                                        className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--accent)] focus:bg-white focus:shadow-lg"
+                                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                     />
                                     <span className="text-[10px] text-gray-500 mt-1 block">
                                         {isHall
@@ -957,7 +957,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="relative group w-full overflow-hidden rounded-2xl bg-[var(--primary)] py-4 text-sm font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-[var(--foreground)] hover:shadow-2xl hover:-translate-y-1 disabled:opacity-70 disabled:translate-y-0"
+                                        className="relative group w-full overflow-hidden rounded-full bg-[var(--primary)] py-4 text-sm font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-[var(--foreground)] hover:shadow-2xl hover:-translate-y-1 disabled:opacity-70 disabled:translate-y-0"
                                     >
                                         <div className="relative z-10 flex items-center justify-center gap-3">
                                             {loading ? (
@@ -981,7 +981,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
                             </form>
 
-                            <div className="mt-8 flex items-center justify-center gap-4 rounded-2xl bg-gray-50 p-6 border border-dashed border-gray-200">
+                            <div className="mt-8 flex items-center justify-center gap-4 rounded-[var(--radius-md)] bg-[var(--surface)] p-6 border border-[var(--border)]">
                                 <div className="h-16 w-16 flex-shrink-0 bg-white rounded-xl shadow-sm flex items-center justify-center p-2 border border-gray-100 overflow-hidden group hover:scale-110 transition-transform">
                                     <img
                                         src="/feng-logo.png"
