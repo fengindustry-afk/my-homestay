@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, User, Bath, BedDouble, CheckCircle, ChefHat, Wifi, MonitorPlay, Car, Home } from "lucide-react";
 import BookingModal from "@/components/BookingModal";
-import ShaderBackground from "@/components/ShaderBackground";
 import type { Room } from "@/components/RoomsSection";
 import { BUSINESS, waLink } from "@/lib/site";
 
@@ -46,172 +45,115 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
         },
     ].filter(Boolean) as { icon: React.ReactNode; title: string }[];
 
+    const askLink = waLink(`Hi ${BUSINESS.name}, saya nak tanya tentang ${room.title} (dari website)`);
+
     return (
-        <div
-            className="min-h-screen overflow-x-hidden pb-24"
-            style={{ background: "var(--background)", color: "var(--foreground)" }}
-        >
-            {/* Hero */}
-            <header className="relative flex min-h-[88vh] items-center overflow-hidden px-6 pb-20 pt-28 lg:px-16">
-                <ShaderBackground intensity={0.85} className="absolute inset-0 z-0" />
+        <div className="detail-page">
+            {/* Hero: full-bleed photograph with the title over a scrim. */}
+            <header className="on-media detail-hero">
+                <Image
+                    src={mainImage}
+                    alt={room.title}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover"
+                />
+                <div className="detail-hero-scrim" aria-hidden="true" />
 
-                <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center gap-14 lg:flex-row">
-                    <div className="hero-copy flex w-full flex-col items-start lg:w-1/2">
-                        <Link href="/#rooms" className="back-link">
-                            <span className="back-link-icon">
-                                <ArrowLeft size={15} />
-                            </span>
-                            All homestays
-                        </Link>
+                <Link href="/#rooms" className="back-pill">
+                    <ArrowLeft size={15} />
+                    All homestays
+                </Link>
 
-                        <p className="hero-subtitle line-mask mt-10" lang="ms">
-                            <span style={{ animationDelay: "0.1s" }}>
-                                {room.type?.trim() || "Homestay"} di Morib, Banting
-                            </span>
+                <div className="detail-hero-copy">
+                    <p className="section-tag" lang="ms">
+                        {room.type?.trim() || "Homestay"} di Morib, Banting
+                    </p>
+
+                    <h1 className="text-display detail-title">
+                        <span className="title-italic">{room.title}</span>
+                    </h1>
+
+                    {room.location && (
+                        <p className="detail-location">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            {room.location}
                         </p>
+                    )}
+                </div>
+            </header>
 
-                        <h1
-                            className="text-display mb-7"
-                            style={{ fontSize: "clamp(2.4rem, 5vw, 4.25rem)", color: "var(--primary)" }}
-                        >
-                            <span className="line-mask">
-                                <span style={{ animationDelay: "0.2s" }}>{room.title}</span>
-                            </span>
-                        </h1>
-
-                        {room.location && (
-                            <p
-                                className="animate-fade-up delay-300 mb-6 flex items-center gap-2"
-                                style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}
-                            >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                </svg>
-                                {room.location}
-                            </p>
-                        )}
-
-                        {room.description && (
-                            <p
-                                className="animate-fade-up delay-400 mb-10 max-w-xl"
-                                style={{ color: "var(--text-muted)", fontSize: "1.02rem", lineHeight: 1.8, whiteSpace: "pre-wrap" }}
-                            >
-                                {room.description}
-                            </p>
-                        )}
-
-                        <div className="animate-fade-up delay-500 flex flex-wrap items-center gap-4">
+            {/* Intro band: price and actions on the left, description on the right. */}
+            <section className="detail-intro">
+                <div className="wrap detail-intro-grid">
+                    <div data-reveal>
+                        <div className="detail-price">
+                            RM{room.price}
+                            <span>per night</span>
+                        </div>
+                        <div className="detail-actions">
                             <button onClick={() => setIsModalOpen(true)} className="btn-primary">
                                 Book this homestay
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M5 12h14M12 5l7 7-7 7" />
                                 </svg>
                             </button>
-
-                            <div>
-                                <div
-                                    style={{
-                                        fontFamily: "var(--font-playfair), Georgia, serif",
-                                        fontSize: "1.9rem",
-                                        color: "var(--primary)",
-                                        lineHeight: 1,
-                                        fontVariantNumeric: "tabular-nums",
-                                    }}
-                                >
-                                    RM{room.price}
-                                </div>
-                                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                                    per night
-                                </div>
-                            </div>
+                            <a href={askLink} className="btn-outline" target="_blank" rel="noopener noreferrer">
+                                Ask a question
+                            </a>
                         </div>
                     </div>
 
-                    <div className="relative w-full lg:w-1/2">
-                        <div
-                            className="relative aspect-[4/3] w-full overflow-hidden animate-scale-in delay-200"
-                            style={{
-                                borderRadius: "var(--radius-md)",
-                                border: "1px solid var(--border-strong)",
-                                boxShadow: "var(--shadow-xl)",
-                            }}
-                        >
-                            <Image
-                                src={mainImage}
-                                alt={room.title}
-                                fill
-                                priority
-                                sizes="(max-width: 1024px) 100vw, 50vw"
-                                className="object-cover"
-                            />
-                        </div>
-                    </div>
+                    {room.description && (
+                        <p className="detail-description" data-reveal data-reveal-delay="120">
+                            {room.description}
+                        </p>
+                    )}
                 </div>
-            </header>
+            </section>
 
-            {/* Facts */}
+            {/* Facts as circle icons. */}
             {facts.length > 0 && (
-                <section
-                    className="py-16"
-                    style={{ background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}
-                >
-                    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 md:grid-cols-4 lg:px-16" data-stagger>
+                <section className="detail-facts">
+                    <div className="wrap detail-facts-grid" data-stagger>
                         {facts.map((item) => (
-                            <div key={item.title} className="flex flex-col items-center text-center">
-                                <div className="stat-icon">{item.icon}</div>
-                                <h2 style={{ fontWeight: 600, color: "var(--primary)", letterSpacing: "0.01em" }}>
-                                    {item.title}
-                                </h2>
+                            <div key={item.title} className="fact">
+                                <div className="fact-circle">{item.icon}</div>
+                                <h2 className="fact-title">{item.title}</h2>
                             </div>
                         ))}
                     </div>
                 </section>
             )}
 
-            {/* Photos */}
+            {/* Photo grid. */}
             {photos.length > 0 && (
-                <section className="mx-auto max-w-7xl px-6 py-24 lg:px-16">
-                    <div className="mb-12 flex items-center gap-8" data-reveal>
-                        <h2 className="section-title" style={{ marginBottom: 0 }}>
-                            The <em style={{ color: "var(--accent)" }}>space</em>
-                        </h2>
-                        <span className="rule flex-1" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3" data-stagger>
-                        {photos.map((p, i) => (
-                            <div
-                                key={p}
-                                className={`detail-photo ${i === 0 || i === 3 ? "lg:col-span-2" : ""}`}
-                            >
-                                <Image
-                                    src={p}
-                                    alt={`${room.title} di Morib, Banting, gambar ${i + 1}`}
-                                    fill
-                                    sizes="(max-width: 1024px) 50vw, 33vw"
-                                    className="object-cover"
-                                />
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Amenities */}
-            {amenitiesList.length > 0 && (
-                <section className="py-24" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
-                    <div className="mx-auto max-w-7xl px-6 lg:px-16">
-                        <div className="mb-14" data-reveal>
-                            <p className="section-tag">Included</p>
-                            <h2 className="section-title">What you get</h2>
+                <section className="section">
+                    <div className="wrap">
+                        <div className="detail-section-head" data-reveal>
+                            <p className="section-tag">Gallery</p>
+                            <h2 className="section-title">
+                                <span className="title-italic">A look inside</span>
+                            </h2>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" data-stagger>
-                            {amenitiesList.map((amenity) => (
-                                <div key={amenity} className="amenity-card">
-                                    <div className="amenity-icon">{amenityIcon(amenity)}</div>
-                                    <h3 className="amenity-title">{amenity}</h3>
+                        <div className="detail-photos" data-stagger>
+                            {photos.map((p, i) => (
+                                <div
+                                    key={p}
+                                    className={`detail-photo ${i === 0 || i === 3 ? "detail-photo-wide" : ""}`}
+                                >
+                                    <Image
+                                        src={p}
+                                        alt={`${room.title} di Morib, Banting, gambar ${i + 1}`}
+                                        fill
+                                        sizes="(max-width: 1024px) 50vw, 33vw"
+                                        className="object-cover"
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -219,23 +161,43 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                 </section>
             )}
 
-            {/* Closing action */}
-            <section className="mx-auto max-w-3xl px-6 pt-24 text-center" data-reveal>
-                <h2 className="text-display" style={{ fontSize: "clamp(1.9rem, 4vw, 2.75rem)", color: "var(--primary)", marginBottom: 26 }}>
-                    Ready to book <em style={{ color: "var(--accent)" }}>{room.title}</em>?
-                </h2>
-                <div className="flex flex-wrap justify-center gap-4">
-                    <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-                        Check availability
-                    </button>
-                    <a
-                        href={waLink(`Hi ${BUSINESS.name}, saya nak tanya tentang ${room.title} (dari website)`)}
-                        className="btn-outline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Ask a question
-                    </a>
+            {/* Amenities as bordered cards. */}
+            {amenitiesList.length > 0 && (
+                <section className="section detail-amenities">
+                    <div className="wrap">
+                        <div className="detail-section-head" data-reveal>
+                            <p className="section-tag">Included</p>
+                            <h2 className="section-title">
+                                <span className="title-italic">What you get</span>
+                            </h2>
+                        </div>
+
+                        <div className="detail-amenity-grid" data-stagger>
+                            {amenitiesList.map((amenity) => (
+                                <div key={amenity} className="detail-amenity">
+                                    <div className="detail-amenity-icon">{amenityIcon(amenity)}</div>
+                                    <h3 className="detail-amenity-title">{amenity}</h3>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Closing: calm and centred. */}
+            <section className="section detail-closing" data-reveal>
+                <div className="wrap detail-closing-inner">
+                    <h2 className="text-display detail-closing-title">
+                        Ready to book <span className="title-em">{room.title}</span>?
+                    </h2>
+                    <div className="detail-actions detail-actions-centre">
+                        <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+                            Check availability
+                        </button>
+                        <a href={askLink} className="btn-outline" target="_blank" rel="noopener noreferrer">
+                            Ask a question
+                        </a>
+                    </div>
                 </div>
             </section>
 
