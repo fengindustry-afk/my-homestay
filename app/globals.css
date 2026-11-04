@@ -45,10 +45,6 @@
   --danger: #F2A7A7;
   --success: #8CCBA3;
 
-  /* Fed into the WebGL background so it re-tints with the theme. */
-  --shader-base: #141714;
-  --shader-deep: #1E2A24;
-  --shader-glow: #D9BE7E;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.50);
@@ -116,16 +112,6 @@
   --danger: #9B2C2C;
   --success: #2F6B45;
 
-  /* The light shader runs a different lighting model, so these three mean
-     something different than they do on dark. There, --glow is emitted light
-     added on top of a dark ground. Here it is the sunlit highlight and --deep
-     is the shade the ripples cast, with --base the lit floor between them:
-     bright lanes over warm shade, the way caustics actually look on a pale
-     pool floor. --base sits close to --background so the hero panel does not
-     read as a lighter box pasted onto the page. */
-  --shader-base: #F2EADA;
-  --shader-deep: #D2C1A0;
-  --shader-glow: #FFFFFC;
 
   --shadow-sm: 0 1px 2px rgba(31, 30, 28, 0.06);
   --shadow-md: 0 4px 14px rgba(31, 30, 28, 0.07);
@@ -388,20 +374,6 @@ body {
   to {
     opacity: 0;
     transform: translate(-50%, -50%) scale(2.6);
-  }
-}
-
-@keyframes scrollHint {
-
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.25;
-  }
-
-  50% {
-    transform: translateY(9px);
-    opacity: 1;
   }
 }
 
@@ -894,122 +866,13 @@ body {
   max-width: 460px;
 }
 
-/* Hairline that draws itself in as the section arrives. */
-.rule {
-  height: 1px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  transform-origin: left;
-}
-
 /* ===========================================================================
    Hero
    =========================================================================== */
 
-.hero-section {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.hero-subtitle {
-  font-size: 0.7rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 1.25rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hero-subtitle::before {
-  content: '';
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  background: var(--accent);
-}
-
-.hero-title {
-  font-family: var(--font-playfair, Georgia, serif);
-  font-size: clamp(2.75rem, 7vw, 5.5rem);
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5rem;
-}
-
-.hero-description {
-  font-size: 1.05rem;
-  max-width: 480px;
-  opacity: 0.88;
-  line-height: 1.75;
-}
-
 /* Slow drift on the hero photograph. */
 .hero-media img {
   transform: scale(1.06);
-}
-
-/* Scrim behind hero copy.
-   The shader sits inset-0 but the photograph covers the right half, so the
-   only place the caustics show is the exact column the text occupies. Measured
-   against real rendered pixels, unscrimmed text lands at 1.1:1 against the
-   bright caustic lanes in dark mode and 4.1:1 in light — both unreadable or
-   borderline. This lifts the copy onto near-solid background while fading to
-   nothing well before the panel edge, so the ripples still read around it. */
-.hero-copy {
-  position: relative;
-  /* Guarantees the -1 pseudo-element stays behind this block's own content and
-     in front of the canvas, without depending on whatever z-index the markup
-     happens to carry. */
-  isolation: isolate;
-}
-
-.hero-copy::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-}
-
-@media (min-width: 1024px) {
-  .hero-copy::before {
-    /* Bleeds past the panel so the falloff finishes off-panel rather than
-       ending on a visible edge. */
-    inset: -10% -22% -10% -40%;
-    background: radial-gradient(ellipse 72% 62% at 42% 50%,
-        color-mix(in srgb, var(--background) 94%, transparent) 0%,
-        color-mix(in srgb, var(--background) 88%, transparent) 42%,
-        color-mix(in srgb, var(--background) 42%, transparent) 70%,
-        transparent 100%);
-  }
-}
-
-.scroll-hint {
-  width: 24px;
-  height: 40px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-full);
-  display: flex;
-  justify-content: center;
-  padding-top: 8px;
-}
-
-.scroll-hint::before {
-  content: '';
-  width: 2px;
-  height: 7px;
-  border-radius: 2px;
-  background: var(--accent);
-  animation: scrollHint 1.9s var(--ease) infinite;
 }
 
 /* Full-bleed photograph with centred copy. A scrim top and bottom keeps the
@@ -1422,21 +1285,6 @@ body {
   color: var(--text-muted);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-}
-
-/* Used by the homestay detail page's facts row. */
-.stat-icon {
-  width: 58px;
-  height: 58px;
-  margin: 0 auto 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-dark);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--accent);
-  transition: all var(--transition-medium);
 }
 
 /* Circle icons in a row: two across on phones, three on tablets, six on desktop. */
@@ -2471,10 +2319,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.4rem;
-  }
-
   .footer-bottom {
     flex-direction: column;
     gap: 12px;
