@@ -906,8 +906,8 @@ body {
     radial-gradient(ellipse 60% 48% at 50% 55%, rgba(0, 0, 0, 0.42), transparent 72%),
     linear-gradient(180deg,
       rgba(0, 0, 0, 0.5) 0%,
-      rgba(0, 0, 0, 0.2) 40%,
-      rgba(0, 0, 0, 0.3) 62%,
+      rgba(0, 0, 0, 0.3) 40%,
+      rgba(0, 0, 0, 0.36) 62%,
       rgba(0, 0, 0, 0.72) 100%);
 }
 
