@@ -147,6 +147,8 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 <div className="w-8">
                     {showPrev && (
                         <button
+                            type="button"
+                            aria-label="Previous month"
                             onClick={() => setCurrentDate(addMonths(currentDate, -1))}
                             className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
@@ -162,6 +164,8 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 <div className="w-8">
                     {showNext && (
                         <button
+                            type="button"
+                            aria-label="Next month"
                             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
                             className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
@@ -213,17 +217,29 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 const discount = discounts[compositeKey];
 
                 days.push(
-                    <div
+                    <button
+                        type="button"
                         key={cloneDay.toString()}
-                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group`}
+                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group disabled:cursor-not-allowed`}
                         onClick={() => isCurrentMonth && handleDateClick(cloneDay)}
+                        disabled={!isCurrentMonth || isBooked || isPastDay}
+                        aria-hidden={!isCurrentMonth || undefined}
+                        aria-pressed={isCurrentMonth ? isSelected : undefined}
+                        aria-label={`${format(cloneDay, "EEEE, d MMMM yyyy")}, ${
+                            isBooked ? "booked"
+                            : isPastDay ? "past"
+                            : isCheckIn ? "selected, check-in"
+                            : isCheckOut ? "selected, check-out"
+                            : isSelected ? "selected"
+                            : discount ? `available, ${discount.percentage}% off`
+                            : "available"}`}
                     >
                         {/* Background for range */}
                         {checkIn && checkOut && isWithinInterval(cloneDay, { start: checkIn, end: checkOut }) && isCurrentMonth && (
-                            <div className={`absolute inset-y-1.5 inset-x-0 bg-[var(--accent-light)] opacity-30 ${isCheckIn ? 'rounded-l-full' : ''} ${isCheckOut ? 'rounded-r-full' : ''}`} />
+                            <span className={`absolute inset-y-1.5 inset-x-0 bg-[var(--accent-light)] opacity-30 ${isCheckIn ? 'rounded-l-full' : ''} ${isCheckOut ? 'rounded-r-full' : ''}`} />
                         )}
 
-                        <div className={`
+                        <span className={`
               z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm transition-all
               ${!isCurrentMonth ? "text-transparent pointer-events-none" : ""}
               ${isBooked ? "bg-gray-100 text-gray-300 cursor-not-allowed line-through" : ""}
@@ -233,22 +249,22 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
               ${discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
             `}>
                             {format(cloneDay, "d")}
-                        </div>
+                        </span>
 
                         {/* Discount Badge */}
                         {discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay && (
-                            <div className="absolute -top-1 -right-0 z-20 scale-[0.6] origin-top-right">
-                                <div className="bg-green-500 text-white px-1.5 py-0.5 rounded-md font-black text-[10px] shadow-sm animate-pulse">
+                            <span className="absolute -top-1 -right-0 z-20 scale-[0.6] origin-top-right">
+                                <span className="block bg-green-500 text-white px-1.5 py-0.5 rounded-md font-black text-[10px] shadow-sm animate-pulse">
                                     -{discount.percentage}%
-                                </div>
-                            </div>
+                                </span>
+                            </span>
                         )}
 
                         {/* Dot indicator for available (dark blue/black as per image) */}
                         {!isBooked && !isSelected && isCurrentMonth && !isPastDay && (
-                            <div className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : 'bg-[var(--primary)]'} opacity-20`} />
+                            <span className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : 'bg-[var(--primary)]'} opacity-20`} />
                         )}
-                    </div>
+                    </button>
                 );
                 day = addDays(day, 1);
             }
