@@ -1704,7 +1704,7 @@ html:not(.light) .testimonial-card.is-feature {
   z-index: -1;
   background: linear-gradient(0deg,
       rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0.35) 50%,
+      rgba(0, 0, 0, 0.45) 50%,
       rgba(0, 0, 0, 0.45) 100%);
 }
 
