@@ -1506,6 +1506,18 @@ body {
   color: var(--on-ink);
 }
 
+/* Dark ink sits too close to the dark page, so dark mode inverts the card
+   to cream with ink text instead. */
+html:not(.light) .testimonial-card.is-feature {
+  --primary: var(--background);
+  --primary-light: #2E2C29;
+  --text-muted: #5C5750;
+  --accent: var(--background);
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+
 .testimonial-stars {
   display: flex;
   gap: 3px;
