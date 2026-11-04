@@ -3,53 +3,21 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 const stats = [
-    {
-        icon: (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-        ),
-        number: "12+",
-        label: "Unique Rooms",
-    },
-    {
-        icon: (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 00-3-3.87" />
-                <path d="M16 3.13a4 4 0 010 7.75" />
-            </svg>
-        ),
-        number: "2,500+",
-        label: "Happy Guests",
-    },
-    {
-        icon: (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-        ),
-        number: "4.5",
-        label: "Average Rating",
-    },
-    {
-        icon: (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-            </svg>
-        ),
-        number: "8",
-        label: "Years Experience",
-    },
+    { number: "12+", label: "Unique Rooms" },
+    { number: "2,500+", label: "Happy Guests" },
+    { number: "4.5", label: "Average Rating" },
+    { number: "8", label: "Years Experience" },
 ];
 
 const promises = [
     "Handpicked premium furnishings & linens",
     "24/7 concierge and guest support",
     "Strategic locations near top attractions",
+];
+
+const badges = [
+    { src: "/TCC Badge.png", title: "TCC Compliant", sub: "Verified 2026", cert: true },
+    { src: "/MuslimFriendly.png", title: "Muslim Friendly", sub: null, cert: false },
 ];
 
 export default function AboutSection() {
@@ -66,151 +34,97 @@ export default function AboutSection() {
     }, [showCert]);
 
     return (
-        <section id="about" className="section" style={{ background: "var(--surface)" }}>
-            <div className="mx-auto max-w-7xl px-6">
-                <div className="grid items-center gap-16 lg:grid-cols-2">
-                    {/* Left: overlapping collage, the two plates drifting at
-                        different rates so the pair reads as having depth. */}
-                    <div className="relative" style={{ minHeight: 520 }}>
-                        <div
-                            className="absolute overflow-hidden"
-                            style={{
-                                top: 0,
-                                left: 0,
-                                width: "66%",
-                                height: "74%",
-                                borderRadius: "var(--radius-md)",
-                                boxShadow: "var(--shadow-lg)",
-                            }}
-                            data-parallax="0.06"
-                        >
-                            <Image
-                                src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Langit.jpg"
-                                alt="Evening view of the Indah Morib homestay grounds"
-                                fill
-                                sizes="(max-width: 1024px) 66vw, 33vw"
-                                style={{ objectFit: "cover" }}
-                            />
+        <>
+            {/* Part 1: the intro, then the four figures in a hairline row. */}
+            <section id="about" className="section">
+                <div className="wrap">
+                    <div className="about-intro">
+                        <div data-reveal>
+                            <p className="section-tag">About</p>
+                            <h2 className="section-title">
+                                <span className="title-italic">A unique balance</span>
+                                <span className="title-roman title-indent">of luxury &amp; comfort</span>
+                            </h2>
                         </div>
 
-                        <div
-                            className="absolute overflow-hidden"
-                            style={{
-                                bottom: 0,
-                                right: 0,
-                                width: "56%",
-                                height: "64%",
-                                borderRadius: "var(--radius-md)",
-                                boxShadow: "var(--shadow-xl)",
-                                border: "1px solid var(--border-strong)",
-                                outline: "6px solid var(--surface)",
-                            }}
-                            data-parallax="-0.05"
-                        >
+                        {/* Vertical reveal only. An x-offset start state would widen the document. */}
+                        <div data-reveal data-reveal-delay="120">
+                            <p className="section-description" style={{ marginBottom: 16 }}>
+                                Nestled in the heart of Malaysia, Indah Morib Homestay offers a
+                                blend of modern comfort and warm hospitality. Each room is
+                                designed around how families actually use a space together.
+                            </p>
+                            <p className="section-description">
+                                Whether you&apos;re here for a family getaway, a celebration, or a
+                                company retreat, our team handles the details so the day runs
+                                itself.
+                            </p>
+
+                            <ul className="promise-list">
+                                {promises.map((item) => (
+                                    <li key={item}>
+                                        <span className="promise-tick" aria-hidden="true">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                        </span>
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <a href="#rooms" className="btn-outline">
+                                Discover more
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div className="stat-row" data-reveal>
+                        {stats.map((stat) => (
+                            <div key={stat.label} className="stat-item">
+                                <div className="stat-number">{stat.number}</div>
+                                <div className="stat-label">{stat.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Part 2: full-bleed photograph with a framed card and the accreditations. */}
+            <section className="recognition">
+                <div className="recognition-photo">
+                    <Image
+                        src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Pool3.jpg"
+                        alt=""
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                    />
+                </div>
+                <div className="recognition-scrim" aria-hidden="true" />
+
+                <div className="wrap recognition-inner">
+                    <h2 className="recognition-title title-italic">Recognitions &amp; Standards</h2>
+
+                    <div className="frame-card" data-reveal>
+                        <div className="frame-photo">
                             <Image
                                 src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H5.jpg"
                                 alt="Interior of a homestay unit at Indah Morib"
                                 fill
-                                sizes="(max-width: 1024px) 56vw, 28vw"
+                                sizes="(max-width: 768px) 90vw, 560px"
                                 style={{ objectFit: "cover" }}
                             />
                         </div>
 
-                        <div
-                            className="absolute"
-                            style={{
-                                bottom: 44,
-                                left: 12,
-                                background: "var(--accent)",
-                                color: "var(--accent-contrast)",
-                                padding: "20px 26px",
-                                borderRadius: "var(--radius-md)",
-                                boxShadow: "var(--shadow-lg)",
-                                zIndex: 3,
-                            }}
-                            data-reveal="scale"
-                            data-reveal-delay="250"
-                        >
-                            <div style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1, fontFamily: "var(--font-playfair), Georgia, serif" }}>
-                                8+
-                            </div>
-                            <div style={{ fontSize: "0.72rem", opacity: 0.85, marginTop: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                                Years of Excellence
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: copy. Vertical reveal, not horizontal — this column
-                        already spans to the container edge, so an x-offset start
-                        state would widen the document. */}
-                    <div data-reveal>
-                        <p className="section-tag">01 &nbsp;/&nbsp; About</p>
-                        <h2 className="section-title">
-                            A unique balance of <em style={{ color: "var(--accent)" }}>luxury</em> &amp; comfort
-                        </h2>
-
-                        <p className="section-description" style={{ marginBottom: 16 }}>
-                            Nestled in the heart of Malaysia, Indah Morib Homestay offers a
-                            blend of modern comfort and warm hospitality. Each room is
-                            designed around how families actually use a space together.
-                        </p>
-                        <p className="section-description" style={{ marginBottom: 34 }}>
-                            Whether you&apos;re here for a family getaway, a celebration, or a
-                            company retreat, our team handles the details so the day runs itself.
-                        </p>
-
-                        <div className="mb-9 flex flex-col gap-4">
-                            {promises.map((item) => (
-                                <div key={item} className="flex items-center gap-3">
-                                    <span
-                                        className="flex flex-shrink-0 items-center justify-center rounded-full"
-                                        style={{
-                                            width: 22,
-                                            height: 22,
-                                            background: "color-mix(in srgb, var(--accent) 18%, transparent)",
-                                            border: "1px solid color-mix(in srgb, var(--accent) 45%, transparent)",
-                                        }}
-                                    >
-                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                    </span>
-                                    <span style={{ fontSize: "0.95rem", color: "var(--primary-light)" }}>
-                                        {item}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <a href="#rooms" className="btn-dark">
-                            Discover more
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
-
-                        {/* Accreditations */}
-                        <div className="mt-12 flex flex-col gap-4">
-                            <p
-                                style={{
-                                    fontSize: "0.65rem",
-                                    fontWeight: 700,
-                                    letterSpacing: "0.2em",
-                                    textTransform: "uppercase",
-                                    color: "var(--text-muted)",
-                                }}
-                            >
-                                Recognitions &amp; Standards
-                            </p>
-
-                            <div className="flex flex-wrap gap-4">
-                                {[
-                                    { src: "/TCC Badge.png", title: "TCC Compliant", sub: "Verified 2026", cert: true },
-                                    { src: "/MuslimFriendly.png", title: "Muslim Friendly", sub: null, cert: false },
-                                ].map((badge) => {
-                                    // Only the TCC badge opens a document. The other is a plain label.
-                                    const Tag = badge.cert ? "button" : "span";
-                                    return (
+                        <div className="frame-badges">
+                            {badges.map((badge) => {
+                                // Only the TCC badge opens a document. The other is a plain label.
+                                const Tag = badge.cert ? "button" : "span";
+                                return (
                                     <Tag
                                         key={badge.title}
                                         onClick={badge.cert ? () => setShowCert(true) : undefined}
@@ -221,55 +135,31 @@ export default function AboutSection() {
                                             <Image
                                                 src={badge.src}
                                                 alt=""
-                                                width={64}
-                                                height={64}
-                                                className="h-16 w-16 object-contain"
+                                                width={40}
+                                                height={40}
+                                                className="h-10 w-10 object-contain"
                                             />
                                         </span>
                                         <span className="flex flex-col items-start">
-                                            <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--primary)", lineHeight: 1.2 }}>
+                                            <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--primary)", lineHeight: 1.2 }}>
                                                 {badge.title}
                                             </span>
                                             {badge.sub && (
-                                                <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                                                <span style={{ fontSize: "0.66rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.14em" }}>
                                                     {badge.sub}
                                                 </span>
                                             )}
                                         </span>
                                     </Tag>
-                                    );
-                                })}
-                            </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
+            </section>
 
-                {/* Stats.
-                    Revealed as one block, not staggered per child: this container
-                    clips (overflow hidden, for the gap-px hairline dividers), so
-                    translating the children individually slides them out of the
-                    frame and exposes the divider colour behind. */}
-                <div
-                    className="mt-24 grid grid-cols-2 gap-px md:grid-cols-4"
-                    style={{
-                        background: "var(--border)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "var(--radius-md)",
-                        overflow: "hidden",
-                    }}
-                    data-reveal
-                >
-                    {stats.map((stat) => (
-                        <div key={stat.label} className="stat-item" style={{ background: "var(--background)" }}>
-                            <div className="stat-icon">{stat.icon}</div>
-                            <div className="stat-number">{stat.number}</div>
-                            <div className="stat-label">{stat.label}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Certificate */}
+            {/* Certificate. Outside the sections so the fixed overlay is not trapped
+                inside a transformed reveal wrapper. */}
             {showCert && (
                 <div
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4"
@@ -398,6 +288,6 @@ export default function AboutSection() {
                     </div>
                 </div>
             )}
-        </section>
+        </>
     );
 }

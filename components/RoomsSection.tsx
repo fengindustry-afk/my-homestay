@@ -157,24 +157,24 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
     return (
         <>
             <section id="rooms" className="section">
-                <div className="mx-auto max-w-7xl px-6">
-                    {/* Header: index left, copy right — asymmetric rather than centred. */}
+                <div className="wrap">
+                    {/* Header: title left, copy right, split across two lines. */}
                     <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
-                        <div className="lg:col-span-7" data-reveal>
-                            <p className="section-tag">02 &nbsp;/&nbsp; Our Homestays</p>
-                            <h2 className="section-title" style={{ maxWidth: 620 }}>
+                        <div className="lg:col-span-8" data-reveal>
+                            <p className="section-tag">Our Homestays</p>
+                            <h2 className="section-title">
                                 {filterCriteria ? (
-                                    "Search results"
+                                    <span className="title-roman">Search results</span>
                                 ) : (
                                     <>
-                                        Handpicked homestays for{" "}
-                                        <em style={{ color: "var(--accent)" }}>every gathering</em>
+                                        <span className="title-italic">Handpicked homestays</span>
+                                        <span className="title-roman title-indent">for every gathering</span>
                                     </>
                                 )}
                             </h2>
                         </div>
 
-                        <div className="lg:col-span-5" data-reveal data-reveal-delay="120">
+                        <div className="lg:col-span-4" data-reveal data-reveal-delay="120">
                             <p className="section-description">
                                 {loading
                                     ? "Bringing up the current collection…"
@@ -203,7 +203,7 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                     </div>
 
                     {loadError ? (
-                        <p className="text-center text-sm" style={{ color: "#F87171" }} role="alert">
+                        <p className="text-center text-sm" style={{ color: "var(--danger)" }} role="alert">
                             Homestays are taking longer than usual.{" "}
                             <a href={waLink(WA_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
                             and we will send you the list.
@@ -222,11 +222,7 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                                 className="room-card-image"
                                             />
-                                            <div className="room-card-overlay" />
                                             {room.badge && <div className="room-card-badge">{room.badge}</div>}
-                                            <div className="room-card-price-tag">
-                                                RM{room.price} <span>/ night</span>
-                                            </div>
                                         </div>
 
                                         <div className="room-card-content">
@@ -249,16 +245,20 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                                                 {room.location}
                                             </div>
 
+                                            <div className="room-card-features">
+                                                {room.rooms != null && (
+                                                    <span>{room.rooms} {room.rooms === 1 ? "Room" : "Rooms"}</span>
+                                                )}
+                                                <span>{room.beds} {room.beds === 1 ? "Bed" : "Beds"}</span>
+                                                <span>{room.baths} {room.baths === 1 ? "Bath" : "Baths"}</span>
+                                                <span>Sleeps {room.guests}</span>
+                                            </div>
+
                                             <div className="room-card-divider" />
 
                                             <div className="room-card-footer">
-                                                <div className="room-card-features">
-                                                    {room.rooms != null && (
-                                                        <span>{room.rooms} {room.rooms === 1 ? "Room" : "Rooms"}</span>
-                                                    )}
-                                                    <span>{room.beds} {room.beds === 1 ? "Bed" : "Beds"}</span>
-                                                    <span>{room.baths} {room.baths === 1 ? "Bath" : "Baths"}</span>
-                                                    <span>Sleeps {room.guests}</span>
+                                                <div className="room-card-price">
+                                                    RM{room.price} <span>/ night</span>
                                                 </div>
 
                                                 <button

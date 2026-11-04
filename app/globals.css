@@ -1078,25 +1078,23 @@ body {
    Search bar
    =========================================================================== */
 
+/* A hairline frame on the section ground, not a floating card. */
 .search-bar {
-  background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
-  padding: 22px 28px;
+  padding: 20px 24px;
   display: flex;
   align-items: flex-end;
   gap: 18px;
   flex-wrap: wrap;
   position: relative;
   z-index: 10;
-  transition: border-color var(--transition-medium), box-shadow var(--transition-medium);
+  transition: border-color var(--transition-medium);
 }
 
 .search-bar:focus-within {
-  border-color: var(--accent);
+  border-color: var(--border-strong);
 }
 
 .search-bar-field {
@@ -1167,10 +1165,10 @@ body {
 
 .room-card {
   position: relative;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--surface);
+  padding: 10px;
+  background: var(--surface-raised);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     transform 0.5s var(--ease),
@@ -1178,17 +1176,17 @@ body {
     box-shadow 0.5s var(--ease);
 }
 
-.room-card:hover,
-.room-card:focus-visible {
+.room-card:hover {
   transform: translateY(-6px);
-  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  border-color: var(--border-strong);
   box-shadow: var(--shadow-lg);
 }
 
 .room-card-media {
   position: relative;
-  height: 280px;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
+  border-radius: var(--radius-sm);
 }
 
 .room-card-image {
@@ -1197,77 +1195,44 @@ body {
 }
 
 .room-card:hover .room-card-image {
-  transform: scale(1.07);
-}
-
-.room-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.72) 100%);
-  opacity: 0.85;
-  transition: opacity var(--transition-medium);
-}
-
-.room-card:hover .room-card-overlay {
-  opacity: 1;
+  transform: scale(1.05);
 }
 
 .room-card-badge {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  padding: 5px 12px;
+  top: 12px;
+  left: 12px;
+  background: var(--background);
+  color: var(--primary);
+  padding: 5px 10px;
   border-radius: var(--radius-sm);
   font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   z-index: 2;
-}
-
-/* Price sits on the image, bottom-right, like a listing sheet. */
-.room-card-price-tag {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 2;
-  color: #fff;
-  font-size: 1.3rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-}
-
-.room-card-price-tag span {
-  font-size: 0.72rem;
-  font-weight: 500;
-  opacity: 0.75;
-  letter-spacing: 0.04em;
 }
 
 .room-card-content {
-  padding: 26px;
+  padding: 22px 12px 12px;
 }
 
 .room-card-type {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
 .room-card-title {
   font-family: var(--font-playfair, Georgia, serif);
-  font-size: 1.35rem;
-  font-weight: 500;
-  line-height: 1.25;
+  font-size: var(--text-h3);
+  font-weight: 400;
+  line-height: 1.12;
   color: var(--primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .room-card-location {
@@ -1276,13 +1241,28 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+}
+
+.room-card-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.room-card-features span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .room-card-divider {
   height: 1px;
   background: var(--border);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .room-card-footer {
@@ -1292,17 +1272,17 @@ body {
   gap: 12px;
 }
 
-.room-card-features {
-  display: flex;
-  gap: 16px;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.room-card-price {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.35rem;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.room-card-features span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.room-card-price span {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
 /* Stretched link: the title's hit area covers the whole card, so the card
@@ -1344,11 +1324,11 @@ body {
   padding: 9px 16px;
   background: transparent;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   color: var(--primary);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
@@ -1373,16 +1353,65 @@ body {
    Stats / amenities / testimonials
    =========================================================================== */
 
+/* Four figures in a hairline row. Two across on phones. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 96px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
 .stat-item {
   text-align: center;
-  padding: 30px 20px;
-  transition: transform var(--transition-medium);
+  padding: 32px 16px;
 }
 
-.stat-item:hover {
-  transform: translateY(-4px);
+.stat-item:nth-child(even) {
+  border-left: 1px solid var(--border);
 }
 
+.stat-item:nth-child(n + 3) {
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 768px) {
+  .stat-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat-item:nth-child(even) {
+    border-left: 0;
+  }
+
+  .stat-item:nth-child(n + 3) {
+    border-top: 0;
+  }
+
+  .stat-item + .stat-item {
+    border-left: 1px solid var(--border);
+  }
+}
+
+.stat-number {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: clamp(2.2rem, 4vw, 3.25rem);
+  font-weight: 400;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+/* Used by the homestay detail page's facts row. */
 .stat-icon {
   width: 58px;
   height: 58px;
@@ -1395,31 +1424,6 @@ body {
   border-radius: var(--radius-md);
   color: var(--accent);
   transition: all var(--transition-medium);
-}
-
-.stat-item:hover .stat-icon {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-gold);
-}
-
-.stat-number {
-  font-family: var(--font-playfair, Georgia, serif);
-  font-size: 2.4rem;
-  font-weight: 500;
-  color: var(--primary);
-  line-height: 1;
-  margin-bottom: 8px;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .amenity-card {
@@ -1493,22 +1497,69 @@ body {
   line-height: 1.7;
 }
 
-/* Accreditation chip */
+/* Intro: title left, copy right, aligned to the top of the title. */
+.about-intro {
+  display: grid;
+  gap: 48px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .about-intro {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 72px;
+  }
+
+  .about-intro .section-title {
+    font-size: clamp(2.375rem, 4.2vw, 3.75rem);
+  }
+}
+
+.promise-list {
+  list-style: none;
+  margin: 32px 0 36px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.promise-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: var(--primary-light);
+}
+
+.promise-tick {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+}
+
+/* Accreditation chip: a hairline pill with the mark in a small circle. */
 .badge-chip {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 18px 8px 8px;
-  background: var(--surface-dark);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  padding: 6px 20px 6px 6px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
   cursor: pointer;
   text-align: left;
-  transition: all var(--transition-medium);
+  transition: border-color var(--transition-medium), transform var(--transition-medium);
 }
 
 .badge-chip:hover {
-  border-color: var(--accent);
+  border-color: var(--primary);
   transform: translateY(-2px);
 }
 
@@ -1516,20 +1567,69 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 68px;
-  height: 68px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
   border: 1px solid var(--border);
   overflow: hidden;
 }
 
-.badge-chip-media img {
-  transition: transform var(--transition-medium);
+/* Photo band with a framed cream card. Its text is theme ink, so the card is
+   not an .on-media surface. */
+.recognition {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: var(--section-y) 0;
+  color: #fff;
 }
 
-.badge-chip:hover .badge-chip-media img {
-  transform: scale(1.08);
+.recognition-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.recognition-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.recognition-title {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: var(--text-h2);
+  font-weight: 400;
+  line-height: var(--leading-display);
+  text-align: center;
+  color: #fff;
+}
+
+.frame-card {
+  width: min(100%, 560px);
+  margin: 56px auto 0;
+  padding: 12px;
+  background: var(--background);
+  color: var(--primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+}
+
+.frame-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.frame-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 8px 12px;
 }
 
 .testimonial-card {
