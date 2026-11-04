@@ -151,7 +151,7 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                                         src={p}
                                         alt={`${room.title} di Morib, Banting, gambar ${i + 1}`}
                                         fill
-                                        sizes="(max-width: 1024px) 50vw, 33vw"
+                                        sizes={i === 0 || i === 3 ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 1024px) 50vw, 33vw"}
                                         className="object-cover"
                                     />
                                 </div>
