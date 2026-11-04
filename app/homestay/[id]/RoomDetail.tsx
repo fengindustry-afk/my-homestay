@@ -145,13 +145,13 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                             {photos.map((p, i) => (
                                 <div
                                     key={p}
-                                    className={`detail-photo ${i === 0 || i === 3 ? "detail-photo-wide" : ""}`}
+                                    className={`detail-photo ${i === 0 || (i === 3 && photos.length >= 6) ? "detail-photo-wide" : ""}`}
                                 >
                                     <Image
                                         src={p}
                                         alt={`${room.title} di Morib, Banting, gambar ${i + 1}`}
                                         fill
-                                        sizes={i === 0 || i === 3 ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 1024px) 50vw, 33vw"}
+                                        sizes={i === 0 || (i === 3 && photos.length >= 6) ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 1024px) 50vw, 33vw"}
                                         className="object-cover"
                                     />
                                 </div>
