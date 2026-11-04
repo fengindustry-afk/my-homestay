@@ -760,6 +760,77 @@ body {
   width: 100%;
 }
 
+/* lg+: links on both sides of a centred serif wordmark. Below lg the bar is a
+   plain row: wordmark, then the controls. */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .nav-bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+}
+
+.nav-wordmark {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-end {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: end;
+}
+
+@media (min-width: 1024px) {
+  .nav-links {
+    display: flex;
+  }
+
+  .nav-links-start {
+    justify-self: start;
+  }
+}
+
+/* Light and dark share the same outline control. Over a photo it goes clear
+   with a white outline. */
+.theme-toggle {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+.theme-toggle:hover {
+  background: var(--surface-dark);
+}
+
+.on-media .theme-toggle {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.on-media .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
@@ -928,6 +999,79 @@ body {
   border-radius: 2px;
   background: var(--accent);
   animation: scrollHint 1.9s var(--ease) infinite;
+}
+
+/* Full-bleed photograph with centred copy. A scrim top and bottom keeps the
+   white type legible on any part of the photo. */
+.hero-band {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 120px var(--gutter) 150px;
+}
+
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+}
+
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.12) 34%,
+      rgba(0, 0, 0, 0.2) 60%,
+      rgba(0, 0, 0, 0.72) 100%);
+}
+
+.hero-h1 {
+  font-size: var(--text-hero);
+  color: #fff;
+  margin-top: 28px;
+}
+
+.hero-lede {
+  max-width: 480px;
+  margin: 28px auto 36px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--primary-light);
+}
+
+.hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.hero-trust {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 40px;
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gutter) 34px;
+  font-size: 0.7rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* ===========================================================================
@@ -1773,15 +1917,13 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .mobile-menu-toggle {
     display: flex;
   }
+}
 
-  .nav-links {
-    display: none;
-  }
-
+@media (max-width: 768px) {
   .cta-section {
     padding: 88px 0;
   }

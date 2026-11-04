@@ -12,6 +12,10 @@ const links = [
     { href: "#contact", label: "Contact" },
 ];
 
+// Split across the wordmark on wide screens: three links each side.
+const leftLinks = links.slice(0, 3);
+const rightLinks = links.slice(3);
+
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -62,63 +66,47 @@ export default function Navbar() {
         };
     }, [menuOpen]);
 
+    // Transparent over the hero, solid once the page scrolls or the menu opens.
+    const solid = scrolled || menuOpen;
+
     return (
         <nav
-            className={`nav-glass fixed top-0 left-0 right-0 z-50 ${scrolled ? "scrolled" : ""}`}
+            className={`nav-glass fixed top-0 left-0 right-0 z-50 ${solid ? "scrolled" : "on-media"}`}
             role="navigation"
             aria-label="Main navigation"
         >
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-                <Link href="/" className="flex items-center gap-2.5 no-underline group">
-                    <span
-                        className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:rotate-[8deg]"
-                        style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-dark))" }}
-                    >
-                        <span
-                            style={{
-                                fontFamily: "var(--font-playfair), Georgia, serif",
-                                fontWeight: 700,
-                                fontSize: "1.05rem",
-                                color: "var(--accent-contrast)",
-                            }}
-                        >
-                            I
-                        </span>
-                    </span>
-                    <span
-                        style={{
-                            fontFamily: "var(--font-playfair), Georgia, serif",
-                            fontSize: "1.2rem",
-                            fontWeight: 600,
-                            color: "var(--primary)",
-                        }}
-                    >
-                        Indahmorib
-                    </span>
-                </Link>
-
-                <div className="hidden items-center gap-8 md:flex">
-                    {links.map((link) => (
+            <div className="nav-bar wrap py-4">
+                <div className="nav-links nav-links-start">
+                    {leftLinks.map((link) => (
                         <a key={link.href} href={link.href} className="nav-link">
                             {link.label}
                         </a>
                     ))}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <Link href="/" className="nav-wordmark">
+                    Indah Morib
+                </Link>
+
+                <div className="nav-end">
+                    <div className="nav-links">
+                        {rightLinks.map((link) => (
+                            <a key={link.href} href={link.href} className="nav-link">
+                                {link.label}
+                            </a>
+                        ))}
+                    </div>
                     <ThemeToggle />
+                    {/* Hidden below md. Kept in a plain wrapper, not on the button itself, so the
+                        .btn-primary rules can't override the display utilities. */}
                     <div className="hidden md:block">
-                        <a
-                            href="#rooms"
-                            className="btn-primary"
-                            style={{ padding: "11px 22px", fontSize: "0.72rem" }}
-                        >
+                        <a href="#rooms" className="btn-primary">
                             Book Now
                         </a>
                     </div>
 
                     <button
-                        className="mobile-menu-toggle md:hidden"
+                        className="mobile-menu-toggle"
                         onClick={() => setMenuOpen(!menuOpen)}
                         aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
                         aria-expanded={menuOpen}
@@ -139,11 +127,11 @@ export default function Navbar() {
                 style={{ background: "var(--accent)", transform: "scaleX(0)" }}
             />
 
-            {/* Mobile: full-screen overlay, links entering in sequence */}
+            {/* Below lg: full-height overlay under the bar, links entering in sequence */}
             {menuOpen && (
                 <div
                     id="mobile-menu"
-                    className="fixed inset-0 top-[69px] md:hidden animate-fade-in"
+                    className="absolute inset-x-0 top-full h-[calc(100dvh-4.75rem)] overflow-y-auto lg:hidden animate-fade-in"
                     style={{ background: "var(--background)" }}
                 >
                     <div className="flex flex-col px-8 pt-10">
