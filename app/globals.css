@@ -9,39 +9,41 @@
    =========================================================================== */
 
 :root {
-  /* Lifted off pure black on purpose. A near-black ground pushes body copy past
-     14:1, and that much contrast makes light text bloom against the background
-     (halation) — it reads as harsh and is tiring over a long page. Sitting the
-     black point around #141714 brings body copy into the 7-9:1 range, which is
-     the comfortable band for dark themes, and lets the surface steps actually
-     be visible instead of all reading as "black".
-     The faint green cast stays: the compound is riverside, and it keeps the
-     greens in the photography from looking like a colour cast. */
-  --background: #141714;
-  --surface: #1B1F1B;
-  --surface-dark: #222722;
-  --surface-raised: #2A302A;
+  /* Dark values. The light theme is the default, and .light below overrides
+     these on <html>. Shared tokens live only here, so .light inherits them. */
+  --background: #181715;
+  --surface: #1F1E1B;
+  --surface-dark: #262421;
+  --surface-raised: #2B2926;
 
-  --foreground: #E9E6E0;
-  --primary: #E9E6E0;
-  --primary-light: #C5C1B9;
-  /* Neutral-warm rather than green-tinted. Saturated grey-green at low
-     lightness is what made the muted copy look muddy. 7.7:1 on --background,
-     7.1:1 on --surface. */
-  --text-muted: #A6ABA4;
+  --foreground: #EEEAE3;
+  --primary: #EEEAE3;
+  --primary-light: #CFCAC1;
+  --text-muted: #A7A196;
 
-  /* Champagne rather than brass. The old #D4AF61 was saturated enough to
-     vibrate against a very dark ground. */
-  --accent: #D9BE7E;
-  --accent-dark: #BFA05C;
-  --accent-light: #EBD9AE;
-  --accent-contrast: #141714;
+  /* Ink replaces the old gold accent. The reference is monochrome. */
+  --accent: #EEEAE3;
+  --accent-dark: #D3CDC2;
+  --accent-light: #3A3733;
+  --accent-contrast: #181715;
 
   --forest: #1F2E25;
   --water: #4F7B72;
-  --border: #2E332E;
-  --border-strong: #3F453F;
+  --border: #34312D;
+  --border-strong: #4A4640;
   --overlay: rgba(10, 12, 10, 0.78);
+
+  /* Footer ink. The footer stays dark whichever theme is active. */
+  --ink: #100F0E;
+  --on-ink: #E9E5DD;
+  --on-ink-muted: #A39D92;
+
+  /* Text and controls laid over photographs. */
+  --on-media: #fff;
+  --scrim: rgba(0, 0, 0, 0.38);
+
+  --danger: #F2A7A7;
+  --success: #8CCBA3;
 
   /* Fed into the WebGL background so it re-tints with the theme. */
   --shader-base: #141714;
@@ -52,13 +54,26 @@
   --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.50);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.58);
   --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.65);
-  --shadow-gold: 0 10px 34px rgba(212, 175, 97, 0.26);
+  --shadow-gold: 0 10px 34px rgba(0, 0, 0, 0.40);
 
-  --radius-sm: 4px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Tighter corners than before. Buttons are pills instead. */
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 14px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+
+  /* Type and rhythm. Display type is set in Playfair, body in Inter. */
+  --text-hero: clamp(3.25rem, 8.4vw, 8.75rem);
+  --text-h2: clamp(2.375rem, 4.8vw, 4.375rem);
+  --text-h3: clamp(1.5rem, 2.4vw, 2rem);
+  --text-body: 0.9375rem;
+  --text-eyebrow: 0.6875rem;
+  --tracking-caps: 0.22em;
+  --leading-display: 1.02;
+  --section-y: clamp(88px, 11vw, 160px);
+  --container: 1200px;
+  --gutter: clamp(20px, 5vw, 64px);
 
   /* Shared geometry for the fixed floating buttons. They used to hardcode their
      own offsets independently, which is how the scroll-top button ended up
@@ -75,31 +90,31 @@
 }
 
 .light {
-  --background: #FDFAF6;
-  --surface: #F4EFE8;
-  --surface-dark: #EDE8DF;
-  --surface-raised: #FFFFFF;
+  --background: #F3F0EA;
+  --surface: #ECE8E0;
+  --surface-dark: #E4DFD5;
+  --surface-raised: #FBFAF7;
 
-  --foreground: #1A2318;
-  --primary: #1A2318;
-  --primary-light: #414B3F;
-  /* Both of these are measured against --surface (#F4EFE8), not --background.
-     Most body copy and every card sits on the surface tone, so checking against
-     the lighter page ground overstates the contrast by roughly half a point. */
-  --text-muted: #5F6A5E;
-  /* 4.9:1 on --surface */
+  --foreground: #1F1E1C;
+  --primary: #1F1E1C;
+  --primary-light: #45423D;
+  /* 5.0:1 on --background and close to that on --surface. */
+  --text-muted: #6B665E;
 
-  --accent: #8A6717;
-  /* 4.6:1 on --surface — small uppercase labels use this */
-  --accent-dark: #6E5212;
-  --accent-light: #C4993E;
-  --accent-contrast: #FFFFFF;
+  --accent: #2E2C29;
+  --accent-dark: #141312;
+  --accent-light: #D9D3C7;
+  --accent-contrast: #F3F0EA;
 
   --forest: #2D4A3A;
   --water: #4F7B72;
-  --border: #D9D2C8;
-  --border-strong: #C4BCAE;
-  --overlay: rgba(26, 35, 24, 0.50);
+  --border: #D9D3C8;
+  --border-strong: #BDB6A9;
+  --overlay: rgba(31, 30, 28, 0.50);
+
+  --ink: #2A2926;
+  --danger: #9B2C2C;
+  --success: #2F6B45;
 
   /* The light shader runs a different lighting model, so these three mean
      something different than they do on dark. There, --glow is emitted light
@@ -112,11 +127,27 @@
   --shader-deep: #D2C1A0;
   --shader-glow: #FFFFFC;
 
-  --shadow-sm: 0 1px 4px rgba(26, 35, 24, 0.08);
-  --shadow-md: 0 4px 16px rgba(26, 35, 24, 0.10);
-  --shadow-lg: 0 12px 40px rgba(26, 35, 24, 0.14);
-  --shadow-xl: 0 24px 64px rgba(26, 35, 24, 0.18);
-  --shadow-gold: 0 8px 28px rgba(168, 127, 34, 0.24);
+  --shadow-sm: 0 1px 2px rgba(31, 30, 28, 0.06);
+  --shadow-md: 0 4px 14px rgba(31, 30, 28, 0.07);
+  --shadow-lg: 0 14px 36px rgba(31, 30, 28, 0.10);
+  --shadow-xl: 0 26px 60px rgba(31, 30, 28, 0.14);
+  --shadow-gold: 0 10px 28px rgba(31, 30, 28, 0.16);
+}
+
+/* Applied to a section or nav that sits over a photograph. Text turns white,
+   and the accent becomes a white fill with ink text. */
+.on-media {
+  --foreground: #fff;
+  --primary: #fff;
+  --primary-light: rgba(255, 255, 255, 0.88);
+  --text-muted: rgba(255, 255, 255, 0.78);
+  --accent: #fff;
+  --accent-dark: #E9E5DD;
+  --accent-light: #fff;
+  --accent-contrast: #141312;
+  --border: rgba(255, 255, 255, 0.22);
+  --border-strong: rgba(255, 255, 255, 0.5);
+  color: #fff;
 }
 
 @theme inline {
@@ -179,6 +210,13 @@ body {
   border-radius: 2px;
 }
 
+/* White ring with a dark halo where the ground is a photo or the dark footer. */
+.on-media :focus-visible,
+.footer :focus-visible {
+  outline-color: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.45);
+}
+
 /* ===== Typography ===== */
 .font-display {
   font-family: var(--font-playfair, Georgia, serif);
@@ -186,30 +224,57 @@ body {
 
 .text-display {
   font-family: var(--font-playfair, Georgia, serif);
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1.05;
+  font-weight: 400;
+  line-height: var(--leading-display);
   letter-spacing: -0.01em;
 }
 
-/* Small caps label used above every section heading. */
-.eyebrow {
+/* Two-line display headings: italic first, roman second. The lines are
+   spans, so no line break characters are needed. */
+.title-italic {
+  display: block;
+  font-style: italic;
+}
+
+.title-roman {
+  display: block;
+}
+
+.title-indent {
+  padding-left: clamp(1.25rem, 4.5vw, 4.5rem);
+}
+
+/* Tracked caps with a hairline on each side. The lines are pseudo-elements,
+   so no dash characters appear in the markup. */
+.eyebrow,
+.section-tag {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  gap: 14px;
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--accent);
 }
 
-.eyebrow::before {
+.eyebrow::before,
+.eyebrow::after,
+.section-tag::before,
+.section-tag::after {
   content: '';
-  width: 28px;
+  width: 36px;
   height: 1px;
-  background: var(--accent);
+  background: currentColor;
+  opacity: 0.5;
   flex-shrink: 0;
+}
+
+/* Centred wrapper that every section uses. */
+.wrap {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
 /* ===========================================================================
@@ -464,13 +529,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  padding: 15px 32px;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  min-height: 44px;
+  padding: 12px 28px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   cursor: pointer;
   text-decoration: none;
   overflow: hidden;
@@ -724,45 +789,27 @@ body {
 
 .section {
   position: relative;
-  padding: 128px 0;
+  padding: var(--section-y) 0;
 }
 
 .section-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-tag::before {
-  content: '';
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  background: var(--accent);
-  flex-shrink: 0;
+  margin-bottom: 22px;
 }
 
 .section-title {
   font-family: var(--font-playfair, Georgia, serif);
-  font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-  font-weight: 500;
-  line-height: 1.12;
+  font-size: var(--text-h2);
+  font-weight: 400;
+  line-height: var(--leading-display);
   letter-spacing: -0.015em;
   color: var(--primary);
-  margin-bottom: 20px;
 }
 
 .section-description {
-  font-size: 1.02rem;
+  font-size: var(--text-body);
   color: var(--text-muted);
-  line-height: 1.8;
-  max-width: 580px;
+  line-height: 1.75;
+  max-width: 460px;
 }
 
 /* Hairline that draws itself in as the section arrives. */
@@ -1735,10 +1782,6 @@ body {
     display: none;
   }
 
-  .section {
-    padding: 72px 0;
-  }
-
   .cta-section {
     padding: 88px 0;
   }
@@ -1771,7 +1814,7 @@ body {
   .btn-dark,
   .btn-outline,
   .search-btn {
-    padding: 15px 26px;
+    padding: 12px 26px;
   }
 
   .room-card-book {
