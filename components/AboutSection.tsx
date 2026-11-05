@@ -97,7 +97,7 @@ export default function AboutSection() {
             <section className="recognition">
                 <div className="recognition-photo">
                     <Image
-                        src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Pool3.jpg"
+                        src="/images/content/pool3.jpg"
                         alt=""
                         fill
                         sizes="100vw"
@@ -112,7 +112,7 @@ export default function AboutSection() {
                     <div className="frame-card" data-reveal>
                         <div className="frame-photo">
                             <Image
-                                src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H5.jpg"
+                                src="/images/content/h5.jpg"
                                 alt="Interior of a homestay unit at Indah Morib"
                                 fill
                                 sizes="(max-width: 768px) 90vw, 560px"
