@@ -2,27 +2,27 @@ import Image from "next/image";
 
 const images = [
     {
-        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H3.jpg",
+        src: "/images/content/gallery-h3.jpg",
         alt: "Interior of a homestay unit at Indah Morib",
         caption: "The units",
     },
     {
-        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/H4.jpg",
+        src: "/images/content/gallery-h4.jpg",
         alt: "The dewan (multipurpose hall) at Indah Morib",
         caption: "The dewan",
     },
     {
-        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Event.jpg",
+        src: "/images/content/gallery-event.jpg",
         alt: "Hall set up for a family event",
         caption: "Family days",
     },
     {
-        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Wdding.jpg",
+        src: "/images/content/gallery-wedding.jpg",
         alt: "Wedding reception held at the compound",
         caption: "Weddings",
     },
     {
-        src: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Pool3.jpg",
+        src: "/images/content/gallery-pool3.jpg",
         alt: "Private pool area at the homestay",
         caption: "The pools",
     },
@@ -58,7 +58,9 @@ export default function GallerySection() {
                             src={img.src}
                             alt={img.alt}
                             fill
-                            sizes="(max-width: 768px) 78vw, 20vw"
+                            // Sources are 4:5 crops, so the tile width sets the download size.
+                            sizes="(max-width: 768px) 78vw, 30vw"
+                            quality={85}
                         />
                         <figcaption className="gallery-caption">{img.caption}</figcaption>
                     </figure>

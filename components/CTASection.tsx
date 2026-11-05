@@ -17,10 +17,11 @@ export default function CTASection() {
         <section id="contact" className="cta-section on-media">
             <div className="cta-photo">
                 <Image
-                    src="https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/room-photos/Content/Langit.jpg"
+                    src="/images/content/langit.jpg"
                     alt=""
                     fill
                     sizes="100vw"
+                    quality={85}
                     className="object-cover"
                 />
             </div>
