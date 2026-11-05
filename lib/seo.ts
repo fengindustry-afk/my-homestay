@@ -162,6 +162,20 @@ export function lodgingJsonLd(business: LodgingInput, siteUrl: string, descripti
     return ld;
 }
 
+// Site-name signal for Google. Without it a *.vercel.app site can be
+// labelled "Vercel" in results. url matches the home canonical exactly.
+export function websiteJsonLd(name: string, siteUrl: string): Record<string, unknown> {
+    return {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        name,
+        alternateName: ["Indah Morib", "Indah Morib HStay"],
+        url: siteUrl,
+        publisher: { "@id": `${siteUrl}/#lodging` },
+    };
+}
+
 // JSON for a <script type="application/ld+json"> tag. Escaping "<" stops
 // admin-entered text such as "</script>" from closing the tag early.
 export function toJsonLd(data: unknown): string {
