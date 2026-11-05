@@ -1,10 +1,12 @@
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
+    const t = useTranslations("Success");
     const [status, setStatus] = useState<"loading" | "success" | "failed">("loading");
     const [bookingDetails, setBookingDetails] = useState<any>(null);
 
@@ -49,7 +51,7 @@ function PaymentStatusContent() {
             <div className="flex min-h-screen items-center justify-center bg-[var(--surface)]">
                 <div className="flex flex-col items-center gap-4">
                     <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--accent)] border-t-transparent" />
-                    <p className="font-medium text-[var(--text-muted)]">Verifying payment status...</p>
+                    <p className="font-medium text-[var(--text-muted)]">{t("verifying")}</p>
                 </div>
             </div>
         );
@@ -64,15 +66,19 @@ function PaymentStatusContent() {
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
                     </div>
-                    <h1 className="font-display mb-4 text-4xl font-normal text-[var(--primary)]">Booking Confirmed!</h1>
+                    <h1 className="font-display mb-4 text-4xl font-normal text-[var(--primary)]">{t("confirmed")}</h1>
                     <p className="mb-8 text-lg text-[var(--text-muted)]">
-                        Thank you {bookingDetails?.guest_name || ""}, your stay at <span className="text-[var(--accent)] font-bold">{bookingDetails?.rooms?.title || "our homestay"}</span> is reserved.
+                        {t.rich("thanks", {
+                            name: bookingDetails?.guest_name || "",
+                            room: bookingDetails?.rooms?.title || t("ourHomestay"),
+                            b: (c) => <span className="text-[var(--accent)] font-bold">{c}</span>,
+                        })}
                     </p>
 
                     {bookingDetails && (
                         <div className="mb-8 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border-strong)] p-6 flex flex-col items-center">
-                            <span className="font-bold text-[var(--danger)] mb-2 uppercase tracking-wide text-xs">Action Required</span>
-                            <p className="text-sm text-[var(--text-muted)] font-medium mb-4">You must push your booking details via WhatsApp to receive homestay access.</p>
+                            <span className="font-bold text-[var(--danger)] mb-2 uppercase tracking-wide text-xs">{t("actionRequired")}</span>
+                            <p className="text-sm text-[var(--text-muted)] font-medium mb-4">{t("actionBody")}</p>
                             <a
                                 href={`https://wa.me/601157572001?text=${encodeURIComponent(
                                     `*SUCCESS BOOKING!*\n\n*Homestay:* ${bookingDetails.rooms?.title || 'Our Homestay'}\n*Unit:* ${bookingDetails.unit_name || 'N/A'}\n*Name:* ${bookingDetails.guest_name}\n*Phone number:* ${bookingDetails.guest_email}\n*Date:* ${bookingDetails.check_in} to ${bookingDetails.check_out}\n*Package details:* ${bookingDetails.package_name}\n*Price:* RM${bookingDetails.total_price}`
@@ -82,7 +88,7 @@ function PaymentStatusContent() {
                                 className="w-full sm:w-auto min-h-[44px] bg-[#25D366] hover:bg-[#1ebd5a] active:scale-95 transition-all text-white py-3 px-8 rounded-full font-semibold flex items-center justify-center gap-3"
                             >
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                                Send Booking Details to WhatsApp
+                                {t("sendWa")}
                             </a>
                         </div>
                     )}
@@ -90,11 +96,11 @@ function PaymentStatusContent() {
                     {bookingDetails && (
                         <div className="mb-10 grid grid-cols-2 gap-4 rounded-[var(--radius-md)] bg-[var(--background)] p-6 text-left border border-[var(--border)]">
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">Check In</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">{t("checkIn")}</p>
                                 <p className="font-bold text-[var(--primary)]">{bookingDetails.check_in}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">Check Out</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1">{t("checkOut")}</p>
                                 <p className="font-bold text-[var(--primary)]">{bookingDetails.check_out}</p>
                             </div>
                         </div>
@@ -102,7 +108,7 @@ function PaymentStatusContent() {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link href="/" className="btn-primary flex-1 py-4 justify-center font-bold">
-                            Back to Home
+                            {t("backHome")}
                         </Link>
                     </div>
                 </div>
@@ -119,16 +125,16 @@ function PaymentStatusContent() {
                         <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                 </div>
-                <h1 className="font-display mb-4 text-4xl font-normal text-[var(--danger)]">Payment Failed</h1>
+                <h1 className="font-display mb-4 text-4xl font-normal text-[var(--danger)]">{t("failed")}</h1>
                 <p className="mb-10 text-lg text-[var(--text-muted)]">
-                    The transaction was cancelled or unsuccessful. The booking slot has been released. Please try again.
+                    {t("failedBody")}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link href="/#rooms" className="btn-dark flex-1 py-4 justify-center font-bold">
-                        Retry Booking
+                        {t("retry")}
                     </Link>
                     <Link href="/" className="px-8 py-4 min-h-[44px] border border-[var(--border-strong)] text-[var(--primary)] rounded-full hover:bg-[var(--surface-dark)] transition-all font-medium flex-1 flex items-center justify-center">
-                        Cancel and Go Back
+                        {t("cancel")}
                     </Link>
                 </div>
             </div>

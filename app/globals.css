@@ -717,6 +717,51 @@ body {
   transition: color var(--transition-fast);
 }
 
+/* BM | EN switch. Same type as the nav links; the inactive language is muted. */
+.locale-switch {
+  display: inline-flex;
+  align-items: center;
+}
+
+.locale-switch-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 7px;
+  color: var(--primary);
+  opacity: 0.55;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+/* Hairline divider. A pseudo-element, so both links keep a 44px tap target. */
+.locale-switch-link + .locale-switch-link {
+  position: relative;
+}
+
+.locale-switch-link + .locale-switch-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 12px;
+  transform: translateY(-50%);
+  background: currentColor;
+}
+
+.locale-switch-link:hover,
+.locale-switch-link[aria-current="true"] {
+  opacity: 1;
+}
+
+.footer .locale-switch-link {
+  color: var(--on-ink);
+}
+
 .nav-link::after {
   content: '';
   position: absolute;
@@ -2034,6 +2079,17 @@ html:not(.light) .testimonial-card.is-feature {
   text-transform: uppercase;
   text-decoration: none;
   transition: background var(--transition-medium);
+}
+
+.detail-locale {
+  position: absolute;
+  top: 112px;
+  right: var(--gutter);
+  z-index: 1;
+}
+
+.detail-locale .locale-switch-link {
+  color: #fff;
 }
 
 .back-pill:hover {

@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import type { Room } from "@/components/RoomsSection";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { localeAlternates } from "@/lib/seo";
 import HomePageClient from "./HomePageClient";
 
-export const metadata: Metadata = {
-  title: "Indah Morib Homestay: Your Home Away From Home",
-  alternates: { canonical: "/" },
-};
+type Props = { params: Promise<{ locale: "ms" | "en" }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Meta" });
+  return { title: { absolute: t("title") }, alternates: localeAlternates("/", locale) };
+}
 
 // The room grid is rendered on the server so crawlers see the room links.
 // Cached for 5 minutes; the browser still refreshes the list on load.
@@ -26,6 +31,7 @@ async function getRooms(): Promise<Room[] | undefined> {
   }
 }
 
-export default async function Home() {
+export default async function Home({ params }: Props) {
+  setRequestLocale((await params).locale);
   return <HomePageClient initialRooms={await getRooms()} />;
 }

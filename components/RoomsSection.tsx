@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
@@ -55,6 +56,7 @@ function RoomSkeleton() {
 }
 
 export default function RoomsSection({ initialRooms, filterCriteria, onSearch, onReset }: RoomsSectionProps) {
+    const t = useTranslations("Rooms");
     const [rooms, setRooms] = useState<Room[]>(initialRooms ?? []);
     const seeded = initialRooms !== undefined;
     const [loading, setLoading] = useState(!seeded);
@@ -161,14 +163,14 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                     {/* Header: title left, copy right, split across two lines. */}
                     <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
                         <div className="lg:col-span-8" data-reveal>
-                            <p className="section-tag">Our Homestays</p>
+                            <p className="section-tag">{t("eyebrow")}</p>
                             <h2 className="section-title">
                                 {filterCriteria ? (
-                                    <span className="title-roman">Search results</span>
+                                    <span className="title-roman">{t("results")}</span>
                                 ) : (
                                     <>
-                                        <span className="title-italic">Handpicked homestays</span>
-                                        <span className="title-roman title-indent">for every gathering</span>
+                                        <span className="title-italic">{t("title1")}</span>
+                                        <span className="title-roman title-indent">{t("title2")}</span>
                                     </>
                                 )}
                             </h2>
@@ -177,12 +179,12 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                         <div className="lg:col-span-4" data-reveal data-reveal-delay="120">
                             <p className="section-description">
                                 {loading
-                                    ? "Bringing up the current collection…"
+                                    ? t("loading")
                                     : filteredRooms.length > 0
-                                        ? "Every unit sleeps a different size of group. Pick the one that fits yours."
+                                        ? t("intro")
                                         : filterCriteria
-                                            ? "Nothing matches those filters. Try widening the guest count or type."
-                                            : "The collection is being updated. Please check back shortly."}
+                                            ? t("noMatch")
+                                            : t("empty")}
                             </p>
 
                             {filterCriteria && (
@@ -191,7 +193,7 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                                         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                         <path d="M3 3v5h5" />
                                     </svg>
-                                    Reset search
+                                    {t("reset")}
                                 </button>
                             )}
                         </div>
@@ -204,9 +206,9 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
 
                     {loadError ? (
                         <p className="text-center text-sm" style={{ color: "var(--danger)" }} role="alert">
-                            Homestays are taking longer than usual.{" "}
-                            <a href={waLink(WA_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
-                            and we will send you the list.
+                            {t.rich("loadError", {
+                                wa: (c) => <a href={waLink(WA_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="underline">{c}</a>,
+                            })}
                         </p>
                     ) : (
                         <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3" data-stagger>
@@ -247,26 +249,26 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
 
                                             <div className="room-card-features">
                                                 {room.rooms != null && (
-                                                    <span>{room.rooms} {room.rooms === 1 ? "Room" : "Rooms"}</span>
+                                                    <span>{t("roomCount", { count: room.rooms })}</span>
                                                 )}
-                                                <span>{room.beds} {room.beds === 1 ? "Bed" : "Beds"}</span>
-                                                <span>{room.baths} {room.baths === 1 ? "Bath" : "Baths"}</span>
-                                                <span>Sleeps {room.guests}</span>
+                                                <span>{t("bedCount", { count: room.beds })}</span>
+                                                <span>{t("bathCount", { count: room.baths })}</span>
+                                                <span>{t("sleeps", { count: room.guests })}</span>
                                             </div>
 
                                             <div className="room-card-divider" />
 
                                             <div className="room-card-footer">
                                                 <div className="room-card-price">
-                                                    RM{room.price} <span>/ night</span>
+                                                    RM{room.price} <span>{t("perNight")}</span>
                                                 </div>
 
                                                 <button
                                                     className="room-card-book"
                                                     onClick={() => handleBook(room)}
-                                                    aria-label={`Book ${room.title}, RM${room.price} per night`}
+                                                    aria-label={t("bookAria", { title: room.title, price: room.price })}
                                                 >
-                                                    Book
+                                                    {t("book")}
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M5 12h14M12 5l7 7-7 7" />
                                                     </svg>

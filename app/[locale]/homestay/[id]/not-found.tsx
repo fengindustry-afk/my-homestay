@@ -1,19 +1,21 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 export default function HomestayNotFound() {
+  const t = useTranslations("NotFound");
   return (
     <div
       className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center"
       style={{ background: "var(--background)", color: "var(--foreground)" }}
     >
       <h1 className="text-display" style={{ fontSize: "2.25rem" }}>
-        Homestay not found
+        {t("roomTitle")}
       </h1>
       <p style={{ color: "var(--text-muted)" }}>
-        This listing may have been removed or the link is out of date.
+        {t("roomBody")}
       </p>
       <Link href="/" className="btn-primary">
-        Return home
+        {t("home")}
       </Link>
     </div>
   );

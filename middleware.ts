@@ -1,6 +1,10 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { rateLimit, sweepExpired } from '@/lib/rateLimit';
+import createIntlMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
+
+const intl = createIntlMiddleware(routing);
 
 // Best-effort edge rate limit on the server API surface (mirrors the rawsec
 // Nginx `limit_req` zones). 60 requests / minute per IP across /api/*.
@@ -28,6 +32,12 @@ export async function middleware(request: NextRequest) {
         },
       });
     }
+  }
+
+  // Public pages: locale routing only (BM at /, English at /en). They use no
+  // auth, so the Supabase session refresh below is for /api and /finest-touch.
+  if (!pathname.startsWith('/api/') && !pathname.startsWith('/finest-touch') && !pathname.includes('.')) {
+    return intl(request);
   }
 
   let response = NextResponse.next({

@@ -1,24 +1,20 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import LocaleSwitch from "./LocaleSwitch";
 
-const links = [
-    { href: "#home", label: "Home" },
-    { href: "#about", label: "About" },
-    { href: "#rooms", label: "Homestays" },
-    { href: "#amenities", label: "Amenities" },
-    { href: "#gallery", label: "Gallery" },
-    { href: "#contact", label: "Contact" },
-];
-
-// Split across the wordmark on wide screens: five links left, Contact right.
-const leftLinks = links.slice(0, 5);
-const rightLinks = links.slice(5);
+const linkKeys = ["home", "about", "rooms", "amenities", "gallery", "contact"] as const;
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const progressRef = useRef<HTMLDivElement>(null);
+    const t = useTranslations("Nav");
+    const links = linkKeys.map((k) => ({ href: `#${k}`, label: t(k) }));
+    // Split across the wordmark on wide screens: five links left, Contact right.
+    const leftLinks = links.slice(0, 5);
+    const rightLinks = links.slice(5);
 
     useEffect(() => {
         let frame = 0;
@@ -72,7 +68,7 @@ export default function Navbar() {
         <nav
             className={`nav-glass fixed top-0 left-0 right-0 z-50 ${solid ? "scrolled" : "on-media"}`}
             role="navigation"
-            aria-label="Main navigation"
+            aria-label={t("mainNav")}
         >
             <div className="nav-bar wrap py-4">
                 <div className="nav-links nav-links-start">
@@ -95,18 +91,19 @@ export default function Navbar() {
                             </a>
                         ))}
                     </div>
+                    <LocaleSwitch />
                     {/* Hidden below md. Kept in a plain wrapper, not on the button itself, so the
                         .btn-primary rules can't override the display utilities. */}
                     <div className="hidden md:block">
                         <a href="#rooms" className="btn-primary">
-                            Book Now
+                            {t("book")}
                         </a>
                     </div>
 
                     <button
                         className="mobile-menu-toggle"
                         onClick={() => setMenuOpen(!menuOpen)}
-                        aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+                        aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
                         aria-expanded={menuOpen}
                         aria-controls="mobile-menu"
                     >
@@ -167,7 +164,7 @@ export default function Navbar() {
                             style={{ animationDelay: "0.4s" }}
                             onClick={() => setMenuOpen(false)}
                         >
-                            Book Now
+                            {t("book")}
                         </a>
                     </div>
                 </div>

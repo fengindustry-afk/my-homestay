@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { ArrowLeft, User, Bath, BedDouble, CheckCircle, ChefHat, Wifi, MonitorPlay, Car, Home } from "lucide-react";
 import BookingModal from "@/components/BookingModal";
+import LocaleSwitch from "@/components/LocaleSwitch";
 import type { Room } from "@/components/RoomsSection";
 import { BUSINESS, waLink } from "@/lib/site";
 
@@ -22,6 +24,8 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const mainImage = room.image || photos[0] || "/placeholder.jpg";
+    const t = useTranslations("Room");
+    const tRooms = useTranslations("Rooms");
     const amenitiesList: string[] = room.amenities
         ? room.amenities.split(",").map((a: string) => a.trim()).filter(Boolean)
         : [];
@@ -29,19 +33,19 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
     const facts = [
         room.rooms != null && {
             icon: <Home size={24} />,
-            title: `${room.rooms} ${room.rooms === 1 ? "Room" : "Rooms"}`,
+            title: tRooms("roomCount", { count: room.rooms }),
         },
         room.beds != null && {
             icon: <BedDouble size={24} />,
-            title: `${room.beds} ${room.beds === 1 ? "Bed" : "Beds"}`,
+            title: tRooms("bedCount", { count: room.beds }),
         },
         room.baths != null && {
             icon: <Bath size={24} />,
-            title: `${room.baths} ${room.baths === 1 ? "Bath" : "Baths"}`,
+            title: tRooms("bathCount", { count: room.baths }),
         },
         room.guests != null && {
             icon: <User size={24} />,
-            title: `Up to ${room.guests} guests`,
+            title: t("upToGuests", { count: room.guests }),
         },
     ].filter(Boolean) as { icon: React.ReactNode; title: string }[];
 
@@ -63,8 +67,11 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
 
                 <Link href="/#rooms" className="back-pill">
                     <ArrowLeft size={15} />
-                    All homestays
+                    {t("back")}
                 </Link>
+
+                {/* The room page has no navbar, so the language switch sits in the hero. */}
+                <LocaleSwitch className="detail-locale" />
 
                 <div className="detail-hero-copy">
                     <p className="section-tag" lang="ms">
@@ -93,17 +100,17 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                     <div data-reveal>
                         <div className="detail-price">
                             RM{room.price}
-                            <span>per night</span>
+                            <span>{t("perNight")}</span>
                         </div>
                         <div className="detail-actions">
                             <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-                                Book this homestay
+                                {t("book")}
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M5 12h14M12 5l7 7-7 7" />
                                 </svg>
                             </button>
                             <a href={askLink} className="btn-outline" target="_blank" rel="noopener noreferrer">
-                                Ask a question
+                                {t("ask")}
                             </a>
                         </div>
                     </div>
@@ -135,9 +142,9 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                 <section className="section">
                     <div className="wrap">
                         <div className="detail-section-head" data-reveal>
-                            <p className="section-tag">Gallery</p>
+                            <p className="section-tag">{t("galleryEyebrow")}</p>
                             <h2 className="section-title">
-                                <span className="title-italic">A look inside</span>
+                                <span className="title-italic">{t("galleryTitle")}</span>
                             </h2>
                         </div>
 
@@ -172,9 +179,9 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                 <section className="section detail-amenities">
                     <div className="wrap">
                         <div className="detail-section-head" data-reveal>
-                            <p className="section-tag">Included</p>
+                            <p className="section-tag">{t("includedEyebrow")}</p>
                             <h2 className="section-title">
-                                <span className="title-italic">What you get</span>
+                                <span className="title-italic">{t("includedTitle")}</span>
                             </h2>
                         </div>
 
@@ -194,14 +201,14 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
             <section className="section detail-closing" data-reveal>
                 <div className="wrap detail-closing-inner">
                     <h2 className="text-display detail-closing-title">
-                        Ready to book <span className="title-em">{room.title}</span>?
+                        {t.rich("closing", { title: room.title, em: (c) => <span className="title-em">{c}</span> })}
                     </h2>
                     <div className="detail-actions detail-actions-centre">
                         <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-                            Check availability
+                            {t("check")}
                         </button>
                         <a href={askLink} className="btn-outline" target="_blank" rel="noopener noreferrer">
-                            Ask a question
+                            {t("ask")}
                         </a>
                     </div>
                 </div>
