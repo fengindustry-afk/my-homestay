@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { BUSINESS } from "@/lib/site";
+import { Link } from "@/i18n/navigation";
 import LocaleSwitch from "./LocaleSwitch";
 
 // Absolute so they also work from pages other than the homepage.
@@ -12,6 +13,7 @@ export default function Footer() {
     const t = useTranslations("Footer");
     const tNav = useTranslations("Nav");
     const tSearch = useTranslations("Search");
+    const tLanding = useTranslations("Landing");
     // "/" or "/en/", so the links stay in the visitor's language.
     const home = t("homePath");
     return (
@@ -25,6 +27,8 @@ export default function Footer() {
                             // Plain <a>, not next/link: Lenis smooth-scrolls same-page anchors with the navbar offset.
                             <a key={k} href={`${home}#${k}`} className="footer-link">{k === "rooms" ? t("ourRooms") : tNav(k)}</a>
                         ))}
+                        <Link href="/family-day" className="footer-link">{tLanding("familyDay.nav")}</Link>
+                        <Link href="/dewan-majlis-banting" className="footer-link">{tLanding("hall.nav")}</Link>
                     </div>
 
                     {/* Brand, centred */}

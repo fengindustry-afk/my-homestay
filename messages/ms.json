@@ -134,6 +134,32 @@
       "a": "{address}. Berhampiran Pantai Morib, kira-kira sejam dari Kuala Lumpur."
     }
   },
+  "Landing": {
+    "home": "Utama",
+    "roomsTitle": "Pilihan untuk kumpulan anda",
+    "from": "Dari RM{price}",
+    "ask": "WhatsApp kami",
+    "familyDay": {
+      "nav": "Family Day di Banting",
+      "title": "Tempat Family Day di Banting dengan Kolam",
+      "description": "Family day di Banting, berhampiran Pantai Morib: kolam renang mesra muslimah, kolam kanak-kanak, tempat BBQ dan unit untuk 3 hingga 10 orang setiap satu.",
+      "eyebrow": "Family Day",
+      "h1": "Family day di Banting, berhampiran Pantai Morib",
+      "p1": "Kompleks kami dibina untuk perhimpunan keluarga. Homestay 3 ada kolam renang berbumbung yang mesra muslimah dan kolam kanak-kanak, serta padang bola dan meja snuker. Homestay 2 ada kolam renang sendiri.",
+      "p2": "Setiap unit memuatkan 3 hingga 10 orang, jadi kumpulan besar boleh tempah beberapa unit sekali. Ada tempat BBQ, surau dan tempat letak kereta percuma. Perlukan ruang untuk majlis? Dewan kami memuatkan 100 orang.",
+      "wa": "family day"
+    },
+    "hall": {
+      "nav": "Dewan Majlis Banting",
+      "title": "Dewan Majlis di Banting untuk 100 Orang",
+      "description": "Dewan serbaguna di Banting untuk majlis kahwin, mesyuarat dan family day. Muat 100 orang. Dari RM800 sehari, dan homestay untuk tetamu yang bermalam.",
+      "eyebrow": "Dewan Majlis",
+      "h1": "Dewan majlis di Banting untuk 100 orang",
+      "p1": "Indah Morib Multipurpose Hall sesuai untuk majlis kahwin, mesyuarat dan family day. Dewan memuatkan 100 orang, berhampiran Pantai Morib dan kira-kira sejam dari Kuala Lumpur.",
+      "p2": "Hari biasa: RM800 (8 pagi - 6 petang), RM900 (8 pagi - 10 malam) atau RM1,000 untuk bermalam. Hujung minggu: RM900, RM1,000 atau RM1,200. Tetamu yang bermalam boleh tempah homestay di kompleks yang sama.",
+      "wa": "dewan majlis"
+    }
+  },
   "CTA": {
     "title1": "Tempah penginapan anda",
     "title2": "dan biar kami uruskan selebihnya",

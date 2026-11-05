@@ -16,7 +16,7 @@ function both(path: string, priority: number): MetadataRoute.Sitemap {
 // No lastModified: rooms have no updated_at column, and a new Date() on every
 // request is noise that search engines ignore.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes = both("/", 1);
+  const staticRoutes = [...both("/", 1), ...both("/family-day", 0.9), ...both("/dewan-majlis-banting", 0.9)];
 
   let roomRoutes: MetadataRoute.Sitemap = [];
   try {
