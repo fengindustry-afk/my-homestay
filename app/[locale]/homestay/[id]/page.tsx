@@ -10,6 +10,16 @@ import RoomDetail from "./RoomDetail";
 
 type Props = { params: Promise<{ id: string; locale: "ms" | "en" }> };
 
+// Cached like the home page (5 min), so the <head> and the hero preload are sent
+// at once instead of after two DB round trips. Admin edits show within 5 minutes.
+export const revalidate = 300;
+
+// Prebuild the current rooms; rooms added later render on first visit, then cache.
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  const { data } = await supabaseAdmin.from("rooms").select("id");
+  return (data ?? []).map((r) => ({ id: String(r.id) }));
+}
+
 // Deduped per request: generateMetadata and the page share one query.
 const getRoom = cache(async (id: string): Promise<Room | null> => {
   const { data } = await supabaseAdmin.from("rooms").select("*").eq("id", id).single();

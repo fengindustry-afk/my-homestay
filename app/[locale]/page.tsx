@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import type { Room } from "@/components/RoomsSection";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { localeAlternates } from "@/lib/seo";
+import { faqJsonLd, localeAlternates, toJsonLd } from "@/lib/seo";
+import { FAQ_KEYS, FAQ_VARS } from "@/components/FaqSection";
 import HomePageClient from "./HomePageClient";
 
 type Props = { params: Promise<{ locale: "ms" | "en" }> };
@@ -32,6 +33,15 @@ async function getRooms(): Promise<Room[] | undefined> {
 }
 
 export default async function Home({ params }: Props) {
-  setRequestLocale((await params).locale);
-  return <HomePageClient initialRooms={await getRooms()} />;
+  const { locale } = await params;
+  setRequestLocale(locale);
+  // Built from the same messages FaqSection renders, so markup matches the page.
+  const t = await getTranslations({ locale, namespace: "Faq" });
+  const faq = FAQ_KEYS.map((k) => ({ q: t(`${k}.q`), a: t(`${k}.a`, FAQ_VARS) }));
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(faqJsonLd(faq)) }} />
+      <HomePageClient initialRooms={await getRooms()} />
+    </>
+  );
 }

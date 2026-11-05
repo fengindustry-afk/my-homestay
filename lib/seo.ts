@@ -227,3 +227,16 @@ export function llmsBody(
     }
     return lines.join("\n") + "\n";
 }
+
+// FAQPage for the home page. Items must be the same text the page shows.
+export function faqJsonLd(items: { q: string; a: string }[]): Record<string, unknown> {
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: items.map(({ q, a }) => ({
+            "@type": "Question",
+            name: q,
+            acceptedAnswer: { "@type": "Answer", text: a },
+        })),
+    };
+}
