@@ -47,6 +47,9 @@ const nextConfig: NextConfig = {
   // Hide the framework version (equivalent to Nginx 'server_tokens off').
   poweredByHeader: false,
   images: {
+    // AVIF first: sharper than WebP at the same size. 85 for full-bleed photos.
+    formats: ["image/avif", "image/webp"],
+    qualities: [75, 85],
     remotePatterns: [
       {
         protocol: "https",

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import CoverPicture from "./CoverPicture";
 import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 const HEADLINE = [
@@ -14,13 +14,11 @@ export default function HeroSection() {
             <div className="hero-photo">
                 {/* Oversized so the photo has room to drift on scroll. */}
                 <div className="hero-media absolute inset-0 -top-[8%] h-[116%]" data-parallax="0.12">
-                    <Image
-                        src="/images/hero-pool.jpg"
+                    <CoverPicture
+                        desktop="/images/hero-pool.jpg"
+                        mobile="/images/hero-pool-portrait.jpg"
                         alt="The pool area at Indah Morib Homestay, Selangor"
-                        fill
-                        priority
-                        className="object-cover"
-                        sizes="100vw"
+                        eager
                     />
                 </div>
             </div>

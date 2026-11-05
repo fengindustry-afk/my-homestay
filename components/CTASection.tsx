@@ -21,6 +21,7 @@ export default function CTASection() {
                     alt=""
                     fill
                     sizes="100vw"
+                    quality={85}
                     className="object-cover"
                 />
             </div>
