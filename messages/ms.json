@@ -102,6 +102,38 @@
     "stars": "{count} daripada 5 bintang",
     "roleBusiness": "Lawatan Kerja", "roleFamilyDay": "Hari Keluarga", "roleRetreat": "Percutian Keluarga"
   },
+  "Faq": {
+    "eyebrow": "Soalan Lazim",
+    "title": "Soalan yang <em>selalu</em> ditanya",
+    "checkin": {
+      "q": "Pukul berapa daftar masuk dan daftar keluar?",
+      "a": "Daftar masuk dari pukul {checkIn} dan daftar keluar sebelum pukul {checkOut}."
+    },
+    "pool": {
+      "q": "Adakah kolam renang mesra muslimah?",
+      "a": "Ya. Homestay 3 ada kolam renang berbumbung yang mesra muslimah, serta kolam kanak-kanak. Homestay 2 juga ada kolam renang sendiri."
+    },
+    "guests": {
+      "q": "Berapa ramai tetamu boleh menginap?",
+      "a": "Setiap unit memuatkan 3 hingga 10 orang. Untuk kumpulan besar, tempah beberapa unit sekali. Dewan kami memuatkan 100 orang untuk majlis."
+    },
+    "hall": {
+      "q": "Berapa harga sewa dewan majlis?",
+      "a": "Hari biasa: RM800 (8 pagi - 6 petang), RM900 (8 pagi - 10 malam) atau RM1,000 untuk bermalam. Hujung minggu: RM900, RM1,000 atau RM1,200."
+    },
+    "book": {
+      "q": "Bagaimana cara menempah?",
+      "a": "Pilih unit di laman ini, pilih tarikh dan bayar dalam talian. Anda juga boleh WhatsApp kami di {phone}."
+    },
+    "amenities": {
+      "q": "Apa kemudahan yang disediakan?",
+      "a": "Wi-Fi percuma, penghawa dingin, tempat letak kereta percuma, tempat BBQ dan surau."
+    },
+    "location": {
+      "q": "Di mana lokasi Indah Morib Homestay?",
+      "a": "{address}. Berhampiran Pantai Morib, kira-kira sejam dari Kuala Lumpur."
+    }
+  },
   "CTA": {
     "title1": "Tempah penginapan anda",
     "title2": "dan biar kami uruskan selebihnya",

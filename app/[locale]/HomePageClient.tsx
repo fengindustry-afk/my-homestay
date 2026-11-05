@@ -7,6 +7,7 @@ import RoomsSection, { type Room } from "@/components/RoomsSection";
 import AmenitiesSection from "@/components/AmenitiesSection";
 import GallerySection from "@/components/GallerySection";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import FaqSection from "@/components/FaqSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -33,6 +34,7 @@ export default function HomePageClient({ initialRooms }: { initialRooms?: Room[]
         <AmenitiesSection />
         <GallerySection />
         <TestimonialsSection />
+        <FaqSection />
         <CTASection />
       </main>
       <Footer />

@@ -35,7 +35,7 @@ export default function RootShell({ lang, children }: { lang: string; children: 
         <noscript>
           <style>{`[data-reveal],[data-stagger]>*{opacity:1!important;transform:none!important}`}</style>
         </noscript>
-        <JsonLd />
+        <JsonLd lang={lang} />
       </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
         {/* Messages come from i18n/request.ts. The admin tree falls back to BM. */}

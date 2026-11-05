@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BUSINESS, SITE_URL, waLink } from "../lib/site.ts";
-import { isHall, llmsBody, localeAlternates, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd } from "../lib/seo.ts";
+import { faqJsonLd, isHall, llmsBody, localeAlternates, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd } from "../lib/seo.ts";
 
 // Fixtures copied from rooms.json (the DB snapshot), images shortened.
 const h3 = { id: 6, title: "Homestay 3", type: "Holiday Home", price: 1500, beds: 5, baths: 4, guests: 10,
@@ -188,4 +188,29 @@ test("llms.txt body lists business facts and every room with its URL", () => {
 test("llms.txt body says so when the room list is empty", () => {
     const body = llmsBody(BUSINESS, SITE_URL, []);
     assert.ok(body.includes(`Room list unavailable. See ${SITE_URL}\n`));
+});
+
+test("FAQPage JSON-LD wraps each question and answer", () => {
+    const ld = faqJsonLd([{ q: "Q1?", a: "A1." }, { q: "Q2?", a: "A2." }]);
+    assert.equal(ld["@type"], "FAQPage");
+    assert.equal(ld.mainEntity.length, 2);
+    assert.deepEqual(ld.mainEntity[0], { "@type": "Question", name: "Q1?", acceptedAnswer: { "@type": "Answer", text: "A1." } });
+});
+
+// Every message key exists in both languages, with the same {placeholders}.
+test("ms.json and en.json have the same keys and placeholders", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const load = async (l) => JSON.parse(await readFile(new URL(`../messages/${l}.json`, import.meta.url), "utf8"));
+    const flat = (o, p = "") => Object.entries(o).flatMap(([k, v]) => (v && typeof v === "object" ? flat(v, `${p}${k}.`) : [[`${p}${k}`, v]]));
+    const ms = new Map(flat(await load("ms"))), en = new Map(flat(await load("en")));
+    assert.deepEqual([...ms.keys()].sort(), [...en.keys()].sort());
+    // Argument names only: "{count, plural, ...}" and "{count}" both give "count".
+    const vars = (s) => [...new Set([...String(s).matchAll(/\{(\w+)[,}]/g)].map((m) => m[1]))].sort();
+    for (const [k, v] of ms) {
+        assert.ok(String(v).trim() || k.endsWith("homePath"), `empty ms ${k}`);
+        assert.deepEqual(vars(v), vars(en.get(k)), `placeholders differ at ${k}`);
+    }
+    for (const k of ["checkin", "pool", "guests", "hall", "book", "amenities", "location"]) {
+        assert.ok(ms.get(`Faq.${k}.q`) && ms.get(`Faq.${k}.a`), `Faq.${k} missing`);
+    }
 });

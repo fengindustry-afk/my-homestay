@@ -102,6 +102,38 @@
     "stars": "{count} out of 5 stars",
     "roleBusiness": "Business Trip", "roleFamilyDay": "Family Day", "roleRetreat": "Family Retreat"
   },
+  "Faq": {
+    "eyebrow": "FAQ",
+    "title": "Questions guests <em>often</em> ask",
+    "checkin": {
+      "q": "What are the check-in and check-out times?",
+      "a": "Check-in is from {checkIn} and check-out is before {checkOut}."
+    },
+    "pool": {
+      "q": "Is there a Muslimah-friendly pool?",
+      "a": "Yes. Homestay 3 has a covered, Muslimah-friendly pool and a children's pool. Homestay 2 also has its own pool."
+    },
+    "guests": {
+      "q": "How many guests can stay?",
+      "a": "Each unit sleeps 3 to 10 people. Large groups can book several units together. Our hall holds 100 guests for events."
+    },
+    "hall": {
+      "q": "How much does the event hall cost?",
+      "a": "Weekdays: RM800 (8 a.m. - 6 p.m.), RM900 (8 a.m. - 10 p.m.) or RM1,000 overnight. Weekends: RM900, RM1,000 or RM1,200."
+    },
+    "book": {
+      "q": "How do I book?",
+      "a": "Choose a unit on this site, pick your dates and pay online. You can also WhatsApp us at {phone}."
+    },
+    "amenities": {
+      "q": "What facilities are included?",
+      "a": "Free Wi-Fi, air conditioning, free parking, a barbecue pit and a prayer room."
+    },
+    "location": {
+      "q": "Where is Indah Morib Homestay?",
+      "a": "{address}. Near Morib Beach, about an hour from Kuala Lumpur."
+    }
+  },
   "CTA": {
     "title1": "Book your stay",
     "title2": "and let the day run itself",
