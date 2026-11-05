@@ -9,7 +9,8 @@ async function loadRooms(): Promise<RoomSeoInput[]> {
         const { supabaseAdmin } = await import("@/lib/supabaseAdmin");
         const { data } = await supabaseAdmin
             .from("rooms")
-            .select("id, title, type, price, beds, baths, guests, amenities, image");
+            .select("id, title, type, price, beds, baths, guests, amenities, image")
+            .order("id");
         return (data ?? []) as RoomSeoInput[];
     } catch {
         return [];
