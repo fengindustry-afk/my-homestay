@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import type { SearchCriteria } from "./RoomsSection";
 
@@ -25,6 +26,7 @@ function dayAfter(iso: string): string {
 }
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
+    const t = useTranslations("Search");
     const [checkIn, setCheckIn] = useState(localToday);
     const [checkOut, setCheckOut] = useState("");
     const [roomType, setRoomType] = useState("All Types");
@@ -33,7 +35,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
     const handleSearch = () => {
         if (checkIn && checkOut && checkOut <= checkIn) {
-            setDateError("Check-out must be after check-in.");
+            setDateError(t("dateError"));
             return;
         }
         setDateError("");
@@ -51,7 +53,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         <div className="mx-auto max-w-6xl">
             <div className="search-bar">
                 <div className="search-bar-field">
-                    <label htmlFor="search-checkin" className="search-bar-label">Check-in</label>
+                    <label htmlFor="search-checkin" className="search-bar-label">{t("checkIn")}</label>
                     <input
                         id="search-checkin"
                         type="date"
@@ -67,7 +69,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                     />
                 </div>
                 <div className="search-bar-field">
-                    <label htmlFor="search-checkout" className="search-bar-label">Check-out</label>
+                    <label htmlFor="search-checkout" className="search-bar-label">{t("checkOut")}</label>
                     <input
                         id="search-checkout"
                         type="date"
@@ -81,39 +83,39 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                     />
                 </div>
                 <div className="search-bar-field">
-                    <label htmlFor="search-guests" className="search-bar-label">Guests</label>
+                    <label htmlFor="search-guests" className="search-bar-label">{t("guests")}</label>
                     <select
                         id="search-guests"
                         className="search-bar-select"
                         value={guests}
                         onChange={(e) => setGuests(e.target.value)}
                     >
-                        <option>1 Guest</option>
-                        <option>2 Guests</option>
-                        <option>3 Guests</option>
-                        <option>4 Guests</option>
-                        <option>5 Guests</option>
-                        <option>10 Guests</option>
-                        <option>20 Guests</option>
-                        <option>50 Guests</option>
-                        <option>120 Guests</option>
+                        <option value="1 Guest">{t("guestCount", { count: 1 })}</option>
+                        <option value="2 Guests">{t("guestCount", { count: 2 })}</option>
+                        <option value="3 Guests">{t("guestCount", { count: 3 })}</option>
+                        <option value="4 Guests">{t("guestCount", { count: 4 })}</option>
+                        <option value="5 Guests">{t("guestCount", { count: 5 })}</option>
+                        <option value="10 Guests">{t("guestCount", { count: 10 })}</option>
+                        <option value="20 Guests">{t("guestCount", { count: 20 })}</option>
+                        <option value="50 Guests">{t("guestCount", { count: 50 })}</option>
+                        <option value="120 Guests">{t("guestCount", { count: 120 })}</option>
                     </select>
                 </div>
                 <div className="search-bar-field">
-                    <label htmlFor="search-type" className="search-bar-label">Homestay Type</label>
+                    <label htmlFor="search-type" className="search-bar-label">{t("type")}</label>
                     <select
                         id="search-type"
                         className="search-bar-select"
                         value={roomType}
                         onChange={(e) => setRoomType(e.target.value)}
                     >
-                        <option>All Types</option>
-                        <option>Bungalow Unit</option>
-                        <option>Studio Unit</option>
-                        <option>Family Room</option>
-                        <option>Holiday Home</option>
-                        <option>Tiny House</option>
-                        <option>Event Hall</option>
+                        <option value="All Types">{t("typeAll")}</option>
+                        <option value="Bungalow Unit">{t("typeBungalow")}</option>
+                        <option value="Studio Unit">{t("typeStudio")}</option>
+                        <option value="Family Room">{t("typeFamily")}</option>
+                        <option value="Holiday Home">{t("typeHoliday")}</option>
+                        <option value="Tiny House">{t("typeTiny")}</option>
+                        <option value="Event Hall">{t("typeHall")}</option>
                     </select>
                 </div>
                 <button
@@ -121,7 +123,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                     id="search-availability-btn"
                     onClick={handleSearch}
                 >
-                    Search
+                    {t("search")}
                 </button>
             </div>
             {dateError && (

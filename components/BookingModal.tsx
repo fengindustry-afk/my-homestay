@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { eachDayOfInterval, format, addDays, isWeekend, areIntervalsOverlapping, parseISO } from "date-fns";
 
 import BookingCalendar from "./BookingCalendar";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -21,6 +23,7 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ isOpen, onClose, room }: BookingModalProps) {
+    const t = useTranslations("Booking");
     const [phone, setPhone] = useState("");
     const [name, setName] = useState("");
     const [icNumber, setIcNumber] = useState("");
@@ -534,11 +537,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             } else {
                 const detail = data.detail || (typeof data.error === 'string' ? data.error : null);
                 console.error("Payment init failed:", detail);
-                setError("Payment could not start. Please try again, or WhatsApp us to confirm your booking.");
+                setError(t("errPayment"));
             }
         } catch (err) {
             console.error("handlePay error:", err);
-            setError("An unexpected error occurred. Please check your connection.");
+            setError(t("errNetwork"));
         } finally {
             setLoading(false);
         }
@@ -610,21 +613,21 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                         <div className="p-8">
                             <div className="flex items-start justify-between mb-2 gap-4">
                                 <h2 className="font-display text-3xl font-normal text-[var(--primary)] leading-tight">{room.title}</h2>
-                                <a
+                                <Link
                                     href={`/homestay/${room.id}`}
                                     className="text-xs font-bold text-white bg-[var(--primary)] hover:bg-[var(--accent)] transition-colors px-4 py-2 rounded-full whitespace-nowrap shadow-md flex items-center gap-1"
                                 >
-                                    View Detail
+                                    {t("viewDetail")}
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                </a>
+                                </Link>
                             </div>
                             <p className="text-sm text-[var(--text-muted)] mb-6" style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-                                {room.description || "Room details will be added soon."}
+                                {room.description || t("noDescription")}
                             </p>
 
                             {room.amenities && (
                                 <div className="mb-6">
-                                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] mb-3">Amenities</h4>
+                                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)] mb-3">{t("amenities")}</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {room.amenities.split(",").map((a, i) => (
                                             <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[11px] font-medium text-[var(--primary)]">
@@ -639,7 +642,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between rounded-[var(--radius-md)] bg-[var(--surface)] p-5 border border-[var(--border)] transition-all">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Base Price</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">{t("basePrice")}</span>
                                         <span className="text-lg font-bold text-[var(--primary)]">
                                             RM{isHomestay2 ? (selectedPackage.includes("Upper Floor") ? 300 : selectedPackage.includes("Lower Floor") ? 350 : room.price) :
                                                 room.title.toLowerCase().includes("homestay 6") ? (selectedUnit.includes("Main") ? 270 : selectedUnit ? 150 : 0) :
@@ -648,15 +651,15 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     </div>
                                     <div className="h-8 w-[1px] bg-[var(--border)]" />
                                     <div className="flex flex-col text-right">
-                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">Nights</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-muted)]">{t("nights")}</span>
                                         <span className="text-lg font-bold text-[var(--accent)]">{nights || "--"}</span>
                                     </div>
                                 </div>
 
                                 <div className="rounded-[var(--radius-md)] bg-[var(--primary)] p-5 text-white">
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Total Amount</span>
-                                        <span className="text-xs px-2 py-0.5 bg-white/20 rounded-full font-medium">Auto-calculated</span>
+                                        <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">{t("total")}</span>
+                                        <span className="text-xs px-2 py-0.5 bg-white/20 rounded-full font-medium">{t("auto")}</span>
                                     </div>
                                     <span className="text-3xl font-black">RM{totalPrice}</span>
                                 </div>
@@ -669,22 +672,22 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                 <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center">
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" /></svg>
                                                 </div>
-                                                <span className="text-sm font-bold text-green-700">Discount Applied!</span>
+                                                <span className="text-sm font-bold text-green-700">{t("discountApplied")}</span>
                                             </div>
                                             <span className="text-lg font-black text-green-600">-{discountDetails.percentage}%</span>
                                         </div>
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-green-600 font-medium">Original Amount:</span>
+                                                <span className="text-green-600 font-medium">{t("original")}</span>
                                                 <span className="text-green-700 font-bold">RM{Math.round((totalPrice * 100) / (100 - discountDetails.percentage))}</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-green-600 font-medium">Discount Amount:</span>
+                                                <span className="text-green-600 font-medium">{t("discountAmount")}</span>
                                                 <span className="text-green-700 font-bold">-RM{Math.round(discountDetails.amount)}</span>
                                             </div>
                                             <div className="h-px bg-green-200 my-2"></div>
                                             <div className="flex justify-between text-base">
-                                                <span className="text-green-700 font-bold">You Pay:</span>
+                                                <span className="text-green-700 font-bold">{t("youPay")}</span>
                                                 <span className="text-lg font-black text-green-600">RM{totalPrice}</span>
                                             </div>
                                         </div>
@@ -702,8 +705,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Select Stay Dates</h3>
-                                    <p className="text-sm text-[var(--text-muted)]">Check availability for {selectedUnit || "this homestay"}</p>
+                                    <h3 className="font-display text-2xl font-normal text-[var(--primary)]">{t("selectDates")}</h3>
+                                    <p className="text-sm text-[var(--text-muted)]">{t("checkFor", { name: selectedUnit || t("thisHomestay") })}</p>
                                 </div>
                             </div>
                             <BookingCalendar
@@ -724,8 +727,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                                     </div>
                                     <div>
-                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Select Package</h3>
-                                        <p className="text-sm text-[var(--text-muted)]">Choose a package for your stay</p>
+                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">{t("selectPackage")}</h3>
+                                        <p className="text-sm text-[var(--text-muted)]">{t("choosePackage")}</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -756,8 +759,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                                     </div>
                                     <div>
-                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Choose Unit</h3>
-                                        <p className="text-sm text-[var(--text-muted)]">Select your preferred unit in {room.title}</p>
+                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">{t("chooseUnit")}</h3>
+                                        <p className="text-sm text-[var(--text-muted)]">{t("chooseUnitIn", { title: room.title })}</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -791,7 +794,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                 <span className="text-sm font-black uppercase tracking-tight">{u}</span>
                                                 {(isHomestay2 || room.title.toLowerCase().includes("homestay 6")) && (
                                                     <span className="text-xs font-bold opacity-70 mt-1">
-                                                        RM{u.toLowerCase().includes("main") ? 270 : u.includes("1") || u.includes("2") ? 350 : u.includes("3") || u.includes("4") ? 300 : 150} / night
+                                                        RM{u.toLowerCase().includes("main") ? 270 : u.includes("1") || u.includes("2") ? 350 : u.includes("3") || u.includes("4") ? 300 : 150} {t("perNight")}
                                                     </span>
                                                 )}
                                             </button>
@@ -808,7 +811,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         {unitsCount}
                                     </div>
                                     <p className="text-sm font-bold text-[var(--primary)] uppercase tracking-wider">
-                                        {unitsCount} Unit{unitsCount !== 1 ? 's' : ''} Selected
+                                        {t("unitsSelected", { count: unitsCount })}
                                     </p>
                                 </div>
                             </div>
@@ -821,22 +824,22 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                                     </div>
                                     <div>
-                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Select Add Ons</h3>
-                                        <p className="text-sm text-[var(--text-muted)]">Enhance your stay</p>
+                                        <h3 className="font-display text-2xl font-normal text-[var(--primary)]">{t("addOns")}</h3>
+                                        <p className="text-sm text-[var(--text-muted)]">{t("addOnsSub")}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] cursor-pointer transition-all">
                                         <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.bbq} onChange={(e) => setAddOns({ ...addOns, bbq: e.target.checked })} />
                                         <div>
-                                            <div className="text-sm font-bold text-[var(--primary)]">Barbecue Pit</div>
+                                            <div className="text-sm font-bold text-[var(--primary)]">{t("bbq")}</div>
                                             <div className="text-xs text-[var(--text-muted)]">+RM30</div>
                                         </div>
                                     </label>
                                     <label className="flex items-center gap-3 p-4 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] cursor-pointer transition-all">
                                         <input type="checkbox" className="w-5 h-5 accent-[var(--accent)]" checked={addOns.cradle} onChange={(e) => setAddOns({ ...addOns, cradle: e.target.checked })} />
                                         <div>
-                                            <div className="text-sm font-bold text-[var(--primary)]">Cradle</div>
+                                            <div className="text-sm font-bold text-[var(--primary)]">{t("cradle")}</div>
                                             <div className="text-xs text-[var(--text-muted)]">+RM10</div>
                                         </div>
                                     </label>
@@ -844,24 +847,24 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     <div className="p-4 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)]">
                                         <div className="flex items-center justify-between mb-3">
                                             <div>
-                                                <div className="text-sm font-bold text-[var(--primary)]">Karaoke Set</div>
-                                                <div className="text-xs text-[var(--text-muted)]">RM25/hour or RM150/day</div>
+                                                <div className="text-sm font-bold text-[var(--primary)]">{t("karaoke")}</div>
+                                                <div className="text-xs text-[var(--text-muted)]">{t("karaokeRate")}</div>
                                             </div>
                                             <select className="border border-[var(--border)] rounded-[var(--radius-sm)] p-2 text-sm bg-[var(--surface-raised)]" value={addOns.karaoke} onChange={(e) => setAddOns({ ...addOns, karaoke: e.target.value })}>
-                                                <option value="none">None</option>
-                                                <option value="hour">Per Hour</option>
-                                                <option value="day">Per Day</option>
+                                                <option value="none">{t("none")}</option>
+                                                <option value="hour">{t("perHour")}</option>
+                                                <option value="day">{t("perDay")}</option>
                                             </select>
                                         </div>
                                         {addOns.karaoke === 'hour' && (
                                             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
-                                                <span className="text-xs text-[var(--text-muted)]">Number of hours:</span>
+                                                <span className="text-xs text-[var(--text-muted)]">{t("hours")}</span>
                                                 <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-[var(--radius-sm)] p-1 text-sm bg-[var(--surface-raised)]" value={addOns.karaokeHours} onChange={(e) => setAddOns({ ...addOns, karaokeHours: parseInt(e.target.value) || 1 })} />
                                             </div>
                                         )}
                                         {addOns.karaoke === 'day' && (
                                             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border)]">
-                                                <span className="text-xs text-[var(--text-muted)]">Number of days:</span>
+                                                <span className="text-xs text-[var(--text-muted)]">{t("days")}</span>
                                                 <input type="number" min="1" className="w-16 border border-[var(--border)] rounded-[var(--radius-sm)] p-1 text-sm bg-[var(--surface-raised)]" value={addOns.karaokeDays} onChange={(e) => setAddOns({ ...addOns, karaokeDays: parseInt(e.target.value) || 1 })} />
                                             </div>
                                         )}
@@ -877,24 +880,24 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 <div className="h-10 w-10 rounded-xl bg-[var(--surface-dark)] flex items-center justify-center text-[var(--primary)]">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                                 </div>
-                                <h3 className="font-display text-2xl font-normal text-[var(--primary)]">Guest Information</h3>
+                                <h3 className="font-display text-2xl font-normal text-[var(--primary)]">{t("guestInfo")}</h3>
                             </div>
 
                             <form onSubmit={handlePay} className="grid md:grid-cols-2 gap-6">
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Full Name</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("fullName")}</label>
                                     <input
                                         type="text"
                                         required
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
-                                        placeholder="Enter your name"
+                                        placeholder={t("namePlaceholder")}
                                     />
                                 </div>
 
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">IC Number</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("ic")}</label>
                                     <input
                                         type="text"
                                         required
@@ -906,7 +909,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
 
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">WhatsApp Number</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("whatsapp")}</label>
                                     <input
                                         type="tel"
                                         required
@@ -918,7 +921,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
 
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Check-in Time</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("checkInTime")}</label>
                                     <input
                                         type="time"
                                         required
@@ -927,11 +930,11 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         onChange={(e) => setCheckInTime(e.target.value)}
                                         className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                     />
-                                    <span className="text-[10px] text-gray-500 mt-1 block">Earliest check-in is {isHall ? "8:00 AM (08:00)" : "3:00 PM (15:00)"}</span>
+                                    <span className="text-[10px] text-gray-500 mt-1 block">{t("earliestCheckIn", { time: isHall ? "8:00 AM (08:00)" : "3:00 PM (15:00)" })}</span>
                                 </div>
 
                                 <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">Check-out Time</label>
+                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("checkOutTime")}</label>
                                     <input
                                         type="time"
                                         required
@@ -941,8 +944,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                     />
                                     <span className="text-[10px] text-gray-500 mt-1 block">
                                         {isHall
-                                            ? "Check-out time depends on selected package."
-                                            : `RM${room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5") ? '20' : '10'}/hour extra charge applies after 12:00 PM`}
+                                            ? t("checkOutHall")
+                                            : t("lateCheckOut", { rate: room.title.toLowerCase().includes("homestay 3") || room.title.toLowerCase().includes("homestay 5") ? "20" : "10" })}
                                     </span>
                                 </div>
 
@@ -966,18 +969,18 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                                     </svg>
-                                                    Processing...
+                                                    {t("processing")}
                                                 </>
                                             ) : (
                                                 <>
-                                                    <span>Proceed Payment</span>
+                                                    <span>{t("pay")}</span>
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                                                 </>
                                             )}
                                         </div>
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                                     </button>
-                                    <p className="mt-3 text-center text-xs font-semibold text-[var(--primary)] selection:bg-[var(--accent)] selection:text-white">You will be notified via WhatsApp.</p>
+                                    <p className="mt-3 text-center text-xs font-semibold text-[var(--primary)] selection:bg-[var(--accent)] selection:text-white">{t("notified")}</p>
                                 </div>
                             </form>
 
@@ -994,9 +997,9 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
                                 <div className="flex flex-col">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Official Partner</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{t("partner")}</span>
                                         <div className="h-1 w-1 rounded-full bg-gray-300" />
-                                        <span className="text-[10px] font-bold text-gray-400">Verified Secure</span>
+                                        <span className="text-[10px] font-bold text-gray-400">{t("verified")}</span>
                                     </div>
                                     <h4 className="text-sm font-black text-gray-500 tracking-tight">FENG INDUSTRY</h4>
                                     <p className="text-[11px] font-mono text-gray-400">Reg: 003552405X</p>
@@ -1004,7 +1007,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                             </div>
 
                             <p className="mt-6 text-center text-[10px] text-[var(--text-muted)] font-medium uppercase tracking-widest opacity-60">
-                                Secure payment powered by Billplz • No hidden fees
+                                {t("secure")}
                             </p>
                         </section>
                     </div>
@@ -1021,7 +1024,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                         <button
                             onClick={() => setIsZoomed(false)}
                             className="absolute right-4 top-4 text-white hover:text-gray-300 z-10"
-                            aria-label="Close zoom"
+                            aria-label={t("closeZoom")}
                         >
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -1030,12 +1033,12 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                         </button>
                         <img
                             src={zoomedImage}
-                            alt="Zoomed view"
+                            alt={t("zoomAlt")}
                             className="max-w-full max-h-full object-contain cursor-zoom-out"
                             onClick={(e) => e.stopPropagation()}
                         />
                         <p className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black bg-opacity-50 px-3 py-1 rounded">
-                            Click anywhere to close
+                            {t("clickClose")}
                         </p>
                     </div>
                 )

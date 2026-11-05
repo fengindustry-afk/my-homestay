@@ -176,6 +176,16 @@ export function websiteJsonLd(name: string, siteUrl: string): Record<string, unk
     };
 }
 
+// Canonical plus hreflang links for a page. BM is the default at the bare
+// path, English sits under /en. x-default points at BM.
+export function localeAlternates(path: string, locale: "ms" | "en") {
+    const en = path === "/" ? "/en" : `/en${path}`;
+    return {
+        canonical: locale === "en" ? en : path,
+        languages: { ms: path, en, "x-default": path },
+    };
+}
+
 // JSON for a <script type="application/ld+json"> tag. Escaping "<" stops
 // admin-entered text such as "</script>" from closing the tag early.
 export function toJsonLd(data: unknown): string {

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 // Tailored Content-Security-Policy. Allow-lists exactly the third parties this
 // site uses (Supabase, Unsplash/pravatar images, Vercel Speed Insights) while
@@ -84,4 +85,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default createNextIntlPlugin("./i18n/request.ts")(nextConfig);

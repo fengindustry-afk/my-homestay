@@ -1,11 +1,12 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { BUSINESS, WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 const CONTACTS = [
-    { label: "Phone", value: BUSINESS.phones[0], href: `tel:${BUSINESS.phones[0].replace(/[^+\d]/g, "")}` },
-    { label: "Email", value: BUSINESS.email.split("@")[0], href: `mailto:${BUSINESS.email}` },
+    { label: "phone", value: BUSINESS.phones[0], href: `tel:${BUSINESS.phones[0].replace(/[^+\d]/g, "")}` },
+    { label: "email", value: BUSINESS.email.split("@")[0], href: `mailto:${BUSINESS.email}` },
     {
-        label: "Location",
+        label: "location",
         value: `${BUSINESS.address.locality}, ${BUSINESS.address.region}`,
         // The main Google profile's share link once known; a Maps search until then.
         href: BUSINESS.mapsUrl ?? "https://maps.google.com/?q=Indah+Morib+Homestay+Banting+Selangor",
@@ -13,6 +14,7 @@ const CONTACTS = [
 ];
 
 export default function CTASection() {
+    const t = useTranslations("CTA");
     return (
         <section id="contact" className="cta-section on-media">
             <div className="cta-photo">
@@ -30,14 +32,13 @@ export default function CTASection() {
             <div className="wrap cta-inner">
                 <div className="cta-top">
                     <h2 className="text-display cta-title" data-reveal>
-                        <span className="title-italic">Book your stay</span>
-                        <span className="title-roman">and let the day run itself</span>
+                        <span className="title-italic">{t("title1")}</span>
+                        <span className="title-roman">{t("title2")}</span>
                     </h2>
 
                     <div data-reveal data-reveal-delay="120">
                         <p className="cta-lede">
-                            Message us directly for current rates, package pricing for large
-                            groups, and event bookings.
+                            {t("lede")}
                         </p>
                         <div className="cta-buttons">
                             <a
@@ -47,13 +48,13 @@ export default function CTASection() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                WhatsApp us
+                                {t("whatsapp")}
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M5 12h14M12 5l7 7-7 7" />
                                 </svg>
                             </a>
                             <a href={`mailto:${BUSINESS.email}`} className="btn-outline" id="email-btn">
-                                Email us
+                                {t("emailUs")}
                             </a>
                         </div>
                     </div>
@@ -68,7 +69,7 @@ export default function CTASection() {
                             rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                             className="contact-chip"
                         >
-                            <span className="contact-chip-label">{item.label}</span>
+                            <span className="contact-chip-label">{t(item.label)}</span>
                             <span className="contact-chip-value">{item.value}</span>
                         </a>
                     ))}

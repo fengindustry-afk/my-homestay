@@ -1,23 +1,24 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 const testimonials = [
     {
         name: "Haqeem Noorazli",
-        role: "Business Trip",
+        role: "roleBusiness",
         avatar: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/backgrounds/Haqiem.png",
         text: "I stayed with my colleagues for a work trip. The person whom I speak/message via whatsapp to book was helpful and attentive. Indah Morib is a building with a 4 unit homestay.The unit I stayed in had 2 rooms 2 bath and a complete kitchen. The unit and 2 rooms are big, spacious, most importantly very clean. Rooms come with air conditioner and toilet comes with heater shower, water pressure is amazing.Will definitely stay here if I come to Morib. I highly recommend this place if you are coming with/for family, big family, work outing activities, weddings.Thanks Indah Morib HStay!",
         stars: 5,
     },
     {
         name: "najwa syolehah",
-        role: "Family Day",
+        role: "roleFamilyDay",
         avatar: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/backgrounds/Najwa.png",
         text: "We held a Family Day with almost 120 people in attendance. A very suitable place with the best facilities. Resort level. Toilets, fields, swimming pool, house, dining area all met the needs of our program. Highly recommended!",
         stars: 5,
     },
     {
         name: "Che Maryam Ahmad",
-        role: "Family Retreat",
+        role: "roleRetreat",
         avatar: "https://skiaybyjtdkkqitvxrli.supabase.co/storage/v1/object/public/backgrounds/Che%20Maryam%20Ahmad.png",
         text: "The place is spacious and neat, the room is comfortable and clean, the kitchen and bathroom are also clean. Ample kitchen equipment, comfortable dining area, many pools and some are covered, suitable for women to bathe. The large hall can be used as a place for congregational prayer. I give 5/5.",
         stars: 5,
@@ -25,8 +26,9 @@ const testimonials = [
 ];
 
 function Stars({ count }: { count: number }) {
+    const t = useTranslations("Testimonials");
     return (
-        <div className="testimonial-stars" role="img" aria-label={`${count} out of 5 stars`}>
+        <div className="testimonial-stars" role="img" aria-label={t("stars", { count })}>
             {Array.from({ length: 5 }, (_, i) => (
                 <svg
                     key={i}
@@ -47,16 +49,18 @@ function Stars({ count }: { count: number }) {
 }
 
 export default function TestimonialsSection() {
+    const t = useTranslations("Testimonials");
+    const tr = t;
     return (
         <section className="section">
             <div className="wrap">
                 <div className="mb-16 text-center" data-reveal>
-                    <p className="section-tag">Testimonials</p>
+                    <p className="section-tag">{t("eyebrow")}</p>
                     <h2 className="section-title">
-                        <span className="title-roman">What our <em className="title-em">guests</em> say</span>
+                        <span className="title-roman">{t.rich("title", { em: (c) => <em className="title-em">{c}</em> })}</span>
                     </h2>
                     <p className="section-description mx-auto mt-6">
-                        Unedited reviews from families and companies who booked the compound.
+                        {t("intro")}
                     </p>
                 </div>
 
@@ -82,7 +86,7 @@ export default function TestimonialsSection() {
                                 />
                                 <div>
                                     <div className="testimonial-name">{t.name}</div>
-                                    <div className="testimonial-role">{t.role}</div>
+                                    <div className="testimonial-role">{tr(t.role)}</div>
                                 </div>
                             </figcaption>
                         </figure>

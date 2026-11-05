@@ -1,14 +1,16 @@
+import { useTranslations } from "next-intl";
 import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 export default function WhatsAppFloat() {
     const href = waLink(WA_DEFAULT_MESSAGE);
+    const t = useTranslations("Common");
 
     return (
         <a
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Chat with us on WhatsApp"
+            aria-label={t("whatsappChat")}
             className="whatsapp-float"
         >
             <svg

@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 export default function ScrollToTop() {
     const [visible, setVisible] = useState(false);
+    const t = useTranslations("Common");
 
     useEffect(() => {
         const handleScroll = () => setVisible(window.scrollY > 400);
@@ -14,7 +16,7 @@ export default function ScrollToTop() {
         <button
             className={`scroll-top-btn ${visible ? "visible" : ""}`}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            aria-label="Scroll to top"
+            aria-label={t("scrollTop")}
             id="scroll-to-top-btn"
         >
             <svg

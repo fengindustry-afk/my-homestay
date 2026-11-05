@@ -3,11 +3,12 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type { Room } from "@/components/RoomsSection";
-import { roomDescription, roomJsonLd, roomTitle, toJsonLd } from "@/lib/seo";
+import { setRequestLocale } from "next-intl/server";
+import { localeAlternates, roomDescription, roomJsonLd, roomTitle, toJsonLd } from "@/lib/seo";
 import { BUSINESS, SITE_URL } from "@/lib/site";
 import RoomDetail from "./RoomDetail";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string; locale: "ms" | "en" }> };
 
 // Deduped per request: generateMetadata and the page share one query.
 const getRoom = cache(async (id: string): Promise<Room | null> => {
@@ -25,7 +26,7 @@ const getPhotos = cache(async (id: string): Promise<string[]> => {
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { id, locale } = await params;
   const room = await getRoom(id);
 
   if (!room) {
@@ -40,18 +41,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: localeAlternates(path, locale),
     openGraph: {
       title: `${title} | ${BUSINESS.name}`,
       description,
-      url: path,
+      url: localeAlternates(path, locale).canonical,
       images: room.image ? [room.image] : undefined,
     },
   };
 }
 
 export default async function HomestayPage({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
+  setRequestLocale(locale);
   const room = await getRoom(id);
   if (!room) notFound();
 
