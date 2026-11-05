@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { BUSINESS } from "@/lib/site";
 
 // Order of the questions on the page and in the FAQPage JSON-LD.
-export const FAQ_KEYS = ["checkin", "pool", "guests", "hall", "book", "amenities", "location"] as const;
+export const FAQ_KEYS = ["checkin", "pool", "poolRules", "guests", "hall", "book", "deposit", "amenities", "location", "beach", "pets"] as const;
 export type FaqKey = (typeof FAQ_KEYS)[number];
 
 const a = BUSINESS.address;

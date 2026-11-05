@@ -129,6 +129,22 @@
       "q": "What facilities are included?",
       "a": "Free Wi-Fi, air conditioning, free parking, a barbecue pit and a prayer room."
     },
+    "poolRules": {
+      "q": "Are there pool rules?",
+      "a": "The pools have no lifeguard, so children must be watched by an adult at all times. Please wear suitable swimwear."
+    },
+    "deposit": {
+      "q": "What about deposits and cancellations?",
+      "a": "You pay online when you book. Deposit and cancellation terms depend on the unit and dates, so WhatsApp us at {phone} before you book, or as soon as possible if you need to change dates."
+    },
+    "beach": {
+      "q": "How far is Morib Beach?",
+      "a": "About 4 km, roughly a 5-minute drive."
+    },
+    "pets": {
+      "q": "Can I bring pets?",
+      "a": "Please WhatsApp us before bringing a pet."
+    },
     "location": {
       "q": "Where is Indah Morib Homestay?",
       "a": "{address}. Near Morib Beach, about an hour from Kuala Lumpur."

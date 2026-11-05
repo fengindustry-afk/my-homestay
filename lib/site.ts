@@ -16,10 +16,11 @@ export const BUSINESS = {
         region: "Selangor",
         country: "MY",
     },
-    // Pin of the main Google Business Profile. Null until the owner sends it.
-    geo: null as { lat: number; lng: number } | null,
-    // Share link of the main Google Business Profile. Null until known.
-    mapsUrl: null as string | null,
+    // Pin of the compound at Pt 704, taken from the Google Maps listing of one unit
+    // ("Indah Morib Homestay 2"). The main business has no Google profile of its own yet.
+    geo: { lat: 2.7366822, lng: 101.4577435 } as { lat: number; lng: number } | null,
+    // A map of the pin, not the unit listing, so the main business is not tied to one unit.
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=2.7366822,101.4577435" as string | null,
     checkIn: "15:00",
     checkOut: "12:00",
     priceRange: "RM150 - RM1,800",

@@ -15,14 +15,14 @@ export const LANDING: Record<LandingKind, { path: string; image: string; faq: Fa
     familyDay: {
         path: "/family-day",
         image: "/images/content/pool3.jpg",
-        faq: ["pool", "guests", "amenities", "book"],
+        faq: ["pool", "poolRules", "guests", "beach"],
         // Units with a pool or room for a big group; the hall has its own page.
         pick: (r) => !isHall(r) && (r.guests >= 10 || /pool|kolam/i.test(r.amenities ?? "")),
     },
     hall: {
         path: "/dewan-majlis-banting",
         image: "/images/content/event.jpg",
-        faq: ["hall", "guests", "book", "location"],
+        faq: ["hall", "guests", "deposit", "location"],
         pick: (r) => isHall(r),
     },
 };

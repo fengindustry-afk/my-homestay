@@ -146,7 +146,7 @@ test("lodging JSON-LD lists the compound's amenities as true features", () => {
 });
 
 test("lodging JSON-LD leaves out geo and hasMap until each is known", () => {
-    const unknown = lodgingJsonLd(BUSINESS, SITE_URL, "d");
+    const unknown = lodgingJsonLd({ ...BUSINESS, geo: null, mapsUrl: null }, SITE_URL, "d");
     assert.equal(unknown.geo, undefined);
     assert.equal(unknown.hasMap, undefined);
     const known = lodgingJsonLd({ ...BUSINESS, geo: { lat: 2.8, lng: 101.5 }, mapsUrl: "https://maps.app.goo.gl/x" }, SITE_URL, "d");
@@ -210,7 +210,7 @@ test("ms.json and en.json have the same keys and placeholders", async () => {
         assert.ok(String(v).trim() || k.endsWith("homePath"), `empty ms ${k}`);
         assert.deepEqual(vars(v), vars(en.get(k)), `placeholders differ at ${k}`);
     }
-    for (const k of ["checkin", "pool", "guests", "hall", "book", "amenities", "location"]) {
+    for (const k of ["checkin", "pool", "poolRules", "guests", "hall", "book", "deposit", "amenities", "location", "beach", "pets"]) {
         assert.ok(ms.get(`Faq.${k}.q`) && ms.get(`Faq.${k}.a`), `Faq.${k} missing`);
     }
 });
