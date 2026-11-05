@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 import {
     format,
     addMonths,
@@ -34,7 +34,43 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Roving tabindex: one Tab stop for both months, arrow keys move between days.
+    const [focusDay, setFocusDay] = useState<Date>(() => new Date());
+    const gridRef = useRef<HTMLDivElement>(null);
+    const keyMoved = useRef(false);
+
     const nextMonth = addMonths(currentDate, 1);
+    // The month arrows can scroll focusDay out of view; then the first visible day holds the Tab stop.
+    const tabDay = isBefore(focusDay, startOfMonth(currentDate)) || isAfter(focusDay, endOfMonth(nextMonth))
+        ? startOfMonth(currentDate)
+        : focusDay;
+
+    useEffect(() => {
+        if (!keyMoved.current) return;
+        keyMoved.current = false;
+        gridRef.current?.querySelector<HTMLButtonElement>(`[data-day="${format(focusDay, "yyyy-MM-dd")}"]`)?.focus();
+    }, [focusDay, currentDate]);
+
+    const handleGridKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+        const moves: Record<string, (d: Date) => Date> = {
+            ArrowLeft: d => addDays(d, -1),
+            ArrowRight: d => addDays(d, 1),
+            ArrowUp: d => addDays(d, -7),
+            ArrowDown: d => addDays(d, 7),
+            Home: d => startOfWeek(d, { weekStartsOn: 1 }),
+            End: d => endOfWeek(d, { weekStartsOn: 1 }),
+            PageUp: d => addMonths(d, -1),
+            PageDown: d => addMonths(d, 1),
+        };
+        const move = moves[e.key];
+        if (!move || !(e.target as HTMLElement).dataset.day) return;
+        e.preventDefault();
+        const next = move(tabDay);
+        if (isBefore(next, startOfMonth(currentDate))) setCurrentDate(startOfMonth(next));
+        else if (isAfter(next, endOfMonth(nextMonth))) setCurrentDate(addMonths(startOfMonth(next), -1));
+        keyMoved.current = true;
+        setFocusDay(next);
+    };
 
     useEffect(() => {
         async function fetchBookings() {
@@ -220,9 +256,12 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                     <button
                         type="button"
                         key={cloneDay.toString()}
-                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group disabled:cursor-not-allowed`}
-                        onClick={() => isCurrentMonth && handleDateClick(cloneDay)}
-                        disabled={!isCurrentMonth || isBooked || isPastDay}
+                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group disabled:cursor-not-allowed aria-disabled:cursor-not-allowed`}
+                        onClick={() => { if (!isCurrentMonth) return; setFocusDay(cloneDay); handleDateClick(cloneDay); }}
+                        disabled={!isCurrentMonth}
+                        aria-disabled={isCurrentMonth && (isBooked || isPastDay) ? true : undefined}
+                        tabIndex={isCurrentMonth && isSameDay(cloneDay, tabDay) ? 0 : -1}
+                        data-day={isCurrentMonth ? dateKey : undefined}
                         aria-hidden={!isCurrentMonth || undefined}
                         aria-pressed={isCurrentMonth ? isSelected : undefined}
                         aria-label={`${format(cloneDay, "EEEE, d MMMM yyyy")}, ${
@@ -285,7 +324,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent)] border-t-transparent" />
                 </div>
             ) : (
-                <div className="flex flex-col md:flex-row gap-8">
+                <div ref={gridRef} onKeyDown={handleGridKeyDown} className="flex flex-col md:flex-row gap-8">
                     <div className="flex-1">
                         {renderHeader(currentDate, true, false)}
                         {renderDays()}
