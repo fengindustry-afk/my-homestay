@@ -283,8 +283,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
               ${!isCurrentMonth ? "text-transparent pointer-events-none" : ""}
               ${isBooked ? "bg-gray-100 text-gray-300 cursor-not-allowed line-through" : ""}
               ${isPastDay ? "text-gray-200 cursor-not-allowed" : ""}
-              ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-[var(--accent-contrast)] scale-110" : "hover:bg-[var(--surface)] text-[var(--primary)]"}
-              ${isBooked && "hover:bg-transparent"}
+              ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-[var(--accent-contrast)] scale-110" : `${isBooked || isPastDay ? "" : "hover:bg-[var(--surface)] "}text-[var(--primary)]`}
               ${discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
             `}>
                             {format(cloneDay, "d")}
