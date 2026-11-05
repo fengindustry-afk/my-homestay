@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BUSINESS, SITE_URL, waLink } from "../lib/site.ts";
-import { isHall, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd, localeAlternates } from "../lib/seo.ts";
+import { isHall, llmsBody, localeAlternates, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd } from "../lib/seo.ts";
 
 // Fixtures copied from rooms.json (the DB snapshot), images shortened.
 const h3 = { id: 6, title: "Homestay 3", type: "Holiday Home", price: 1500, beds: 5, baths: 4, guests: 10,
@@ -172,4 +172,20 @@ test("locale alternates: BM at the bare path, English under /en, x-default to BM
     const room = localeAlternates("/homestay/12", "en");
     assert.equal(room.canonical, "/en/homestay/12");
     assert.deepEqual(room.languages, { ms: "/homestay/12", en: "/en/homestay/12", "x-default": "/homestay/12" });
+});
+
+test("llms.txt body lists business facts and every room with its URL", () => {
+    const body = llmsBody(BUSINESS, SITE_URL, [h3, hall]);
+    assert.match(body, /^# Indah Morib Homestay\n/);
+    assert.ok(body.includes(`Website: ${SITE_URL}\n`));
+    assert.ok(body.includes("## Rooms and spaces\n"));
+    assert.ok(body.includes(`${roomTitle(h3)} - ${roomDescription(h3)} - ${SITE_URL}/homestay/6\n`));
+    assert.ok(body.includes(`${roomTitle(hall)} - ${roomDescription(hall)} - ${SITE_URL}/homestay/13\n`));
+    assert.ok(body.endsWith("\n"));
+    assert.doesNotMatch(body, /Room list unavailable/);
+});
+
+test("llms.txt body says so when the room list is empty", () => {
+    const body = llmsBody(BUSINESS, SITE_URL, []);
+    assert.ok(body.includes(`Room list unavailable. See ${SITE_URL}\n`));
 });

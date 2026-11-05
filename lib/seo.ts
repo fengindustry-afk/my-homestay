@@ -191,3 +191,39 @@ export function localeAlternates(path: string, locale: "ms" | "en") {
 export function toJsonLd(data: unknown): string {
     return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+// Plain-text body for /llms.txt. Business facts come in as an argument because
+// this file has no imports.
+export function llmsBody(
+    business: {
+        name: string;
+        address: { street: string; locality: string; postalCode: string; region: string; country: string };
+        phones: string[];
+        email: string;
+        checkIn: string;
+        checkOut: string;
+        priceRange: string;
+        amenities: string[];
+    },
+    siteUrl: string,
+    rooms: RoomSeoInput[],
+): string {
+    const a = business.address;
+    const lines: string[] = [
+        `# ${business.name}`,
+        `Address: ${a.street}, ${a.locality}, ${a.postalCode}, ${a.region}, ${a.country}`,
+        `Phone: ${business.phones.join(", ")}`,
+        `Email: ${business.email}`,
+        `Check-in: ${business.checkIn}. Check-out: ${business.checkOut}.`,
+        `Price range: ${business.priceRange}`,
+        `Amenities: ${business.amenities.join(", ")}`,
+        `Website: ${siteUrl}`,
+        "",
+        "## Rooms and spaces",
+    ];
+    if (rooms.length === 0) lines.push(`Room list unavailable. See ${siteUrl}`);
+    for (const room of rooms) {
+        lines.push(`${roomTitle(room)} - ${roomDescription(room)} - ${siteUrl}/homestay/${room.id}`);
+    }
+    return lines.join("\n") + "\n";
+}
