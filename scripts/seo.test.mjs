@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BUSINESS, SITE_URL, waLink } from "../lib/site.ts";
-import { isHall, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd } from "../lib/seo.ts";
+import { isHall, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd } from "../lib/seo.ts";
 
 // Fixtures copied from rooms.json (the DB snapshot), images shortened.
 const h3 = { id: 6, title: "Homestay 3", type: "Holiday Home", price: 1500, beds: 5, baths: 4, guests: 10,
@@ -156,4 +156,12 @@ test("lodging JSON-LD leaves out geo and hasMap until each is known", () => {
 
 test("lodging JSON-LD never carries review or rating markup", () => {
     assert.doesNotMatch(JSON.stringify(lodgingJsonLd(BUSINESS, SITE_URL, "d")), /aggregateRating|"review"/);
+});
+
+test("website JSON-LD names the site and points at the lodging entity", () => {
+    const ld = websiteJsonLd(BUSINESS.name, SITE_URL);
+    assert.equal(ld["@type"], "WebSite");
+    assert.equal(ld.name, "Indah Morib Homestay");
+    assert.equal(ld.url, SITE_URL);
+    assert.equal(ld.publisher["@id"], lodgingJsonLd(BUSINESS, SITE_URL, "d")["@id"]);
 });
