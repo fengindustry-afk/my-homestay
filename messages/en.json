@@ -134,6 +134,32 @@
       "a": "{address}. Near Morib Beach, about an hour from Kuala Lumpur."
     }
   },
+  "Landing": {
+    "home": "Home",
+    "roomsTitle": "Options for your group",
+    "from": "From RM{price}",
+    "ask": "WhatsApp us",
+    "familyDay": {
+      "nav": "Family Day in Banting",
+      "title": "Family Day Venue in Banting with Pools",
+      "description": "Family day in Banting, near Morib Beach: a Muslimah-friendly pool, a children's pool, a barbecue pit and units for 3 to 10 people each.",
+      "eyebrow": "Family Day",
+      "h1": "Family day in Banting, near Morib Beach",
+      "p1": "Our compound is built for family gatherings. Homestay 3 has a covered, Muslimah-friendly pool and a children's pool, plus a football field and a snooker table. Homestay 2 has its own pool.",
+      "p2": "Each unit sleeps 3 to 10 people, so large groups can book several units together. There is a barbecue pit, a prayer room and free parking. Need space for an event? Our hall holds 100 guests.",
+      "wa": "family day"
+    },
+    "hall": {
+      "nav": "Event Hall Banting",
+      "title": "Event Hall in Banting for 100 Guests",
+      "description": "Multipurpose hall in Banting for weddings, meetings and family days. Holds 100 guests. From RM800 a day, with homestays for guests who stay overnight.",
+      "eyebrow": "Event Hall",
+      "h1": "Event hall in Banting for 100 guests",
+      "p1": "Indah Morib Multipurpose Hall suits weddings, meetings and family days. It holds 100 guests, near Morib Beach and about an hour from Kuala Lumpur.",
+      "p2": "Weekdays: RM800 (8 a.m. - 6 p.m.), RM900 (8 a.m. - 10 p.m.) or RM1,000 overnight. Weekends: RM900, RM1,000 or RM1,200. Guests who stay overnight can book a homestay in the same compound.",
+      "wa": "dewan majlis"
+    }
+  },
   "CTA": {
     "title1": "Book your stay",
     "title2": "and let the day run itself",
