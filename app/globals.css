@@ -2157,6 +2157,12 @@ html:not(.light) .testimonial-card.is-feature {
   grid-column: span 2;
 }
 
+@media (max-width: 1023px) {
+  .detail-photo-fill {
+    grid-column: span 2;
+  }
+}
+
 @media (min-width: 1024px) {
   .detail-photos {
     grid-template-columns: repeat(3, minmax(0, 1fr));

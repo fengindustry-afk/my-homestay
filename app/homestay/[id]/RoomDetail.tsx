@@ -142,20 +142,26 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                         </div>
 
                         <div className="detail-photos" data-stagger>
-                            {photos.map((p, i) => (
+                            {photos.map((p, i) => {
+                                const wide = i === 0 || (i === 3 && photos.length >= 6);
+                                // Odd count of half-width tiles on phones: the last one fills its row.
+                                const fill = !wide && i === photos.length - 1
+                                    && (photos.length - (photos.length >= 6 ? 2 : 1)) % 2 === 1;
+                                return (
                                 <div
                                     key={p}
-                                    className={`detail-photo ${i === 0 || (i === 3 && photos.length >= 6) ? "detail-photo-wide" : ""}`}
+                                    className={`detail-photo ${wide ? "detail-photo-wide" : ""} ${fill ? "detail-photo-fill" : ""}`}
                                 >
                                     <Image
                                         src={p}
                                         alt={`${room.title} di Morib, Banting, gambar ${i + 1}`}
                                         fill
-                                        sizes={i === 0 || (i === 3 && photos.length >= 6) ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 1024px) 50vw, 33vw"}
+                                        sizes={wide ? "(max-width: 1024px) 100vw, 66vw" : fill ? "(max-width: 1024px) 100vw, 33vw" : "(max-width: 1024px) 50vw, 33vw"}
                                         className="object-cover"
                                     />
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </section>
