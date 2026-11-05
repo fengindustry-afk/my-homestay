@@ -129,6 +129,22 @@
       "q": "Apa kemudahan yang disediakan?",
       "a": "Wi-Fi percuma, penghawa dingin, tempat letak kereta percuma, tempat BBQ dan surau."
     },
+    "poolRules": {
+      "q": "Ada peraturan kolam renang?",
+      "a": "Kolam tidak diawasi penjaga, jadi kanak-kanak mesti diawasi orang dewasa pada setiap masa. Sila pakai pakaian renang yang sesuai."
+    },
+    "deposit": {
+      "q": "Bagaimana dengan deposit dan pembatalan?",
+      "a": "Bayaran dibuat dalam talian semasa menempah. Syarat deposit dan pembatalan bergantung pada unit dan tarikh, jadi WhatsApp kami di {phone} sebelum menempah, atau secepat mungkin jika perlu menukar tarikh."
+    },
+    "beach": {
+      "q": "Berapa jauh ke Pantai Morib?",
+      "a": "Kira-kira 4 km, lebih kurang 5 minit memandu."
+    },
+    "pets": {
+      "q": "Boleh bawa haiwan peliharaan?",
+      "a": "Sila WhatsApp kami dahulu sebelum membawa haiwan peliharaan."
+    },
     "location": {
       "q": "Di mana lokasi Indah Morib Homestay?",
       "a": "{address}. Berhampiran Pantai Morib, kira-kira sejam dari Kuala Lumpur."
