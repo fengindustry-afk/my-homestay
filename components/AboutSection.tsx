@@ -1,28 +1,23 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import CoverPicture from "./CoverPicture";
-
-const stats = [
-    { number: "12+", label: "Unique Rooms" },
-    { number: "2,500+", label: "Happy Guests" },
-    { number: "4.5", label: "Average Rating" },
-    { number: "8", label: "Years Experience" },
-];
-
-const promises = [
-    "Handpicked premium furnishings & linens",
-    "24/7 concierge and guest support",
-    "Strategic locations near top attractions",
-];
-
-const badges = [
-    { src: "/TCC Badge.png", title: "TCC Compliant", sub: "Verified 2026", cert: true },
-    { src: "/MuslimFriendly.png", title: "Muslim Friendly", sub: null, cert: false },
-];
 
 export default function AboutSection() {
     const [showCert, setShowCert] = useState(false);
+    const t = useTranslations("About");
+    const stats = [
+        { number: "12+", label: t("statRooms") },
+        { number: "2,500+", label: t("statGuests") },
+        { number: "4.5", label: t("statRating") },
+        { number: "8", label: t("statYears") },
+    ];
+    const promises = [t("promise1"), t("promise2"), t("promise3")];
+    const badges = [
+        { src: "/TCC Badge.png", title: t("badgeTcc"), sub: t("badgeTccSub"), cert: true },
+        { src: "/MuslimFriendly.png", title: t("badgeMuslim"), sub: null, cert: false },
+    ];
 
     // Escape closes the certificate, as the close button does.
     useEffect(() => {
@@ -41,24 +36,20 @@ export default function AboutSection() {
                 <div className="wrap">
                     <div className="about-intro">
                         <div data-reveal>
-                            <p className="section-tag">About</p>
+                            <p className="section-tag">{t("eyebrow")}</p>
                             <h2 className="section-title">
-                                <span className="title-italic">A unique balance</span>
-                                <span className="title-roman title-indent">of luxury &amp; comfort</span>
+                                <span className="title-italic">{t("title1")}</span>
+                                <span className="title-roman title-indent">{t("title2")}</span>
                             </h2>
                         </div>
 
                         {/* Vertical reveal only. An x-offset start state would widen the document. */}
                         <div data-reveal data-reveal-delay="120">
                             <p className="section-description" style={{ marginBottom: 16 }}>
-                                Nestled in the heart of Malaysia, Indah Morib Homestay offers a
-                                blend of modern comfort and warm hospitality. Each room is
-                                designed around how families actually use a home together.
+                                {t("p1")}
                             </p>
                             <p className="section-description">
-                                Whether you&apos;re here for a family getaway, a celebration, or a
-                                company retreat, our team handles the details so the day runs
-                                itself.
+                                {t("p2")}
                             </p>
 
                             <ul className="promise-list">
@@ -75,7 +66,7 @@ export default function AboutSection() {
                             </ul>
 
                             <a href="#rooms" className="btn-outline">
-                                Discover more
+                                {t("more")}
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M5 12h14M12 5l7 7-7 7" />
                                 </svg>
@@ -106,13 +97,13 @@ export default function AboutSection() {
                 <div className="recognition-scrim" aria-hidden="true" />
 
                 <div className="wrap recognition-inner">
-                    <h2 className="recognition-title title-italic">Recognitions &amp; Standards</h2>
+                    <h2 className="recognition-title title-italic">{t("recognitions")}</h2>
 
                     <div className="frame-card" data-reveal>
                         <div className="frame-photo">
                             <Image
                                 src="/images/content/h5.jpg"
-                                alt="Interior of a homestay unit at Indah Morib"
+                                alt={t("interiorAlt")}
                                 fill
                                 sizes="(max-width: 768px) 90vw, 560px"
                                 style={{ objectFit: "cover" }}
@@ -128,7 +119,7 @@ export default function AboutSection() {
                                         key={badge.title}
                                         onClick={badge.cert ? () => setShowCert(true) : undefined}
                                         className="badge-chip"
-                                        aria-label={badge.cert ? `View ${badge.title} certification` : undefined}
+                                        aria-label={badge.cert ? t("viewCert", { name: badge.title }) : undefined}
                                     >
                                         <span className="badge-chip-media">
                                             <Image
@@ -164,7 +155,7 @@ export default function AboutSection() {
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4"
                     role="dialog"
                     aria-modal="true"
-                    aria-label="Certificate of compliance"
+                    aria-label={t("certTitle")}
                 >
                     <div
                         className="absolute inset-0 animate-fade-in"
@@ -183,7 +174,7 @@ export default function AboutSection() {
                     >
                         <button
                             onClick={() => setShowCert(false)}
-                            aria-label="Close certificate"
+                            aria-label={t("closeCert")}
                             className="absolute right-5 top-5 z-20 rounded-full p-2 transition-transform hover:scale-110"
                             style={{ background: "var(--surface-dark)", color: "var(--primary)", border: "1px solid var(--border)" }}
                         >
@@ -220,18 +211,16 @@ export default function AboutSection() {
                                     </div>
 
                                     <p style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.3em", marginBottom: 14 }}>
-                                        Official Certification
+                                        {t("certEyebrow")}
                                     </p>
                                     <h2 className="text-display" style={{ fontSize: "2.2rem", color: "var(--primary)", marginBottom: 22 }}>
-                                        Certificate of Compliance
+                                        {t("certTitle")}
                                     </h2>
 
                                     <div className="mx-auto mb-8" style={{ width: 80, height: 1, background: "var(--accent)" }} />
 
                                     <p style={{ fontSize: "1rem", color: "var(--text-muted)", lineHeight: 1.8, marginBottom: 28 }}>
-                                        This is to certify that{" "}
-                                        <strong style={{ color: "var(--primary)" }}>Indah Morib Homestay</strong>{" "}
-                                        has met all standards and requirements for
+                                        {t.rich("certBody", { b: (c) => <strong style={{ color: "var(--primary)" }}>{c}</strong> })}
                                     </p>
 
                                     <div
@@ -252,13 +241,13 @@ export default function AboutSection() {
                                     >
                                         <div className="text-left">
                                             <p style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 5 }}>
-                                                Issue Date
+                                                {t("issueDate")}
                                             </p>
-                                            <p style={{ fontWeight: 600, color: "var(--primary)" }}>January 15, 2026</p>
+                                            <p style={{ fontWeight: 600, color: "var(--primary)" }}>{t("issueDateValue")}</p>
                                         </div>
                                         <div className="text-right">
                                             <p style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 5 }}>
-                                                Verify ID
+                                                {t("verifyId")}
                                             </p>
                                             <p style={{ fontWeight: 600, color: "var(--primary)", fontFamily: "var(--font-geist-mono), monospace" }}>
                                                 FI-TCC-2026-IMH
@@ -278,7 +267,7 @@ export default function AboutSection() {
                                                 <polyline points="7 10 12 15 17 10" />
                                                 <line x1="12" y1="15" x2="12" y2="3" />
                                             </svg>
-                                            View official document
+                                            {t("viewDoc")}
                                         </a>
                                     </div>
                                 </div>

@@ -1,16 +1,15 @@
-import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/next';
-import Script from 'next/script';
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
+import { NextIntlClientProvider } from "next-intl";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import JsonLd from "@/components/JsonLd";
 import SmoothScroll from "@/components/SmoothScroll";
 import ScrollFX from "@/components/ScrollFX";
 import ButtonFX from "@/components/ButtonFX";
-import { GOOGLE_SITE_VERIFICATION, SITE_URL } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -25,47 +24,12 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  verification: GOOGLE_SITE_VERIFICATION ? { google: GOOGLE_SITE_VERIFICATION } : undefined,
-  robots: {
-    index: true,
-    follow: true,
-  },
-  title: {
-    default: "Indah Morib Homestay: Your Home Away From Home",
-    template: "%s | Indah Morib Homestay",
-  },
-  description:
-    "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
-  keywords:
-    "homestay Morib, homestay Selangor, family homestay Malaysia, private pool homestay, Banting homestay",
-  openGraph: {
-    title: "Indah Morib Homestay",
-    description:
-      "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
-    url: SITE_URL,
-    siteName: "Indah Morib Homestay",
-    images: [
-      {
-        url: "/og-image.jpg", // You can upload an image here later
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: "en_MY",
-    type: "website",
-  },
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+// The <html> document both root layouts share: the public [locale] tree and
+// the (admin) tree. Only lang differs between them.
+export default function RootShell({ lang, children }: { lang: string; children: React.ReactNode }) {
   return (
     // No scroll-smooth class here: Lenis owns scrolling and the two conflict.
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         {/* GSAP drives the reveals, so without JS nothing would ever animate in. */}
         <noscript>
@@ -74,6 +38,8 @@ export default function RootLayout({
         <JsonLd />
       </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
+        {/* Messages come from i18n/request.ts. The admin tree falls back to BM. */}
+        <NextIntlClientProvider locale={lang}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -88,6 +54,7 @@ export default function RootLayout({
           <SpeedInsights />
           <Analytics />
         </ThemeProvider>
+        </NextIntlClientProvider>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-N4W8198R6K"
           strategy="afterInteractive"

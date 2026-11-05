@@ -1,45 +1,42 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 const images = [
     {
         src: "/images/content/gallery-h3.jpg",
-        alt: "Interior of a homestay unit at Indah Morib",
-        caption: "The units",
+        key: "units",
     },
     {
         src: "/images/content/gallery-h4.jpg",
-        alt: "The dewan (multipurpose hall) at Indah Morib",
-        caption: "The dewan",
+        key: "dewan",
     },
     {
         src: "/images/content/gallery-event.jpg",
-        alt: "Hall set up for a family event",
-        caption: "Family days",
+        key: "family",
     },
     {
         src: "/images/content/gallery-wedding.jpg",
-        alt: "Wedding reception held at the compound",
-        caption: "Weddings",
+        key: "weddings",
     },
     {
         src: "/images/content/gallery-pool3.jpg",
-        alt: "Private pool area at the homestay",
-        caption: "The pools",
+        key: "pools",
     },
 ];
 
 export default function GallerySection() {
+    const t = useTranslations("Gallery");
     return (
         <section id="gallery" className="section">
             <div className="wrap gallery-head" data-reveal>
                 <div>
-                    <p className="section-tag">Gallery</p>
+                    <p className="section-tag">{t("eyebrow")}</p>
                     <h2 className="section-title gallery-title">
-                        <span className="title-italic">A glimpse of Indah Morib</span>
+                        <span className="title-italic">{t("title")}</span>
                     </h2>
                 </div>
                 <p className="section-description">
-                    The grounds, the halls, and the water. Photographed as they are.
+                    {t("intro")}
                 </p>
             </div>
 
@@ -48,7 +45,7 @@ export default function GallerySection() {
             <div
                 className="gallery-strip"
                 role="region"
-                aria-label="Photos of Indah Morib"
+                aria-label={t("regionLabel")}
                 tabIndex={0}
                 data-stagger
             >
@@ -56,13 +53,13 @@ export default function GallerySection() {
                     <figure key={img.src} className="gallery-item" id={`gallery-item-${i}`}>
                         <Image
                             src={img.src}
-                            alt={img.alt}
+                            alt={t(`${img.key}.alt`)}
                             fill
                             // Sources are 4:5 crops, so the tile width sets the download size.
                             sizes="(max-width: 768px) 78vw, 30vw"
                             quality={85}
                         />
-                        <figcaption className="gallery-caption">{img.caption}</figcaption>
+                        <figcaption className="gallery-caption">{t(`${img.key}.caption`)}</figcaption>
                     </figure>
                 ))}
             </div>

@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BUSINESS, SITE_URL, waLink } from "../lib/site.ts";
-import { isHall, llmsBody, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd } from "../lib/seo.ts";
+import { isHall, llmsBody, localeAlternates, lodgingJsonLd, roomDescription, roomJsonLd, roomTitle, toJsonLd, websiteJsonLd } from "../lib/seo.ts";
 
 // Fixtures copied from rooms.json (the DB snapshot), images shortened.
 const h3 = { id: 6, title: "Homestay 3", type: "Holiday Home", price: 1500, beds: 5, baths: 4, guests: 10,
@@ -164,6 +164,14 @@ test("website JSON-LD names the site and points at the lodging entity", () => {
     assert.equal(ld.name, "Indah Morib Homestay");
     assert.equal(ld.url, SITE_URL);
     assert.equal(ld.publisher["@id"], lodgingJsonLd(BUSINESS, SITE_URL, "d")["@id"]);
+});
+
+test("locale alternates: BM at the bare path, English under /en, x-default to BM", () => {
+    assert.deepEqual(localeAlternates("/", "ms"), { canonical: "/", languages: { ms: "/", en: "/en", "x-default": "/" } });
+    assert.equal(localeAlternates("/", "en").canonical, "/en");
+    const room = localeAlternates("/homestay/12", "en");
+    assert.equal(room.canonical, "/en/homestay/12");
+    assert.deepEqual(room.languages, { ms: "/homestay/12", en: "/en/homestay/12", "x-default": "/homestay/12" });
 });
 
 test("llms.txt body lists business facts and every room with its URL", () => {

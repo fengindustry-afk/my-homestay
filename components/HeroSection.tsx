@@ -1,14 +1,14 @@
+import { useTranslations } from "next-intl";
 import CoverPicture from "./CoverPicture";
 import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
-const HEADLINE = [
-    { text: "Where family gathers,", italic: true },
-    { text: "and the day unwinds.", italic: false },
-];
-
-const TRUST = ["Muslim-friendly", "Private pools", "Up to 120 guests"];
-
 export default function HeroSection() {
+    const t = useTranslations("Hero");
+    const HEADLINE = [
+        { text: t("line1"), italic: true },
+        { text: t("line2"), italic: false },
+    ];
+    const TRUST = [t("trust1"), t("trust2"), t("trust3")];
     return (
         <section id="home" className="on-media hero-band">
             <div className="hero-photo">
@@ -17,14 +17,14 @@ export default function HeroSection() {
                     <CoverPicture
                         desktop="/images/hero-pool.jpg"
                         mobile="/images/hero-pool-portrait.jpg"
-                        alt="The pool area at Indah Morib Homestay, Selangor"
+                        alt={t("photoAlt")}
                         eager
                     />
                 </div>
             </div>
             <div className="hero-scrim" aria-hidden="true" />
 
-            <p className="section-tag animate-fade-up">Morib, Selangor</p>
+            <p className="section-tag animate-fade-up">{t("eyebrow")}</p>
 
             <h1 className="text-display hero-h1">
                 {HEADLINE.map((line, i) => (
@@ -40,13 +40,12 @@ export default function HeroSection() {
             </h1>
 
             <p className="hero-lede animate-fade-up delay-500">
-                A riverside compound for family retreats, gatherings, and celebrations.
-                An hour from Kuala Lumpur, a world away from the everyday.
+                {t("lede")}
             </p>
 
             <div className="hero-ctas animate-fade-up delay-600">
                 <a href="#rooms" className="btn-primary">
-                    View Homestays
+                    {t("viewRooms")}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
@@ -57,7 +56,7 @@ export default function HeroSection() {
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    WhatsApp Us
+                    {t("whatsapp")}
                 </a>
             </div>
 

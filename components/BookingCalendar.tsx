@@ -17,6 +17,8 @@ import {
     isAfter,
     parseISO
 } from "date-fns";
+import { ms as msLocale, enGB } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import { supabase } from "@/lib/supabaseClient";
 
 interface BookingCalendarProps {
@@ -28,6 +30,8 @@ interface BookingCalendarProps {
 }
 
 export default function BookingCalendar({ roomId, unitName, totalUnits = 1, discounts = {}, onSelect }: BookingCalendarProps) {
+    const t = useTranslations("Calendar");
+    const dfLocale = useLocale() === "ms" ? msLocale : enGB;
     const [currentDate, setCurrentDate] = useState(new Date());
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
@@ -184,7 +188,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                     {showPrev && (
                         <button
                             type="button"
-                            aria-label="Previous month"
+                            aria-label={t("prev")}
                             onClick={() => setCurrentDate(addMonths(currentDate, -1))}
                             className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
@@ -195,13 +199,13 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                     )}
                 </div>
                 <h3 className="font-display text-xl font-normal text-[var(--primary)]">
-                    {format(monthDate, "MMMM yyyy")}
+                    {format(monthDate, "MMMM yyyy", { locale: dfLocale })}
                 </h3>
                 <div className="w-8">
                     {showNext && (
                         <button
                             type="button"
-                            aria-label="Next month"
+                            aria-label={t("next")}
                             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
                             className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
@@ -216,7 +220,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     };
 
     const renderDays = () => {
-        const days = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+        const days = t("weekdays").split(",");
         return (
             <div className="grid grid-cols-7 mb-2 border-b border-[var(--border)] pb-2">
                 {days.map(day => (
@@ -264,14 +268,14 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                         data-day={isCurrentMonth ? dateKey : undefined}
                         aria-hidden={!isCurrentMonth || undefined}
                         aria-pressed={isCurrentMonth ? isSelected : undefined}
-                        aria-label={`${format(cloneDay, "EEEE, d MMMM yyyy")}, ${
-                            isBooked ? "booked"
-                            : isPastDay ? "past"
-                            : isCheckIn ? "selected, check-in"
-                            : isCheckOut ? "selected, check-out"
-                            : isSelected ? "selected"
-                            : discount ? `available, ${discount.percentage}% off`
-                            : "available"}`}
+                        aria-label={`${format(cloneDay, "EEEE, d MMMM yyyy", { locale: dfLocale })}, ${
+                            isBooked ? t("booked")
+                            : isPastDay ? t("past")
+                            : isCheckIn ? t("selectedCheckIn")
+                            : isCheckOut ? t("selectedCheckOut")
+                            : isSelected ? t("selected")
+                            : discount ? t("availableOff", { pct: discount.percentage })
+                            : t("available")}`}
                     >
                         {/* Background for range */}
                         {checkIn && checkOut && isWithinInterval(cloneDay, { start: checkIn, end: checkOut }) && isCurrentMonth && (
@@ -341,19 +345,19 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
             <div className="mt-6 flex flex-wrap items-center justify-center gap-6 border-t border-[var(--border)] pt-4 text-xs font-medium text-[var(--text-muted)]">
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full border border-[var(--primary)]" />
-                    <span>Available</span>
+                    <span>{t("legendAvailable")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-md bg-green-500 text-white px-1 text-[8px] flex items-center justify-center font-bold">PROMO</div>
-                    <span>Discounted</span>
+                    <span>{t("legendDiscount")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-gray-200" />
-                    <span>Not available</span>
+                    <span>{t("legendBooked")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-[var(--accent)]" />
-                    <span>Selected</span>
+                    <span>{t("legendSelected")}</span>
                 </div>
             </div>
         </div>

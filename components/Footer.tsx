@@ -1,28 +1,29 @@
+import { useTranslations } from "next-intl";
 import { BUSINESS } from "@/lib/site";
+import LocaleSwitch from "./LocaleSwitch";
 
 // Absolute so they also work from pages other than the homepage.
-const QUICK_LINKS = [
-    ["/#home", "Home"],
-    ["/#rooms", "Our Homestays"],
-    ["/#amenities", "Amenities"],
-    ["/#gallery", "Gallery"],
-    ["/#contact", "Contact"],
-] as const;
+const QUICK_LINKS = ["home", "rooms", "amenities", "gallery", "contact"] as const;
 
-const HOMESTAY_TYPES = ["Bungalow Unit", "Studio Unit", "Family Room", "Holiday Home", "Tiny House", "Event Hall"];
+const HOMESTAY_TYPES = ["typeBungalow", "typeStudio", "typeFamily", "typeHoliday", "typeTiny", "typeHall"] as const;
 
 export default function Footer() {
     const { address } = BUSINESS;
+    const t = useTranslations("Footer");
+    const tNav = useTranslations("Nav");
+    const tSearch = useTranslations("Search");
+    // "/" or "/en/", so the links stay in the visitor's language.
+    const home = t("homePath");
     return (
         <footer className="footer">
             <div className="wrap">
                 <div className="footer-grid">
                     {/* Explore */}
                     <div>
-                        <h4 className="footer-title">Quick Links</h4>
-                        {QUICK_LINKS.map(([href, label]) => (
+                        <h4 className="footer-title">{t("quickLinks")}</h4>
+                        {QUICK_LINKS.map((k) => (
                             // Plain <a>, not next/link: Lenis smooth-scrolls same-page anchors with the navbar offset.
-                            <a key={href} href={href} className="footer-link">{label}</a>
+                            <a key={k} href={`${home}#${k}`} className="footer-link">{k === "rooms" ? t("ourRooms") : tNav(k)}</a>
                         ))}
                     </div>
 
@@ -31,14 +32,15 @@ export default function Footer() {
                         <div className="footer-emblem" aria-hidden="true">I</div>
                         <span className="footer-wordmark">{BUSINESS.name}</span>
                         <p className="footer-tagline">
-                            Your home away from home. Experience luxury, comfort, and Malaysian
-                            hospitality at its <a href="/finest-touch" style={{ textDecoration: "none", color: "inherit" }}>finest</a>.
+                            {t.rich("tagline", {
+                                admin: (c) => <a href="/finest-touch" style={{ textDecoration: "none", color: "inherit" }}>{c}</a>,
+                            })}
                         </p>
                     </div>
 
                     {/* Contact */}
                     <div className="footer-contact">
-                        <h4 className="footer-title">Contact Info</h4>
+                        <h4 className="footer-title">{t("contactInfo")}</h4>
                         <p>
                             {address.street}<br />
                             {address.locality} {address.postalCode},<br />
@@ -54,16 +56,17 @@ export default function Footer() {
                 </div>
 
                 <div className="footer-types">
-                    <h4 className="footer-title">Homestay Types</h4>
+                    <h4 className="footer-title">{t("types")}</h4>
                     <ul className="footer-type-list">
                         {HOMESTAY_TYPES.map((r) => (
-                            <li key={r} className="footer-type">{r}</li>
+                            <li key={r} className="footer-type">{tSearch(r)}</li>
                         ))}
                     </ul>
                 </div>
 
                 <div className="footer-bottom">
-                    <span>&copy; 2026 {BUSINESS.name}. All rights reserved.</span>
+                    <span>{t("rights", { name: BUSINESS.name })}</span>
+                    <LocaleSwitch className="footer-locale" />
                     <div className="footer-social">
                         <a href="https://facebook.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Facebook">Facebook</a>
                         {/*<a href="https://instagram.com/indahmoribhomestay" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Ig</a>
