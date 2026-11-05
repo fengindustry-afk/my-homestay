@@ -77,7 +77,7 @@ const amenities = [
             </svg>
         ),
         title: "Parking",
-        desc: "Free private parking space for every guest",
+        desc: "Free private parking for every guest",
     },
    /* {
         icon: (
@@ -99,22 +99,19 @@ export default function AmenitiesSection() {
             className="section"
             style={{ background: "var(--surface)" }}
         >
-            <div className="mx-auto max-w-7xl px-6">
-                <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
-                    <div className="lg:col-span-7" data-reveal>
-                        <p className="section-tag">03 &nbsp;/&nbsp; Amenities</p>
-                        <h2 className="section-title" style={{ maxWidth: 560 }}>
-                            Everything you <em style={{ color: "var(--accent)" }}>need</em>, already here
-                        </h2>
-                    </div>
-                    <div className="lg:col-span-5" data-reveal data-reveal-delay="120">
-                        <p className="section-description">
-                            The details that decide whether a stay is comfortable or merely adequate.
-                        </p>
-                    </div>
+            <div className="wrap">
+                <div className="text-center" data-reveal>
+                    <p className="section-tag">Amenities</p>
+                    <h2 className="section-title">
+                        <span className="title-italic">Everything you need,</span>
+                        <span className="title-roman">already here</span>
+                    </h2>
+                    <p className="section-description mx-auto mt-6">
+                        The details that decide whether a stay is comfortable or merely adequate.
+                    </p>
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-stagger>
+                <div className="amenity-grid mt-20" data-stagger>
                     {amenities.map((a) => (
                         <div key={a.title} className="amenity-card" id={`amenity-${a.title.toLowerCase().replace(/\s+/g, "-")}`}>
                             <div className="amenity-icon">{a.icon}</div>

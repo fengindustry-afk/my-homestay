@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 import {
     format,
     addMonths,
@@ -34,7 +34,43 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Roving tabindex: one Tab stop for both months, arrow keys move between days.
+    const [focusDay, setFocusDay] = useState<Date>(() => new Date());
+    const gridRef = useRef<HTMLDivElement>(null);
+    const keyMoved = useRef(false);
+
     const nextMonth = addMonths(currentDate, 1);
+    // The month arrows can scroll focusDay out of view; then the first visible day holds the Tab stop.
+    const tabDay = isBefore(focusDay, startOfMonth(currentDate)) || isAfter(focusDay, endOfMonth(nextMonth))
+        ? startOfMonth(currentDate)
+        : focusDay;
+
+    useEffect(() => {
+        if (!keyMoved.current) return;
+        keyMoved.current = false;
+        gridRef.current?.querySelector<HTMLButtonElement>(`[data-day="${format(focusDay, "yyyy-MM-dd")}"]`)?.focus();
+    }, [focusDay, currentDate]);
+
+    const handleGridKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+        const moves: Record<string, (d: Date) => Date> = {
+            ArrowLeft: d => addDays(d, -1),
+            ArrowRight: d => addDays(d, 1),
+            ArrowUp: d => addDays(d, -7),
+            ArrowDown: d => addDays(d, 7),
+            Home: d => startOfWeek(d, { weekStartsOn: 1 }),
+            End: d => endOfWeek(d, { weekStartsOn: 1 }),
+            PageUp: d => addMonths(d, -1),
+            PageDown: d => addMonths(d, 1),
+        };
+        const move = moves[e.key];
+        if (!move || !(e.target as HTMLElement).dataset.day) return;
+        e.preventDefault();
+        const next = move(tabDay);
+        if (isBefore(next, startOfMonth(currentDate))) setCurrentDate(startOfMonth(next));
+        else if (isAfter(next, endOfMonth(nextMonth))) setCurrentDate(addMonths(startOfMonth(next), -1));
+        keyMoved.current = true;
+        setFocusDay(next);
+    };
 
     useEffect(() => {
         async function fetchBookings() {
@@ -147,8 +183,10 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 <div className="w-8">
                     {showPrev && (
                         <button
+                            type="button"
+                            aria-label="Previous month"
                             onClick={() => setCurrentDate(addMonths(currentDate, -1))}
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--accent)]">
                                 <polyline points="15 18 9 12 15 6" />
@@ -156,14 +194,16 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                         </button>
                     )}
                 </div>
-                <h3 className="text-lg font-semibold text-[var(--primary)]">
+                <h3 className="font-display text-xl font-normal text-[var(--primary)]">
                     {format(monthDate, "MMMM yyyy")}
                 </h3>
                 <div className="w-8">
                     {showNext && (
                         <button
+                            type="button"
+                            aria-label="Next month"
                             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-                            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-1 hover:bg-[var(--surface-dark)] rounded-full transition-colors"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--accent)]">
                                 <polyline points="9 18 15 12 9 6" />
@@ -213,42 +253,56 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 const discount = discounts[compositeKey];
 
                 days.push(
-                    <div
+                    <button
+                        type="button"
                         key={cloneDay.toString()}
-                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group`}
-                        onClick={() => isCurrentMonth && handleDateClick(cloneDay)}
+                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group disabled:cursor-not-allowed aria-disabled:cursor-not-allowed`}
+                        onClick={() => { if (!isCurrentMonth) return; setFocusDay(cloneDay); handleDateClick(cloneDay); }}
+                        disabled={!isCurrentMonth}
+                        aria-disabled={isCurrentMonth && (isBooked || isPastDay) ? true : undefined}
+                        tabIndex={isCurrentMonth && isSameDay(cloneDay, tabDay) ? 0 : -1}
+                        data-day={isCurrentMonth ? dateKey : undefined}
+                        aria-hidden={!isCurrentMonth || undefined}
+                        aria-pressed={isCurrentMonth ? isSelected : undefined}
+                        aria-label={`${format(cloneDay, "EEEE, d MMMM yyyy")}, ${
+                            isBooked ? "booked"
+                            : isPastDay ? "past"
+                            : isCheckIn ? "selected, check-in"
+                            : isCheckOut ? "selected, check-out"
+                            : isSelected ? "selected"
+                            : discount ? `available, ${discount.percentage}% off`
+                            : "available"}`}
                     >
                         {/* Background for range */}
                         {checkIn && checkOut && isWithinInterval(cloneDay, { start: checkIn, end: checkOut }) && isCurrentMonth && (
-                            <div className={`absolute inset-y-1.5 inset-x-0 bg-[var(--accent-light)] opacity-30 ${isCheckIn ? 'rounded-l-full' : ''} ${isCheckOut ? 'rounded-r-full' : ''}`} />
+                            <span className={`absolute inset-y-1.5 inset-x-0 bg-[var(--accent-light)] opacity-30 ${isCheckIn ? 'rounded-l-full' : ''} ${isCheckOut ? 'rounded-r-full' : ''}`} />
                         )}
 
-                        <div className={`
+                        <span className={`
               z-10 flex h-8 w-8 items-center justify-center rounded-full text-sm transition-all
               ${!isCurrentMonth ? "text-transparent pointer-events-none" : ""}
               ${isBooked ? "bg-gray-100 text-gray-300 cursor-not-allowed line-through" : ""}
               ${isPastDay ? "text-gray-200 cursor-not-allowed" : ""}
-              ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-white shadow-md scale-110" : "hover:bg-gray-50 text-[var(--primary)]"}
-              ${isBooked && "hover:bg-transparent"}
+              ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-[var(--accent-contrast)] scale-110" : `${isBooked || isPastDay ? "" : "hover:bg-[var(--surface)] "}text-[var(--primary)]`}
               ${discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
             `}>
                             {format(cloneDay, "d")}
-                        </div>
+                        </span>
 
                         {/* Discount Badge */}
                         {discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay && (
-                            <div className="absolute -top-1 -right-0 z-20 scale-[0.6] origin-top-right">
-                                <div className="bg-green-500 text-white px-1.5 py-0.5 rounded-md font-black text-[10px] shadow-sm animate-pulse">
+                            <span className="absolute -top-1 -right-0 z-20 scale-[0.6] origin-top-right">
+                                <span className="block bg-green-500 text-white px-1.5 py-0.5 rounded-md font-black text-[10px] shadow-sm animate-pulse">
                                     -{discount.percentage}%
-                                </div>
-                            </div>
+                                </span>
+                            </span>
                         )}
 
                         {/* Dot indicator for available (dark blue/black as per image) */}
                         {!isBooked && !isSelected && isCurrentMonth && !isPastDay && (
-                            <div className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : 'bg-[var(--primary)]'} opacity-20`} />
+                            <span className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : 'bg-[var(--primary)]'} opacity-20`} />
                         )}
-                    </div>
+                    </button>
                 );
                 day = addDays(day, 1);
             }
@@ -263,13 +317,13 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     };
 
     return (
-        <div className="w-full bg-white rounded-xl">
+        <div className="w-full bg-[var(--surface-raised)] rounded-[var(--radius-md)]">
             {loading ? (
                 <div className="flex h-64 items-center justify-center">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--accent)] border-t-transparent" />
                 </div>
             ) : (
-                <div className="flex flex-col md:flex-row gap-8">
+                <div ref={gridRef} onKeyDown={handleGridKeyDown} className="flex flex-col md:flex-row gap-8">
                     <div className="flex-1">
                         {renderHeader(currentDate, true, false)}
                         {renderDays()}
@@ -286,7 +340,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
             {/* Legend */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-6 border-t border-[var(--border)] pt-4 text-xs font-medium text-[var(--text-muted)]">
                 <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-[var(--primary)]" />
+                    <div className="h-3 w-3 rounded-full border border-[var(--primary)]" />
                     <span>Available</span>
                 </div>
                 <div className="flex items-center gap-2">

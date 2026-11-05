@@ -9,56 +9,67 @@
    =========================================================================== */
 
 :root {
-  /* Lifted off pure black on purpose. A near-black ground pushes body copy past
-     14:1, and that much contrast makes light text bloom against the background
-     (halation) — it reads as harsh and is tiring over a long page. Sitting the
-     black point around #141714 brings body copy into the 7-9:1 range, which is
-     the comfortable band for dark themes, and lets the surface steps actually
-     be visible instead of all reading as "black".
-     The faint green cast stays: the compound is riverside, and it keeps the
-     greens in the photography from looking like a colour cast. */
-  --background: #141714;
-  --surface: #1B1F1B;
-  --surface-dark: #222722;
-  --surface-raised: #2A302A;
+  /* Dark values. The light theme is the default, and .light below overrides
+     these on <html>. Shared tokens live only here, so .light inherits them. */
+  --background: #181715;
+  --surface: #1F1E1B;
+  --surface-dark: #262421;
+  --surface-raised: #2B2926;
 
-  --foreground: #E9E6E0;
-  --primary: #E9E6E0;
-  --primary-light: #C5C1B9;
-  /* Neutral-warm rather than green-tinted. Saturated grey-green at low
-     lightness is what made the muted copy look muddy. 7.7:1 on --background,
-     7.1:1 on --surface. */
-  --text-muted: #A6ABA4;
+  --foreground: #EEEAE3;
+  --primary: #EEEAE3;
+  --primary-light: #CFCAC1;
+  --text-muted: #A7A196;
 
-  /* Champagne rather than brass. The old #D4AF61 was saturated enough to
-     vibrate against a very dark ground. */
-  --accent: #D9BE7E;
-  --accent-dark: #BFA05C;
-  --accent-light: #EBD9AE;
-  --accent-contrast: #141714;
+  /* Ink replaces the old gold accent. The reference is monochrome. */
+  --accent: #EEEAE3;
+  --accent-dark: #D3CDC2;
+  --accent-light: #3A3733;
+  --accent-contrast: #181715;
 
   --forest: #1F2E25;
   --water: #4F7B72;
-  --border: #2E332E;
-  --border-strong: #3F453F;
+  --border: #34312D;
+  --border-strong: #4A4640;
   --overlay: rgba(10, 12, 10, 0.78);
 
-  /* Fed into the WebGL background so it re-tints with the theme. */
-  --shader-base: #141714;
-  --shader-deep: #1E2A24;
-  --shader-glow: #D9BE7E;
+  /* Footer ink. The footer stays dark whichever theme is active. */
+  --ink: #100F0E;
+  --on-ink: #E9E5DD;
+  --on-ink-muted: #A39D92;
+
+  /* Text and controls laid over photographs. */
+  --on-media: #fff;
+  --scrim: rgba(0, 0, 0, 0.38);
+
+  --danger: #F2A7A7;
+  --success: #8CCBA3;
+
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.50);
   --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.58);
   --shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.65);
-  --shadow-gold: 0 10px 34px rgba(212, 175, 97, 0.26);
+  --shadow-gold: 0 10px 34px rgba(0, 0, 0, 0.40);
 
-  --radius-sm: 4px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Tighter corners than before. Buttons are pills instead. */
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 14px;
   --radius-xl: 24px;
   --radius-full: 9999px;
+
+  /* Type and rhythm. Display type is set in Playfair, body in Inter. */
+  --text-hero: clamp(3.25rem, 8.4vw, 8.75rem);
+  --text-h2: clamp(2.375rem, 4.8vw, 4.375rem);
+  --text-h3: clamp(1.5rem, 2.4vw, 2rem);
+  --text-body: 0.9375rem;
+  --text-eyebrow: 0.6875rem;
+  --tracking-caps: 0.22em;
+  --leading-display: 1.02;
+  --section-y: clamp(88px, 11vw, 160px);
+  --container: 1200px;
+  --gutter: clamp(20px, 5vw, 64px);
 
   /* Shared geometry for the fixed floating buttons. They used to hardcode their
      own offsets independently, which is how the scroll-top button ended up
@@ -75,48 +86,54 @@
 }
 
 .light {
-  --background: #FDFAF6;
-  --surface: #F4EFE8;
-  --surface-dark: #EDE8DF;
-  --surface-raised: #FFFFFF;
+  --background: #F3F0EA;
+  --surface: #ECE8E0;
+  --surface-dark: #E4DFD5;
+  --surface-raised: #FBFAF7;
 
-  --foreground: #1A2318;
-  --primary: #1A2318;
-  --primary-light: #414B3F;
-  /* Both of these are measured against --surface (#F4EFE8), not --background.
-     Most body copy and every card sits on the surface tone, so checking against
-     the lighter page ground overstates the contrast by roughly half a point. */
-  --text-muted: #5F6A5E;
-  /* 4.9:1 on --surface */
+  --foreground: #1F1E1C;
+  --primary: #1F1E1C;
+  --primary-light: #45423D;
+  /* 5.0:1 on --background and close to that on --surface. */
+  --text-muted: #6B665E;
 
-  --accent: #8A6717;
-  /* 4.6:1 on --surface — small uppercase labels use this */
-  --accent-dark: #6E5212;
-  --accent-light: #C4993E;
-  --accent-contrast: #FFFFFF;
+  --accent: #2E2C29;
+  --accent-dark: #141312;
+  --accent-light: #D9D3C7;
+  --accent-contrast: #F3F0EA;
 
   --forest: #2D4A3A;
   --water: #4F7B72;
-  --border: #D9D2C8;
-  --border-strong: #C4BCAE;
-  --overlay: rgba(26, 35, 24, 0.50);
+  --border: #D9D3C8;
+  --border-strong: #BDB6A9;
+  --overlay: rgba(31, 30, 28, 0.50);
 
-  /* The light shader runs a different lighting model, so these three mean
-     something different than they do on dark. There, --glow is emitted light
-     added on top of a dark ground. Here it is the sunlit highlight and --deep
-     is the shade the ripples cast, with --base the lit floor between them:
-     bright lanes over warm shade, the way caustics actually look on a pale
-     pool floor. --base sits close to --background so the hero panel does not
-     read as a lighter box pasted onto the page. */
-  --shader-base: #F2EADA;
-  --shader-deep: #D2C1A0;
-  --shader-glow: #FFFFFC;
+  --ink: #2A2926;
+  --danger: #9B2C2C;
+  --success: #2F6B45;
 
-  --shadow-sm: 0 1px 4px rgba(26, 35, 24, 0.08);
-  --shadow-md: 0 4px 16px rgba(26, 35, 24, 0.10);
-  --shadow-lg: 0 12px 40px rgba(26, 35, 24, 0.14);
-  --shadow-xl: 0 24px 64px rgba(26, 35, 24, 0.18);
-  --shadow-gold: 0 8px 28px rgba(168, 127, 34, 0.24);
+
+  --shadow-sm: 0 1px 2px rgba(31, 30, 28, 0.06);
+  --shadow-md: 0 4px 14px rgba(31, 30, 28, 0.07);
+  --shadow-lg: 0 14px 36px rgba(31, 30, 28, 0.10);
+  --shadow-xl: 0 26px 60px rgba(31, 30, 28, 0.14);
+  --shadow-gold: 0 10px 28px rgba(31, 30, 28, 0.16);
+}
+
+/* Applied to a section or nav that sits over a photograph. Text turns white,
+   and the accent becomes a white fill with ink text. */
+.on-media {
+  --foreground: #fff;
+  --primary: #fff;
+  --primary-light: rgba(255, 255, 255, 0.88);
+  --text-muted: rgba(255, 255, 255, 0.78);
+  --accent: #fff;
+  --accent-dark: #E9E5DD;
+  --accent-light: #fff;
+  --accent-contrast: #141312;
+  --border: rgba(255, 255, 255, 0.22);
+  --border-strong: rgba(255, 255, 255, 0.5);
+  color: #fff;
 }
 
 @theme inline {
@@ -179,6 +196,13 @@ body {
   border-radius: 2px;
 }
 
+/* White ring with a dark halo where the ground is a photo or the dark footer. */
+.on-media :focus-visible,
+.footer :focus-visible {
+  outline-color: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.45);
+}
+
 /* ===== Typography ===== */
 .font-display {
   font-family: var(--font-playfair, Georgia, serif);
@@ -186,30 +210,62 @@ body {
 
 .text-display {
   font-family: var(--font-playfair, Georgia, serif);
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1.05;
+  font-weight: 400;
+  line-height: var(--leading-display);
   letter-spacing: -0.01em;
 }
 
-/* Small caps label used above every section heading. */
-.eyebrow {
+/* Two-line display headings: italic first, roman second. The lines are
+   spans, so no line break characters are needed. */
+.title-italic {
+  display: block;
+  font-style: italic;
+}
+
+.title-roman {
+  display: block;
+}
+
+/* Italic word inside a roman line. */
+.title-em {
+  font-style: italic;
+}
+
+.title-indent {
+  padding-left: clamp(1.25rem, 4.5vw, 4.5rem);
+}
+
+/* Tracked caps with a hairline on each side. The lines are pseudo-elements,
+   so no dash characters appear in the markup. */
+.eyebrow,
+.section-tag {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  gap: 14px;
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--accent);
 }
 
-.eyebrow::before {
+.eyebrow::before,
+.eyebrow::after,
+.section-tag::before,
+.section-tag::after {
   content: '';
-  width: 28px;
+  width: 36px;
   height: 1px;
-  background: var(--accent);
+  background: currentColor;
+  opacity: 0.5;
   flex-shrink: 0;
+}
+
+/* Centred wrapper that every section uses. */
+.wrap {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
 }
 
 /* ===========================================================================
@@ -318,20 +374,6 @@ body {
   to {
     opacity: 0;
     transform: translate(-50%, -50%) scale(2.6);
-  }
-}
-
-@keyframes scrollHint {
-
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.25;
-  }
-
-  50% {
-    transform: translateY(9px);
-    opacity: 1;
   }
 }
 
@@ -464,13 +506,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  padding: 15px 32px;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  min-height: 44px;
+  padding: 12px 28px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   cursor: pointer;
   text-decoration: none;
   overflow: hidden;
@@ -551,7 +593,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--accent-light);
+  background: var(--accent-dark);
   box-shadow: var(--shadow-gold);
 }
 
@@ -642,7 +684,7 @@ body {
 }
 
 .nav-glass.scrolled {
-  background: color-mix(in srgb, var(--background) 82%, transparent);
+  background: color-mix(in srgb, var(--background) 94%, transparent);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   border-bottom-color: var(--border);
@@ -695,6 +737,83 @@ body {
   width: 100%;
 }
 
+/* lg+: links on both sides of a centred serif wordmark. Below lg the bar is a
+   plain row: wordmark, then the controls. */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* From lg the wordmark sits in the middle column even when the links are
+   hidden: the left column stays empty below xl, so the centre never drifts. */
+@media (min-width: 1024px) {
+  .nav-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+}
+
+.nav-wordmark {
+  grid-column: 2;
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-links-start {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.nav-end {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: end;
+}
+
+/* Full link row only from xl. Below that the hamburger takes over. */
+@media (min-width: 1280px) {
+  .nav-links {
+    display: flex;
+  }
+}
+
+/* Light and dark share the same outline control. Over a photo it goes clear
+   with a white outline. */
+.theme-toggle {
+  background: var(--surface);
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+.theme-toggle:hover {
+  background: var(--surface-dark);
+}
+
+.on-media .theme-toggle {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.on-media .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
@@ -724,188 +843,134 @@ body {
 
 .section {
   position: relative;
-  padding: 128px 0;
+  padding: var(--section-y) 0;
 }
 
 .section-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 18px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-tag::before {
-  content: '';
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  background: var(--accent);
-  flex-shrink: 0;
+  margin-bottom: 22px;
 }
 
 .section-title {
   font-family: var(--font-playfair, Georgia, serif);
-  font-size: clamp(2.1rem, 4.2vw, 3.25rem);
-  font-weight: 500;
-  line-height: 1.12;
+  font-size: var(--text-h2);
+  font-weight: 400;
+  line-height: var(--leading-display);
   letter-spacing: -0.015em;
   color: var(--primary);
-  margin-bottom: 20px;
 }
 
 .section-description {
-  font-size: 1.02rem;
+  font-size: var(--text-body);
   color: var(--text-muted);
-  line-height: 1.8;
-  max-width: 580px;
-}
-
-/* Hairline that draws itself in as the section arrives. */
-.rule {
-  height: 1px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  transform-origin: left;
+  line-height: 1.75;
+  max-width: 460px;
 }
 
 /* ===========================================================================
    Hero
    =========================================================================== */
 
-.hero-section {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.hero-subtitle {
-  font-size: 0.7rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 1.25rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hero-subtitle::before {
-  content: '';
-  display: inline-block;
-  width: 28px;
-  height: 1px;
-  background: var(--accent);
-}
-
-.hero-title {
-  font-family: var(--font-playfair, Georgia, serif);
-  font-size: clamp(2.75rem, 7vw, 5.5rem);
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5rem;
-}
-
-.hero-description {
-  font-size: 1.05rem;
-  max-width: 480px;
-  opacity: 0.88;
-  line-height: 1.75;
-}
-
 /* Slow drift on the hero photograph. */
 .hero-media img {
   transform: scale(1.06);
 }
 
-/* Scrim behind hero copy.
-   The shader sits inset-0 but the photograph covers the right half, so the
-   only place the caustics show is the exact column the text occupies. Measured
-   against real rendered pixels, unscrimmed text lands at 1.1:1 against the
-   bright caustic lanes in dark mode and 4.1:1 in light — both unreadable or
-   borderline. This lifts the copy onto near-solid background while fading to
-   nothing well before the panel edge, so the ripples still read around it. */
-.hero-copy {
+/* Full-bleed photograph with centred copy. A scrim top and bottom keeps the
+   white type legible on any part of the photo. */
+.hero-band {
   position: relative;
-  /* Guarantees the -1 pseudo-element stays behind this block's own content and
-     in front of the canvas, without depending on whatever z-index the markup
-     happens to carry. */
   isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 120px var(--gutter) 150px;
 }
 
-.hero-copy::before {
-  content: '';
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+}
+
+.hero-scrim {
   position: absolute;
   inset: 0;
   z-index: -1;
-  pointer-events: none;
-  background: color-mix(in srgb, var(--background) 88%, transparent);
+  background:
+    radial-gradient(ellipse 60% 48% at 50% 55%, rgba(0, 0, 0, 0.42), transparent 72%),
+    linear-gradient(180deg,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(0, 0, 0, 0.3) 40%,
+      rgba(0, 0, 0, 0.36) 62%,
+      rgba(0, 0, 0, 0.72) 100%);
 }
 
-@media (min-width: 1024px) {
-  .hero-copy::before {
-    /* Bleeds past the panel so the falloff finishes off-panel rather than
-       ending on a visible edge. */
-    inset: -10% -22% -10% -40%;
-    background: radial-gradient(ellipse 72% 62% at 42% 50%,
-        color-mix(in srgb, var(--background) 94%, transparent) 0%,
-        color-mix(in srgb, var(--background) 88%, transparent) 42%,
-        color-mix(in srgb, var(--background) 42%, transparent) 70%,
-        transparent 100%);
-  }
+.hero-h1 {
+  font-size: var(--text-hero);
+  color: #fff;
+  margin-top: 28px;
 }
 
-.scroll-hint {
-  width: 24px;
-  height: 40px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-full);
+.hero-lede {
+  max-width: 480px;
+  margin: 28px auto 36px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--primary-light);
+}
+
+.hero-ctas {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  padding-top: 8px;
+  gap: 12px;
 }
 
-.scroll-hint::before {
-  content: '';
-  width: 2px;
-  height: 7px;
-  border-radius: 2px;
-  background: var(--accent);
-  animation: scrollHint 1.9s var(--ease) infinite;
+.hero-trust {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 40px;
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gutter) 34px;
+  font-size: 0.7rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* ===========================================================================
    Search bar
    =========================================================================== */
 
+/* A hairline frame on the section ground, not a floating card. */
 .search-bar {
-  background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
-  padding: 22px 28px;
+  padding: 20px 24px;
   display: flex;
   align-items: flex-end;
   gap: 18px;
   flex-wrap: wrap;
   position: relative;
   z-index: 10;
-  transition: border-color var(--transition-medium), box-shadow var(--transition-medium);
+  transition: border-color var(--transition-medium);
 }
 
 .search-bar:focus-within {
-  border-color: var(--accent);
+  border-color: var(--border-strong);
 }
 
 .search-bar-field {
@@ -976,10 +1041,10 @@ body {
 
 .room-card {
   position: relative;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--surface);
+  padding: 10px;
+  background: var(--surface-raised);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     transform 0.5s var(--ease),
@@ -987,17 +1052,17 @@ body {
     box-shadow 0.5s var(--ease);
 }
 
-.room-card:hover,
-.room-card:focus-visible {
+.room-card:hover {
   transform: translateY(-6px);
-  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  border-color: var(--border-strong);
   box-shadow: var(--shadow-lg);
 }
 
 .room-card-media {
   position: relative;
-  height: 280px;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
+  border-radius: var(--radius-sm);
 }
 
 .room-card-image {
@@ -1006,77 +1071,44 @@ body {
 }
 
 .room-card:hover .room-card-image {
-  transform: scale(1.07);
-}
-
-.room-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.72) 100%);
-  opacity: 0.85;
-  transition: opacity var(--transition-medium);
-}
-
-.room-card:hover .room-card-overlay {
-  opacity: 1;
+  transform: scale(1.05);
 }
 
 .room-card-badge {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  padding: 5px 12px;
+  top: 12px;
+  left: 12px;
+  background: var(--background);
+  color: var(--primary);
+  padding: 5px 10px;
   border-radius: var(--radius-sm);
   font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   z-index: 2;
-}
-
-/* Price sits on the image, bottom-right, like a listing sheet. */
-.room-card-price-tag {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 2;
-  color: #fff;
-  font-size: 1.3rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-}
-
-.room-card-price-tag span {
-  font-size: 0.72rem;
-  font-weight: 500;
-  opacity: 0.75;
-  letter-spacing: 0.04em;
 }
 
 .room-card-content {
-  padding: 26px;
+  padding: 22px 12px 12px;
 }
 
 .room-card-type {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
 .room-card-title {
   font-family: var(--font-playfair, Georgia, serif);
-  font-size: 1.35rem;
-  font-weight: 500;
-  line-height: 1.25;
+  font-size: var(--text-h3);
+  font-weight: 400;
+  line-height: 1.12;
   color: var(--primary);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .room-card-location {
@@ -1085,13 +1117,28 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
+}
+
+.room-card-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.room-card-features span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .room-card-divider {
   height: 1px;
   background: var(--border);
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
 .room-card-footer {
@@ -1101,17 +1148,17 @@ body {
   gap: 12px;
 }
 
-.room-card-features {
-  display: flex;
-  gap: 16px;
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.room-card-price {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.35rem;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.room-card-features span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+.room-card-price span {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
 /* Stretched link: the title's hit area covers the whole card, so the card
@@ -1153,11 +1200,11 @@ body {
   padding: 9px 16px;
   background: transparent;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   color: var(--primary);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
@@ -1182,142 +1229,184 @@ body {
    Stats / amenities / testimonials
    =========================================================================== */
 
+/* Four figures in a hairline row. Two across on phones. */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 96px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
 .stat-item {
   text-align: center;
-  padding: 30px 20px;
-  transition: transform var(--transition-medium);
+  padding: 32px 16px;
 }
 
-.stat-item:hover {
-  transform: translateY(-4px);
+.stat-item:nth-child(even) {
+  border-left: 1px solid var(--border);
 }
 
-.stat-icon {
-  width: 58px;
-  height: 58px;
-  margin: 0 auto 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-dark);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--accent);
-  transition: all var(--transition-medium);
+.stat-item:nth-child(n + 3) {
+  border-top: 1px solid var(--border);
 }
 
-.stat-item:hover .stat-icon {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-gold);
+@media (min-width: 768px) {
+  .stat-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat-item:nth-child(even) {
+    border-left: 0;
+  }
+
+  .stat-item:nth-child(n + 3) {
+    border-top: 0;
+  }
+
+  .stat-item + .stat-item {
+    border-left: 1px solid var(--border);
+  }
 }
 
 .stat-number {
   font-family: var(--font-playfair, Georgia, serif);
-  font-size: 2.4rem;
-  font-weight: 500;
+  font-size: clamp(2.2rem, 4vw, 3.25rem);
+  font-weight: 400;
   color: var(--primary);
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
-  font-size: 0.78rem;
+  font-size: 0.68rem;
+  font-weight: 600;
   color: var(--text-muted);
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
+}
+
+/* Circle icons in a row: two across on phones, three on tablets, six on desktop. */
+.amenity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px 20px;
+}
+
+@media (min-width: 768px) {
+  .amenity-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .amenity-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 .amenity-card {
   position: relative;
-  padding: 34px 26px;
-  background: var(--surface);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  transition:
-    transform var(--transition-medium),
-    border-color var(--transition-medium),
-    background var(--transition-medium);
-}
-
-.amenity-card:hover {
-  transform: translateY(-5px);
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  background: var(--surface-dark);
-}
-
-/* Gold wash that grows from the corner the pointer enters. */
-.amenity-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.5s var(--ease);
-}
-
-.amenity-card:hover::before {
-  transform: scaleX(1);
+  text-align: center;
+  padding: 4px 4px;
 }
 
 .amenity-icon {
-  width: 52px;
-  height: 52px;
-  margin-bottom: 20px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-dark);
-  border-radius: var(--radius-md);
-  color: var(--accent);
-  border: 1px solid var(--border);
-  transition: all var(--transition-medium);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+  transition: background var(--transition-medium), color var(--transition-medium), border-color var(--transition-medium);
 }
 
 .amenity-card:hover .amenity-icon {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  border-color: var(--accent);
-  transform: scale(1.06) rotate(-4deg);
+  background: var(--primary);
+  color: var(--background);
+  border-color: var(--primary);
 }
 
 .amenity-title {
-  font-size: 1.02rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--primary);
   margin-bottom: 8px;
 }
 
 .amenity-desc {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--text-muted);
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
-/* Accreditation chip */
+/* Intro: heading left, copy right, both aligned to the top of the heading. */
+.about-intro {
+  display: grid;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .about-intro {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 80px;
+  }
+
+  .about-intro .section-title {
+    font-size: clamp(2.375rem, 4.2vw, 3.75rem);
+  }
+}
+
+.promise-list {
+  list-style: none;
+  margin: 28px 0 36px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promise-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  color: var(--primary-light);
+}
+
+.promise-tick {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+}
+
+/* Accreditation chip: a hairline pill with the mark in a small circle. */
 .badge-chip {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 18px 8px 8px;
-  background: var(--surface-dark);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  padding: 6px 20px 6px 6px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
   cursor: pointer;
   text-align: left;
-  transition: all var(--transition-medium);
+  transition: border-color var(--transition-medium), transform var(--transition-medium);
 }
 
 .badge-chip:hover {
-  border-color: var(--accent);
+  border-color: var(--primary);
   transform: translateY(-2px);
 }
 
@@ -1325,46 +1414,108 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 68px;
-  height: 68px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-raised);
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
   border: 1px solid var(--border);
   overflow: hidden;
 }
 
-.badge-chip-media img {
-  transition: transform var(--transition-medium);
+/* Photo band with a framed cream card. Its text is theme ink, so the card is
+   not an .on-media surface. */
+.recognition {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: var(--section-y) 0;
+  color: #fff;
 }
 
-.badge-chip:hover .badge-chip-media img {
-  transform: scale(1.08);
+.recognition-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.recognition-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.recognition-title {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: var(--text-h2);
+  font-weight: 400;
+  line-height: var(--leading-display);
+  text-align: center;
+  color: #fff;
+}
+
+.frame-card {
+  width: min(100%, 560px);
+  margin: 56px auto 0;
+  padding: 12px;
+  background: var(--background);
+  color: var(--primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+}
+
+.frame-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.frame-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 8px 12px;
 }
 
 .testimonial-card {
-  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 36px 32px;
   background: var(--surface);
-  border-radius: var(--radius-md);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   transition: transform var(--transition-medium), border-color var(--transition-medium);
-  position: relative;
-}
-
-.testimonial-card::before {
-  content: '\201C';
-  position: absolute;
-  top: 16px;
-  right: 26px;
-  font-size: 4.5rem;
-  color: var(--accent);
-  font-family: var(--font-playfair, Georgia, serif);
-  line-height: 1;
-  opacity: 0.18;
 }
 
 .testimonial-card:hover {
   transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* The highlighted card is ink with cream text. Its inner colours are remapped
+   here, so the markup underneath stays the same for every card. */
+.testimonial-card.is-feature {
+  --primary: var(--on-ink);
+  --primary-light: var(--on-ink);
+  --text-muted: var(--on-ink-muted);
+  --accent: var(--on-ink);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+/* Dark ink sits too close to the dark page, so dark mode inverts the card
+   to cream with ink text instead. */
+html:not(.light) .testimonial-card.is-feature {
+  --primary: var(--background);
+  --primary-light: #2E2C29;
+  --text-muted: #5C5750;
+  --accent: var(--background);
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
 }
 
 .testimonial-stars {
@@ -1375,10 +1526,11 @@ body {
 }
 
 .testimonial-text {
+  flex: 1;
   font-size: 0.95rem;
   color: var(--primary-light);
-  line-height: 1.85;
-  margin-bottom: 22px;
+  line-height: 1.8;
+  margin-bottom: 26px;
 }
 
 .testimonial-author {
@@ -1411,66 +1563,84 @@ body {
    Gallery
    =========================================================================== */
 
-.gallery-grid {
+.gallery-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px 48px;
+  margin-bottom: 56px;
+}
+
+.gallery-title {
+  font-size: clamp(2rem, 3.4vw, 3rem);
+}
+
+/* Full-bleed strip of five. On phones it scrolls sideways and snaps. */
+.gallery-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(2, 280px);
-  gap: 14px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  height: clamp(320px, 40vw, 520px);
+}
+
+.gallery-strip:focus-visible {
+  outline-offset: -4px;
 }
 
 .gallery-item {
   position: relative;
-  border-radius: var(--radius-md);
+  margin: 0;
   overflow: hidden;
-}
-
-.gallery-item:nth-child(1) {
-  grid-column: span 2;
-  grid-row: span 2;
+  min-width: 0;
 }
 
 .gallery-item img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  transition: transform 1s var(--ease), filter 0.5s var(--ease);
+  transition: transform 1s var(--ease);
 }
 
 .gallery-item:hover img {
-  transform: scale(1.07);
+  transform: scale(1.05);
 }
 
 .gallery-item::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
+  background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
   opacity: 0;
   transition: opacity var(--transition-medium);
 }
 
-.gallery-item:hover::after {
-  opacity: 1;
-}
-
 .gallery-caption {
   position: absolute;
-  left: 20px;
-  bottom: 18px;
+  left: 18px;
+  bottom: 16px;
   z-index: 2;
   color: #fff;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
+  font-size: 0.68rem;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   font-weight: 600;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
   transition: opacity var(--transition-medium), transform var(--transition-medium);
 }
 
-.gallery-item:hover .gallery-caption {
+/* Captions show on hover, on focus within an item, and when the strip itself
+   has keyboard focus. */
+.gallery-item:hover::after,
+.gallery-item:focus-within::after,
+.gallery-strip:focus-visible .gallery-item::after {
   opacity: 1;
-  transform: translateY(0);
+}
+
+.gallery-item:hover .gallery-caption,
+.gallery-item:focus-within .gallery-caption,
+.gallery-strip:focus-visible .gallery-caption {
+  opacity: 1;
+  transform: none;
 }
 
 /* Touch screens have no hover, so captions stay visible there. */
@@ -1481,60 +1651,202 @@ body {
   }
 }
 
+@media (max-width: 768px) {
+  .gallery-strip {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    padding-inline: var(--gutter);
+    height: 380px;
+    gap: 12px;
+    scrollbar-width: none;
+  }
+
+  .gallery-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gallery-item {
+    flex: 0 0 78vw;
+    height: 100%;
+    scroll-snap-align: start;
+    border-radius: var(--radius-sm);
+  }
+}
+
 /* ===========================================================================
    CTA
    =========================================================================== */
 
+/* Full-bleed photograph with a bottom scrim. Title bottom-left, copy and
+   actions bottom-right, contact details in a hairline row underneath. */
 .cta-section {
   position: relative;
-  padding: 140px 0;
+  isolation: isolate;
   overflow: hidden;
+  min-height: min(100svh, 880px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 140px 0 72px;
+}
+
+.cta-photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.cta-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(0deg,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.45) 50%,
+      rgba(0, 0, 0, 0.45) 100%);
+}
+
+.cta-inner {
+  position: relative;
+  width: 100%;
+}
+
+.recognition-inner {
+  position: relative;
+}
+
+.cta-top {
+  display: grid;
+  gap: 40px;
+  align-items: end;
+}
+
+@media (min-width: 1024px) {
+  .cta-top {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 72px;
+  }
+}
+
+.cta-title {
+  font-size: var(--text-h2);
+  color: #fff;
+}
+
+.cta-lede {
+  max-width: 420px;
+  font-size: var(--text-body);
+  line-height: 1.75;
+  color: var(--primary-light);
+  margin-bottom: 28px;
+}
+
+.cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.contact-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin-top: 64px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@media (min-width: 640px) {
+  .contact-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .contact-chip {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 20px 16px;
-  text-align: center;
+  padding: 22px 20px;
   text-decoration: none;
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  transition: all var(--transition-medium);
+  color: #fff;
+  transition: background var(--transition-medium);
+}
+
+.contact-chip + .contact-chip {
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@media (min-width: 640px) {
+  .contact-chip + .contact-chip {
+    border-top: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+  }
 }
 
 .contact-chip:hover {
-  border-color: var(--accent);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.contact-chip-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.contact-chip-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
 }
 
 /* ===========================================================================
    Footer
+
+   Always dark. The footer sets its own colour tokens, so the links, titles and
+   borders inside it read correctly in either theme.
    =========================================================================== */
 
 .footer {
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 88px 0 32px;
+  --primary: var(--on-ink);
+  --accent: var(--on-ink);
+  --text-muted: var(--on-ink-muted);
+  --border: rgba(233, 229, 221, 0.14);
+  --border-strong: rgba(233, 229, 221, 0.3);
+  background: var(--ink);
+  color: var(--on-ink-muted);
+  padding: 96px 0 40px;
+}
+
+.footer-grid {
+  display: grid;
+  gap: 48px;
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: start;
+  }
+
+  .footer-contact {
+    text-align: right;
+  }
 }
 
 .footer-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-  color: var(--primary);
-  margin-bottom: 22px;
+  color: var(--on-ink);
+  margin-bottom: 20px;
 }
 
 .footer-link {
   display: block;
-  color: var(--text-muted);
+  color: var(--on-ink-muted);
   text-decoration: none;
   font-size: 0.875rem;
   padding: 5px 0;
@@ -1543,91 +1855,335 @@ body {
 }
 
 .footer-link:hover {
-  color: var(--accent);
+  color: var(--on-ink);
   transform: translateX(4px);
 }
 
-.footer-social {
-  display: flex;
-  gap: 10px;
+.footer-contact p {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--on-ink-muted);
 }
 
-.footer-social a {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
+.footer-contact p + p {
+  margin-top: 8px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.footer-emblem {
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
-  transition: all var(--transition-medium);
-  text-decoration: none;
-  font-size: 0.85rem;
+  border: 1px solid rgba(233, 229, 221, 0.4);
+  border-radius: var(--radius-full);
+  color: var(--on-ink);
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.1rem;
 }
 
-.footer-social a:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-contrast);
-  transform: translateY(-2px);
+.footer-wordmark {
+  margin-top: 16px;
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: 1.5rem;
+  color: var(--on-ink);
+}
+
+.footer-tagline {
+  max-width: 300px;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--on-ink-muted);
+}
+
+.footer-types {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 72px;
+  text-align: center;
+}
+
+.footer-type-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-type {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--on-ink-muted);
 }
 
 .footer-bottom {
-  margin-top: 56px;
+  margin-top: 64px;
   padding-top: 26px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(233, 229, 221, 0.14);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.82rem;
-  color: var(--text-muted);
+  gap: 16px;
+  font-size: 0.8rem;
+  color: var(--on-ink-muted);
 }
 
-/* ===========================================================================
-   Homestay detail page
-   =========================================================================== */
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-muted);
+.footer-social a {
+  color: var(--on-ink-muted);
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   transition: color var(--transition-fast);
 }
 
-.back-link-icon {
+.footer-social a:hover {
+  color: var(--on-ink);
+}
+
+/* Homestay detail page */
+
+.detail-page {
+  min-height: 100vh;
+  padding-bottom: 96px;
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Full-bleed photograph with the title over a scrim. */
+.detail-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 88vh;
+  min-height: 88svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding: 120px var(--gutter) 88px;
+  color: #fff;
+}
+
+.detail-hero > img {
+  z-index: -2;
+}
+
+.detail-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.45) 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      rgba(0, 0, 0, 0.35) 62%,
+      rgba(0, 0, 0, 0.8) 100%);
+}
+
+.detail-hero-copy {
+  position: relative;
+  max-width: 760px;
+}
+
+.detail-title {
+  font-size: var(--text-h2);
+  color: #fff;
+  margin-top: 20px;
+}
+
+.detail-location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* White hairline pill, top left of the photograph. */
+.back-pill {
+  position: absolute;
+  top: 112px;
+  left: var(--gutter);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background var(--transition-medium);
+}
+
+.back-pill:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Intro band: price and actions left, description right. */
+.detail-intro {
+  padding: var(--section-y) 0 88px;
+}
+
+.detail-intro-grid {
+  display: grid;
+  gap: 40px;
+}
+
+@media (min-width: 1024px) {
+  .detail-intro-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 96px;
+    align-items: start;
+  }
+}
+
+.detail-price {
+  font-family: var(--font-playfair, Georgia, serif);
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  line-height: 1;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-price span {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.7rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.detail-actions-centre {
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.detail-description {
+  max-width: 520px;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+
+/* Facts: hairline band with circle icons. */
+.detail-facts {
+  padding: 72px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px 24px;
+}
+
+@media (min-width: 768px) {
+  .detail-facts-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.fact-circle {
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
   border: 1px solid var(--border-strong);
-  transition: all var(--transition-medium);
+  border-radius: var(--radius-full);
+  color: var(--primary);
 }
 
-.back-link:hover {
-  color: var(--accent);
+.fact-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.01em;
 }
 
-.back-link:hover .back-link-icon {
-  border-color: var(--accent);
-  transform: translateX(-3px);
+.detail-section-head {
+  margin-bottom: 56px;
+}
+
+/* Photo grid with small corners. Wide tiles span the full row on phones, and
+   two columns by two rows from lg. */
+.detail-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-photo-wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 1023px) {
+  .detail-photo-fill {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .detail-photos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* 2x2 tile that stretches to the two rows its neighbours set. Grid does not
+     stretch items that keep an aspect ratio, so it drops the 4:3. The doubled
+     class beats the base .detail-photo rule below. */
+  .detail-photo.detail-photo-wide {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: auto;
+    min-height: 260px;
+  }
 }
 
 .detail-photo {
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--surface-dark);
+  border-radius: var(--radius-sm);
 }
 
 .detail-photo img {
@@ -1635,7 +2191,75 @@ body {
 }
 
 .detail-photo:hover img {
-  transform: scale(1.06);
+  transform: scale(1.04);
+}
+
+.detail-amenities {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.detail-amenity-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .detail-amenity-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .detail-amenity-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.detail-amenity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.detail-amenity-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  color: var(--primary);
+}
+
+.detail-amenity-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Calm closing block. */
+.detail-closing {
+  text-align: center;
+}
+
+.detail-closing-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail-closing-title {
+  max-width: 720px;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  color: var(--primary);
 }
 
 /* ===========================================================================
@@ -1706,16 +2330,6 @@ body {
    =========================================================================== */
 
 @media (max-width: 1024px) {
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 220px);
-  }
-
-  .gallery-item:nth-child(1) {
-    grid-column: span 2;
-    grid-row: span 1;
-  }
-
   .search-bar {
     flex-direction: column;
     align-items: stretch;
@@ -1726,40 +2340,13 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1279px) {
   .mobile-menu-toggle {
     display: flex;
   }
+}
 
-  .nav-links {
-    display: none;
-  }
-
-  .section {
-    padding: 72px 0;
-  }
-
-  .cta-section {
-    padding: 88px 0;
-  }
-
-  .hero-title {
-    font-size: 2.4rem;
-  }
-
-  .gallery-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
-
-  .gallery-item:nth-child(1) {
-    grid-column: span 1;
-  }
-
-  .gallery-item {
-    height: 240px;
-  }
-
+@media (max-width: 768px) {
   .footer-bottom {
     flex-direction: column;
     gap: 12px;
@@ -1771,10 +2358,11 @@ body {
   .btn-dark,
   .btn-outline,
   .search-btn {
-    padding: 15px 26px;
+    padding: 12px 26px;
   }
 
   .room-card-book {
     padding: 12px 18px;
+    min-height: 44px;
   }
 }

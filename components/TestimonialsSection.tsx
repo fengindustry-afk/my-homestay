@@ -48,29 +48,26 @@ function Stars({ count }: { count: number }) {
 
 export default function TestimonialsSection() {
     return (
-        <section className="section" style={{ background: "var(--surface)" }}>
-            <div className="mx-auto max-w-7xl px-6">
-                <div className="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
-                    <div className="lg:col-span-7" data-reveal>
-                        <p className="section-tag">05 &nbsp;/&nbsp; Testimonials</p>
-                        <h2 className="section-title" style={{ maxWidth: 560 }}>
-                            What our <em style={{ color: "var(--accent)" }}>guests</em> say
-                        </h2>
-                    </div>
-                    <div className="lg:col-span-5" data-reveal data-reveal-delay="120">
-                        <p className="section-description">
-                            Unedited reviews from families and companies who booked the compound.
-                        </p>
-                    </div>
+        <section className="section">
+            <div className="wrap">
+                <div className="mb-16 text-center" data-reveal>
+                    <p className="section-tag">Testimonials</p>
+                    <h2 className="section-title">
+                        <span className="title-roman">What our <em className="title-em">guests</em> say</span>
+                    </h2>
+                    <p className="section-description mx-auto mt-6">
+                        Unedited reviews from families and companies who booked the compound.
+                    </p>
                 </div>
 
                 {/* items-start: each card keeps its own height rather than
-                    stretching to the longest review. */}
-                <div className="grid items-start gap-7 md:grid-cols-3" data-stagger>
-                    {testimonials.map((t) => (
+                    stretching to the longest review. The middle card is the
+                    highlighted one. */}
+                <div className="grid items-start gap-6 md:grid-cols-3" data-stagger>
+                    {testimonials.map((t, i) => (
                         <figure
                             key={t.name}
-                            className="testimonial-card"
+                            className={i === 1 ? "testimonial-card is-feature" : "testimonial-card"}
                             id={`testimonial-${t.name.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                             <Stars count={t.stars} />
