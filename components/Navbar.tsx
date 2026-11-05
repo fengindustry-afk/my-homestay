@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
     { href: "#home", label: "Home" },
@@ -96,7 +95,6 @@ export default function Navbar() {
                             </a>
                         ))}
                     </div>
-                    <ThemeToggle />
                     {/* Hidden below md. Kept in a plain wrapper, not on the button itself, so the
                         .btn-primary rules can't override the display utilities. */}
                     <div className="hidden md:block">
