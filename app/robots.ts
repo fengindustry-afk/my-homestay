@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const baseUrl = "https://indahmoribhomestay.vercel.app";
+import { SITE_URL as baseUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {

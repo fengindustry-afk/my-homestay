@@ -1,4 +1,16 @@
+import { BUSINESS } from "@/lib/site";
+
+// Absolute so they also work from pages other than the homepage.
+const QUICK_LINKS = [
+    ["/#home", "Home"],
+    ["/#rooms", "Our Homestays"],
+    ["/#amenities", "Amenities"],
+    ["/#gallery", "Gallery"],
+    ["/#contact", "Contact"],
+] as const;
+
 export default function Footer() {
+    const { address } = BUSINESS;
     return (
         <footer className="footer">
             <div className="mx-auto max-w-7xl px-6">
@@ -27,7 +39,7 @@ export default function Footer() {
                                     color: "var(--primary)",
                                 }}
                             >
-                                Indahmorib
+                                {BUSINESS.name}
                             </span>
                         </div>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.7, marginBottom: 20 }}>
@@ -46,11 +58,10 @@ export default function Footer() {
                     {/* Quick Links */}
                     <div>
                         <h4 className="footer-title">Quick Links</h4>
-                        <a href="#home" className="footer-link">Home</a>
-                        <a href="#rooms" className="footer-link">Our Homestays</a>
-                        <a href="#amenities" className="footer-link">Amenities</a>
-                        <a href="#gallery" className="footer-link">Gallery</a>
-                        <a href="#contact" className="footer-link">Contact</a>
+                        {QUICK_LINKS.map(([href, label]) => (
+                            // Plain <a>, not next/link: Lenis smooth-scrolls same-page anchors with the navbar offset.
+                            <a key={href} href={href} className="footer-link">{label}</a>
+                        ))}
                     </div>
 
                     {/* Homestay Types */}
@@ -65,20 +76,21 @@ export default function Footer() {
                     <div>
                         <h4 className="footer-title">Contact Info</h4>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.8, marginBottom: 8 }}>
-                            Pt 704, Jalan Perdana 2 Indah Perdana, Kampung Endah<br />
-                            Banting 42700,<br />
-                            Selangor
+                            {address.street}<br />
+                            {address.locality} {address.postalCode},<br />
+                            {address.region}
                         </p>
                         <p style={{ fontSize: "0.9rem", lineHeight: 1.8 }}>
-                            +60 11-5757 2001<br />
-                            +60 11-5504 3280<br />
-                            indahmoribhomestay@gmail.com
+                            {BUSINESS.phones.map((p) => (
+                                <span key={p}>{p}<br /></span>
+                            ))}
+                            {BUSINESS.email}
                         </p>
                     </div>
                 </div>
 
                 <div className="footer-bottom">
-                    <span>&copy; 2026 Indahmorib Homestay. All rights reserved.</span>
+                    <span>&copy; 2026 {BUSINESS.name}. All rights reserved.</span>
                 </div>
             </div>
         </footer>

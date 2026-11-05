@@ -1,9 +1,15 @@
 import ShaderBackground from "./ShaderBackground";
+import { BUSINESS, WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 const CONTACTS = [
-    { label: "Phone", value: "+60 11-5757 2001", href: "tel:+601157572001" },
-    { label: "Email", value: "indahmoribhomestay", href: "mailto:indahmoribhomestay@gmail.com" },
-    { label: "Location", value: "Banting, Selangor", href: "https://maps.google.com/?q=Indah+Morib+Homestay+Banting+Selangor" },
+    { label: "Phone", value: BUSINESS.phones[0], href: `tel:${BUSINESS.phones[0].replace(/[^+\d]/g, "")}` },
+    { label: "Email", value: BUSINESS.email.split("@")[0], href: `mailto:${BUSINESS.email}` },
+    {
+        label: "Location",
+        value: `${BUSINESS.address.locality}, ${BUSINESS.address.region}`,
+        // The main Google profile's share link once known; a Maps search until then.
+        href: BUSINESS.mapsUrl ?? "https://maps.google.com/?q=Indah+Morib+Homestay+Banting+Selangor",
+    },
 ];
 
 export default function CTASection() {
@@ -63,7 +69,7 @@ export default function CTASection() {
                     data-reveal-delay="260"
                 >
                     <a
-                        href="https://wa.me/601157572001"
+                        href={waLink(WA_DEFAULT_MESSAGE)}
                         className="btn-primary"
                         id="whatsapp-btn"
                         target="_blank"
@@ -74,7 +80,7 @@ export default function CTASection() {
                             <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
                     </a>
-                    <a href="mailto:indahmoribhomestay@gmail.com" className="btn-outline" id="email-btn">
+                    <a href={`mailto:${BUSINESS.email}`} className="btn-outline" id="email-btn">
                         Email us
                     </a>
                 </div>

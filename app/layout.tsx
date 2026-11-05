@@ -9,6 +9,7 @@ import JsonLd from "@/components/JsonLd";
 import SmoothScroll from "@/components/SmoothScroll";
 import ScrollFX from "@/components/ScrollFX";
 import ButtonFX from "@/components/ButtonFX";
+import { GOOGLE_SITE_VERIFICATION, SITE_URL } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -23,7 +24,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://indahmoribhomestay.vercel.app"),
+  metadataBase: new URL(SITE_URL),
+  verification: GOOGLE_SITE_VERIFICATION ? { google: GOOGLE_SITE_VERIFICATION } : undefined,
   robots: {
     index: true,
     follow: true,
@@ -40,7 +42,7 @@ export const metadata: Metadata = {
     title: "Indah Morib Homestay",
     description:
       "Homestay compound in Morib, Selangor, for family retreats, gatherings, and celebrations. Private pools and up to 120 guests.",
-    url: "https://indahmoribhomestay.vercel.app",
+    url: SITE_URL,
     siteName: "Indah Morib Homestay",
     images: [
       {

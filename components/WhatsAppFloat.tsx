@@ -1,9 +1,7 @@
-const WHATSAPP_NUMBER = "601157572001";
-const PREFILLED_MESSAGE =
-    "Hi Indah Morib Homestay! I'd like to ask about availability and booking.";
+import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 export default function WhatsAppFloat() {
-    const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(PREFILLED_MESSAGE)}`;
+    const href = waLink(WA_DEFAULT_MESSAGE);
 
     return (
         <a

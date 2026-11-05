@@ -5,6 +5,7 @@ import Link from "next/link";
 import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
+import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
 
 export interface Room {
     id: number;
@@ -32,6 +33,8 @@ export interface SearchCriteria {
 }
 
 interface RoomsSectionProps {
+    /** Rooms fetched on the server, so the first HTML already has the room links. */
+    initialRooms?: Room[];
     filterCriteria?: SearchCriteria;
     onSearch?: (criteria: SearchCriteria) => void;
     onReset?: () => void;
@@ -51,9 +54,10 @@ function RoomSkeleton() {
     );
 }
 
-export default function RoomsSection({ filterCriteria, onSearch, onReset }: RoomsSectionProps) {
-    const [rooms, setRooms] = useState<Room[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function RoomsSection({ initialRooms, filterCriteria, onSearch, onReset }: RoomsSectionProps) {
+    const [rooms, setRooms] = useState<Room[]>(initialRooms ?? []);
+    const seeded = initialRooms !== undefined;
+    const [loading, setLoading] = useState(!seeded);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,8 +98,10 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
     useEffect(() => {
         let isMounted = true;
 
+        // With server-rendered rooms this is a silent refresh: no skeleton,
+        // and a failed refresh keeps the rooms already on screen.
         async function loadRooms() {
-            setLoading(true);
+            if (!seeded) setLoading(true);
             setLoadError(null);
 
             const { data, error } = await supabase
@@ -107,8 +113,10 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
 
             if (error) {
                 console.error("Homestay load failed:", error.message);
-                setLoadError(error.message);
-                setRooms([]);
+                if (!seeded) {
+                    setLoadError(error.message);
+                    setRooms([]);
+                }
             } else {
                 setRooms((data || []) as Room[]);
             }
@@ -120,7 +128,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
         return () => {
             isMounted = false;
         };
-    }, []);
+    }, [seeded]);
 
     const filteredRooms = useMemo(() => {
         if (!filterCriteria) return rooms;
@@ -197,7 +205,7 @@ export default function RoomsSection({ filterCriteria, onSearch, onReset }: Room
                     {loadError ? (
                         <p className="text-center text-sm" style={{ color: "#F87171" }} role="alert">
                             Homestays are taking longer than usual.{" "}
-                            <a href="https://wa.me/601157572001" target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
+                            <a href={waLink(WA_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="underline">WhatsApp us</a>{" "}
                             and we will send you the list.
                         </p>
                     ) : (

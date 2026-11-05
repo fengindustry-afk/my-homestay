@@ -3,6 +3,8 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import type { Room } from "@/components/RoomsSection";
+import { roomDescription, roomJsonLd, roomTitle, toJsonLd } from "@/lib/seo";
+import { BUSINESS, SITE_URL } from "@/lib/site";
 import RoomDetail from "./RoomDetail";
 
 type Props = { params: Promise<{ id: string }> };
@@ -30,16 +32,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { robots: { index: false, follow: false } };
   }
 
-  const title = `${room.title} — Indah Morib Homestay`;
-  const description =
-    room.description ?? `${room.title} at Indah Morib Homestay${room.location ? `, ${room.location}` : ""}.`;
+  // The layout's title.template appends the brand; the OG title doesn't get it.
+  const title = roomTitle(room);
+  const description = roomDescription(room);
   const path = `/homestay/${id}`;
 
   return {
     title,
     description,
     alternates: { canonical: path },
-    openGraph: { title, description, url: path },
+    openGraph: {
+      title: `${title} | ${BUSINESS.name}`,
+      description,
+      url: path,
+      images: room.image ? [room.image] : undefined,
+    },
   };
 }
 
@@ -49,5 +56,13 @@ export default async function HomestayPage({ params }: Props) {
   if (!room) notFound();
 
   const photos = await getPhotos(id);
-  return <RoomDetail room={room} photos={photos} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: toJsonLd(roomJsonLd(room, photos, SITE_URL)) }}
+      />
+      <RoomDetail room={room} photos={photos} />
+    </>
+  );
 }
