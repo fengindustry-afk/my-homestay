@@ -54,20 +54,22 @@ export default function TestimonialsSection() {
     return (
         <section className="section">
             <div className="wrap">
-                <div className="mb-16 text-center" data-reveal>
-                    <p className="section-tag">{t("eyebrow")}</p>
-                    <h2 className="section-title">
-                        <span className="title-roman">{t.rich("title", { em: (c) => <em className="title-em">{c}</em> })}</span>
-                    </h2>
-                    <p className="section-description mx-auto mt-6">
+                <div className="split-head" data-reveal>
+                    <div>
+                        <p className="section-tag">{t("eyebrow")}</p>
+                        <h2 className="section-title">
+                            <span className="title-roman">{t.rich("title", { em: (c) => <em className="title-em">{c}</em> })}</span>
+                        </h2>
+                    </div>
+                    <p className="section-description">
                         {t("intro")}
                     </p>
                 </div>
 
                 {/* items-start: each card keeps its own height rather than
                     stretching to the longest review. The middle card is the
-                    highlighted one. */}
-                <div className="grid items-start gap-6 md:grid-cols-3" data-stagger>
+                    inked one. */}
+                <div className="testimonial-grid" data-stagger>
                     {testimonials.map((t, i) => (
                         <figure
                             key={t.name}

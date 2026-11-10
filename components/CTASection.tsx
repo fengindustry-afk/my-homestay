@@ -16,22 +16,10 @@ const CONTACTS = [
 export default function CTASection() {
     const t = useTranslations("CTA");
     return (
-        <section id="contact" className="cta-section on-media">
-            <div className="cta-photo">
-                <Image
-                    src="/images/content/langit.jpg"
-                    alt=""
-                    fill
-                    sizes="100vw"
-                    quality={85}
-                    className="object-cover"
-                />
-            </div>
-            <div className="cta-scrim" aria-hidden="true" />
-
-            <div className="wrap cta-inner">
-                <div className="cta-top">
-                    <h2 className="text-display cta-title" data-reveal>
+        <section id="contact" className="cta-section">
+            <div className="wrap cta-grid">
+                <div>
+                    <h2 className="section-title" data-reveal>
                         <span className="title-italic">{t("title1")}</span>
                         <span className="title-roman">{t("title2")}</span>
                     </h2>
@@ -49,30 +37,38 @@ export default function CTASection() {
                                 rel="noopener noreferrer"
                             >
                                 {t("whatsapp")}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                </svg>
                             </a>
                             <a href={`mailto:${BUSINESS.email}`} className="btn-outline" id="email-btn">
                                 {t("emailUs")}
                             </a>
                         </div>
                     </div>
+
+                    <div className="contact-row" data-stagger>
+                        {CONTACTS.map((item) => (
+                            <a
+                                key={item.label}
+                                href={item.href}
+                                target={item.href.startsWith("http") ? "_blank" : undefined}
+                                rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                                className="contact-chip"
+                            >
+                                <span className="contact-chip-label">{t(item.label)}</span>
+                                <span className="contact-chip-value">{item.value}</span>
+                            </a>
+                        ))}
+                    </div>
                 </div>
 
-                <div className="contact-row" data-stagger>
-                    {CONTACTS.map((item) => (
-                        <a
-                            key={item.label}
-                            href={item.href}
-                            target={item.href.startsWith("http") ? "_blank" : undefined}
-                            rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                            className="contact-chip"
-                        >
-                            <span className="contact-chip-label">{t(item.label)}</span>
-                            <span className="contact-chip-value">{item.value}</span>
-                        </a>
-                    ))}
+                <div className="cta-photo photo-frame">
+                    <Image
+                        src="/images/content/langit.jpg"
+                        alt=""
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        quality={85}
+                        className="object-cover"
+                    />
                 </div>
             </div>
         </section>

@@ -31,7 +31,7 @@ export default function AboutSection() {
 
     return (
         <>
-            {/* Part 1: the intro, then the four figures in a hairline row. */}
+            {/* Part 1: the intro, then the four figures in a well. */}
             <section id="about" className="section">
                 <div className="wrap">
                     <div className="about-intro">
@@ -45,7 +45,7 @@ export default function AboutSection() {
 
                         {/* Vertical reveal only. An x-offset start state would widen the document. */}
                         <div data-reveal data-reveal-delay="120">
-                            <p className="section-description" style={{ marginBottom: 16 }}>
+                            <p className="section-description">
                                 {t("p1")}
                             </p>
                             <p className="section-description">
@@ -56,7 +56,7 @@ export default function AboutSection() {
                                 {promises.map((item) => (
                                     <li key={item}>
                                         <span className="promise-tick" aria-hidden="true">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                                                 <polyline points="20 6 9 17 4 12" />
                                             </svg>
                                         </span>
@@ -67,9 +67,6 @@ export default function AboutSection() {
 
                             <a href="#rooms" className="btn-outline">
                                 {t("more")}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                </svg>
                             </a>
                         </div>
                     </div>
@@ -85,32 +82,31 @@ export default function AboutSection() {
                 </div>
             </section>
 
-            {/* Part 2: full-bleed photograph with a framed card and the accreditations. */}
+            {/* Part 2: the pool, then the accreditations as a ruled list. */}
             <section className="recognition">
-                <div className="recognition-photo">
-                    <CoverPicture
-                        desktop="/images/content/pool3.jpg"
-                        mobile="/images/content/pool3-portrait.jpg"
-                        alt=""
-                    />
-                </div>
-                <div className="recognition-scrim" aria-hidden="true" />
+                <div className="wrap recognition-grid">
+                    <div className="recognition-photo photo-frame">
+                        <CoverPicture
+                            desktop="/images/content/pool3.jpg"
+                            mobile="/images/content/pool3-portrait.jpg"
+                            alt=""
+                        />
+                    </div>
 
-                <div className="wrap recognition-inner">
-                    <h2 className="recognition-title title-italic">{t("recognitions")}</h2>
+                    <div data-reveal>
+                        <h2 className="section-title">{t("recognitions")}</h2>
 
-                    <div className="frame-card" data-reveal>
-                        <div className="frame-photo">
+                        <div className="frame-photo photo-frame">
                             <Image
                                 src="/images/content/h5.jpg"
                                 alt={t("interiorAlt")}
                                 fill
-                                sizes="(max-width: 768px) 90vw, 560px"
+                                sizes="(max-width: 1024px) 100vw, 40vw"
                                 style={{ objectFit: "cover" }}
                             />
                         </div>
 
-                        <div className="frame-badges">
+                        <div className="frame-badges ruled">
                             {badges.map((badge) => {
                                 // Only the TCC badge opens a document. The other is a plain label.
                                 const Tag = badge.cert ? "button" : "span";
@@ -130,16 +126,8 @@ export default function AboutSection() {
                                                 className="h-10 w-10 object-contain"
                                             />
                                         </span>
-                                        <span className="flex flex-col items-start">
-                                            <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--primary)", lineHeight: 1.2 }}>
-                                                {badge.title}
-                                            </span>
-                                            {badge.sub && (
-                                                <span style={{ fontSize: "0.66rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.14em" }}>
-                                                    {badge.sub}
-                                                </span>
-                                            )}
-                                        </span>
+                                        <span className="badge-title">{badge.title}</span>
+                                        {badge.sub && <span className="tag-in">{badge.sub}</span>}
                                     </Tag>
                                 );
                             })}
@@ -159,7 +147,7 @@ export default function AboutSection() {
                 >
                     <div
                         className="absolute inset-0 animate-fade-in"
-                        style={{ background: "var(--overlay)", backdropFilter: "blur(10px)" }}
+                        style={{ background: "var(--overlay)" }}
                         onClick={() => setShowCert(false)}
                     />
 
@@ -175,10 +163,10 @@ export default function AboutSection() {
                         <button
                             onClick={() => setShowCert(false)}
                             aria-label={t("closeCert")}
-                            className="absolute right-5 top-5 z-20 rounded-full p-2 transition-transform hover:scale-110"
+                            className="absolute right-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)]"
                             style={{ background: "var(--surface-dark)", color: "var(--primary)", border: "1px solid var(--border)" }}
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18" />
                                 <line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
@@ -191,7 +179,7 @@ export default function AboutSection() {
                                 style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
                             >
                                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center" style={{ opacity: 0.04 }}>
-                                    <svg width="360" height="360" viewBox="0 0 24 24" fill="var(--accent)">
+                                    <svg aria-hidden="true" width="360" height="360" viewBox="0 0 24 24" fill="var(--accent)">
                                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
                                     </svg>
                                 </div>
@@ -205,15 +193,15 @@ export default function AboutSection() {
                                             border: "1px solid color-mix(in srgb, var(--accent) 40%, transparent)",
                                         }}
                                     >
-                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
                                     </div>
 
-                                    <p style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.3em", marginBottom: 14 }}>
+                                    <p className="cert-label" style={{ marginBottom: 14 }}>
                                         {t("certEyebrow")}
                                     </p>
-                                    <h2 className="text-display" style={{ fontSize: "2.2rem", color: "var(--primary)", marginBottom: 22 }}>
+                                    <h2 className="text-display" style={{ fontSize: "var(--text-h2)", marginBottom: 22 }}>
                                         {t("certTitle")}
                                     </h2>
 
@@ -230,7 +218,7 @@ export default function AboutSection() {
                                         <h3 style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--primary)" }}>
                                             TCC COMPLIANT 2026
                                         </h3>
-                                        <p style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.16em", marginTop: 6 }}>
+                                        <p className="cert-label" style={{ marginTop: 6 }}>
                                             Trust, Corporate &amp; Education Sector Standards
                                         </p>
                                     </div>
@@ -240,13 +228,13 @@ export default function AboutSection() {
                                         style={{ borderTop: "1px solid var(--border)" }}
                                     >
                                         <div className="text-left">
-                                            <p style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 5 }}>
+                                            <p className="cert-label" style={{ marginBottom: 5 }}>
                                                 {t("issueDate")}
                                             </p>
                                             <p style={{ fontWeight: 600, color: "var(--primary)" }}>{t("issueDateValue")}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 5 }}>
+                                            <p className="cert-label" style={{ marginBottom: 5 }}>
                                                 {t("verifyId")}
                                             </p>
                                             <p style={{ fontWeight: 600, color: "var(--primary)", fontFamily: "var(--font-geist-mono), monospace" }}>
@@ -262,7 +250,7 @@ export default function AboutSection() {
                                             rel="noopener noreferrer"
                                             className="btn-primary"
                                         >
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                                 <polyline points="7 10 12 15 17 10" />
                                                 <line x1="12" y1="15" x2="12" y2="3" />

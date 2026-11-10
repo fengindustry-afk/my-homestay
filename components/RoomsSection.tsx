@@ -160,9 +160,9 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
         <>
             <section id="rooms" className="section">
                 <div className="wrap">
-                    {/* Header: title left, copy right, split across two lines. */}
-                    <div className="mb-12 grid gap-8 lg:grid-cols-12 lg:items-end">
-                        <div className="lg:col-span-8" data-reveal>
+                    {/* Header: title left, copy right. */}
+                    <div className="split-head">
+                        <div data-reveal>
                             <p className="section-tag">{t("eyebrow")}</p>
                             <h2 className="section-title">
                                 {filterCriteria ? (
@@ -170,13 +170,13 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                                 ) : (
                                     <>
                                         <span className="title-italic">{t("title1")}</span>
-                                        <span className="title-roman title-indent">{t("title2")}</span>
+                                        <span className="title-roman">{t("title2")}</span>
                                     </>
                                 )}
                             </h2>
                         </div>
 
-                        <div className="lg:col-span-4" data-reveal data-reveal-delay="120">
+                        <div data-reveal data-reveal-delay="120">
                             <p className="section-description">
                                 {loading
                                     ? t("loading")
@@ -188,8 +188,8 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                             </p>
 
                             {filterCriteria && (
-                                <button onClick={handleReset} className="btn-ghost mt-3" style={{ paddingLeft: 0 }}>
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <button onClick={handleReset} className="btn-ghost mt-3">
+                                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                         <path d="M3 3v5h5" />
                                     </svg>
@@ -200,18 +200,18 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                     </div>
 
                     {/* Search precedes the results it filters. */}
-                    <div className="mb-14" data-reveal data-reveal-delay="180">
+                    <div className="mb-16" data-reveal data-reveal-delay="180">
                         <SearchBar key={searchKey} onSearch={onSearch} />
                     </div>
 
                     {loadError ? (
-                        <p className="text-center text-sm" style={{ color: "var(--danger)" }} role="alert">
+                        <p className="search-error" role="alert">
                             {t.rich("loadError", {
                                 wa: (c) => <a href={waLink(WA_DEFAULT_MESSAGE)} target="_blank" rel="noopener noreferrer" className="underline">{c}</a>,
                             })}
                         </p>
                     ) : (
-                        <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3" data-stagger>
+                        <div className="room-grid" data-stagger>
                             {loading
                                 ? Array.from({ length: 3 }, (_, i) => <RoomSkeleton key={i} />)
                                 : filteredRooms.map((room) => (
@@ -240,7 +240,7 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                                             </h3>
 
                                             <div className="room-card-location">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
                                                     <circle cx="12" cy="10" r="3" />
                                                 </svg>
@@ -269,9 +269,6 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
                                                     aria-label={t("bookAria", { title: room.title, price: room.price })}
                                                 >
                                                     {t("book")}
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M5 12h14M12 5l7 7-7 7" />
-                                                    </svg>
                                                 </button>
                                             </div>
                                         </div>

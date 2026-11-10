@@ -19,14 +19,14 @@ export default function FaqSection({ keys = FAQ_KEYS }: { keys?: readonly FaqKey
     const t = useTranslations("Faq");
     return (
         <section id="faq" className="section">
-            <div className="wrap">
-                <div className="text-center" data-reveal>
+            <div className="wrap faq-layout">
+                <div className="faq-head" data-reveal>
                     <p className="section-tag">{t("eyebrow")}</p>
                     <h2 className="section-title">
                         <span className="title-roman">{t.rich("title", { em: (c) => <em className="title-em">{c}</em> })}</span>
                     </h2>
                 </div>
-                <div className="faq-list mt-16" data-reveal>
+                <div className="faq-list" data-reveal>
                     {keys.map((k) => (
                         <details key={k} className="faq-item">
                             <summary className="faq-q">{t(`${k}.q`)}</summary>

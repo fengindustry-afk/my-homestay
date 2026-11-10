@@ -53,86 +53,88 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
 
     return (
         <div className="detail-page">
-            {/* Hero: full-bleed photograph with the title over a scrim. */}
-            <header className="on-media detail-hero">
-                <Image
-                    src={mainImage}
-                    alt={room.title}
-                    fill
-                    priority
-                    sizes="100vw"
-                    className="object-cover"
-                />
-                <div className="detail-hero-scrim" aria-hidden="true" />
+            {/* Hero: the title, the price and both actions beside the photograph. */}
+            <header className="detail-hero">
+                <div className="wrap">
+                    {/* The room page has no navbar, so the back link and the language switch lead it. */}
+                    <div className="detail-bar">
+                        <Link href="/#rooms" className="back-pill">
+                            <ArrowLeft size={16} aria-hidden="true" />
+                            {t("back")}
+                        </Link>
+                        <LocaleSwitch className="detail-locale" />
+                    </div>
 
-                <Link href="/#rooms" className="back-pill">
-                    <ArrowLeft size={15} />
-                    {t("back")}
-                </Link>
+                    <div className="detail-hero-grid">
+                        <div>
+                            <p className="section-tag" lang="ms">
+                                {room.type?.trim() || "Homestay"} di Morib, Banting
+                            </p>
 
-                {/* The room page has no navbar, so the language switch sits in the hero. */}
-                <LocaleSwitch className="detail-locale" />
+                            <h1 className="text-display detail-title">
+                                <span className="title-italic">{room.title}</span>
+                            </h1>
 
-                <div className="detail-hero-copy">
-                    <p className="section-tag" lang="ms">
-                        {room.type?.trim() || "Homestay"} di Morib, Banting
-                    </p>
+                            {room.location && (
+                                <p className="detail-location">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                    {room.location}
+                                </p>
+                            )}
 
-                    <h1 className="text-display detail-title">
-                        <span className="title-italic">{room.title}</span>
-                    </h1>
+                            <div className="detail-price">
+                                RM{room.price}
+                                <span>{t("perNight")}</span>
+                            </div>
+                            <div className="detail-actions">
+                                <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+                                    {t("book")}
+                                </button>
+                                <a href={askLink} className="btn-outline" target="_blank" rel="noopener noreferrer">
+                                    {t("ask")}
+                                </a>
+                            </div>
+                        </div>
 
-                    {room.location && (
-                        <p className="detail-location">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
-                            {room.location}
-                        </p>
-                    )}
+                        <div className="detail-hero-media photo-frame">
+                            <Image
+                                src={mainImage}
+                                alt={room.title}
+                                fill
+                                priority
+                                sizes="(max-width: 1024px) 100vw, 58vw"
+                                className="object-cover"
+                            />
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            {/* Intro band: price and actions on the left, description on the right. */}
-            <section className="detail-intro">
-                <div className="wrap detail-intro-grid">
-                    <div data-reveal>
-                        <div className="detail-price">
-                            RM{room.price}
-                            <span>{t("perNight")}</span>
-                        </div>
-                        <div className="detail-actions">
-                            <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-                                {t("book")}
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                            <a href={askLink} className="btn-outline" target="_blank" rel="noopener noreferrer">
-                                {t("ask")}
-                            </a>
-                        </div>
-                    </div>
-
-                    {room.description && (
-                        <p className="detail-description" data-reveal data-reveal-delay="120">
+            {room.description && (
+                <section className="detail-intro">
+                    <div className="wrap">
+                        <p className="detail-description" data-reveal>
                             {room.description}
                         </p>
-                    )}
-                </div>
-            </section>
+                    </div>
+                </section>
+            )}
 
-            {/* Facts as circle icons. */}
+            {/* Facts in a well. */}
             {facts.length > 0 && (
                 <section className="detail-facts">
-                    <div className="wrap detail-facts-grid" data-stagger>
-                        {facts.map((item) => (
-                            <div key={item.title} className="fact">
-                                <div className="fact-circle">{item.icon}</div>
-                                <h2 className="fact-title">{item.title}</h2>
-                            </div>
-                        ))}
+                    <div className="wrap">
+                        <div className="detail-facts-grid" data-stagger>
+                            {facts.map((item) => (
+                                <div key={item.title} className="fact">
+                                    <div className="fact-circle">{item.icon}</div>
+                                    <h2 className="fact-title">{item.title}</h2>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </section>
             )}
@@ -174,7 +176,7 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                 </section>
             )}
 
-            {/* Amenities as bordered cards. */}
+            {/* Amenities as a ruled list. */}
             {amenitiesList.length > 0 && (
                 <section className="section detail-amenities">
                     <div className="wrap">
@@ -197,13 +199,13 @@ export default function RoomDetail({ room, photos }: { room: Room; photos: strin
                 </section>
             )}
 
-            {/* Closing: calm and centred. */}
+            {/* Closing: the question on the left, both actions on the right. */}
             <section className="section detail-closing" data-reveal>
                 <div className="wrap detail-closing-inner">
                     <h2 className="text-display detail-closing-title">
                         {t.rich("closing", { title: room.title, em: (c) => <span className="title-em">{c}</span> })}
                     </h2>
-                    <div className="detail-actions detail-actions-centre">
+                    <div className="detail-actions">
                         <button onClick={() => setIsModalOpen(true)} className="btn-primary">
                             {t("check")}
                         </button>

@@ -69,42 +69,49 @@ export default async function LandingPage({ kind, locale }: { kind: LandingKind;
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(breadcrumb) }} />
             <div className="detail-page">
-                <header className="on-media detail-hero">
-                    <Image src={cfg.image} alt="" fill priority sizes="100vw" className="object-cover" />
-                    <div className="detail-hero-scrim" aria-hidden="true" />
-                    <Link href="/" className="back-pill">
-                        <ArrowLeft size={15} />
-                        {t("home")}
-                    </Link>
-                    {/* No navbar on this page, so the language switch sits in the hero. */}
-                    <LocaleSwitch className="detail-locale" />
-                    <div className="detail-hero-copy">
-                        <p className="section-tag">{t(`${kind}.eyebrow`)}</p>
-                        <h1 className="text-display detail-title">{t(`${kind}.h1`)}</h1>
+                <header className="detail-hero">
+                    <div className="wrap">
+                        {/* No navbar on this page, so the back link and the language switch lead it. */}
+                        <div className="detail-bar">
+                            <Link href="/" className="back-pill">
+                                <ArrowLeft size={16} aria-hidden="true" />
+                                {t("home")}
+                            </Link>
+                            <LocaleSwitch className="detail-locale" />
+                        </div>
+                        <div className="detail-hero-grid">
+                            <div>
+                                <p className="section-tag">{t(`${kind}.eyebrow`)}</p>
+                                <h1 className="text-display detail-title detail-title-long">{t(`${kind}.h1`)}</h1>
+                                <div className="detail-actions">
+                                    <a href={ask} target="_blank" rel="noopener noreferrer" className="btn-primary">
+                                        {t("ask")}
+                                    </a>
+                                </div>
+                            </div>
+                            <div className="detail-hero-media photo-frame">
+                                <Image src={cfg.image} alt="" fill priority sizes="(max-width: 1024px) 100vw, 58vw" className="object-cover" />
+                            </div>
+                        </div>
                     </div>
                 </header>
 
                 <section className="detail-intro">
-                    <div className="wrap detail-intro-grid">
-                        <div>
-                            <a href={ask} target="_blank" rel="noopener noreferrer" className="btn-primary">
-                                {t("ask")}
-                            </a>
-                        </div>
-                        <div className="section-description">
+                    <div className="wrap">
+                        <div className="detail-copy">
                             <p>{t(`${kind}.p1`)}</p>
-                            <p className="mt-4">{t(`${kind}.p2`)}</p>
+                            <p>{t(`${kind}.p2`)}</p>
                         </div>
                     </div>
                 </section>
 
                 {rooms.length > 0 && (
-                    <section className="section" style={{ background: "var(--surface)" }}>
+                    <section className="section detail-amenities">
                         <div className="wrap">
-                            <h2 className="section-title text-center">
+                            <h2 className="section-title detail-section-head">
                                 <span className="title-roman">{t("roomsTitle")}</span>
                             </h2>
-                            <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3 mt-16">
+                            <div className="room-grid">
                                 {rooms.map((room) => (
                                     <article key={room.id} className="room-card">
                                         <div className="room-card-media">

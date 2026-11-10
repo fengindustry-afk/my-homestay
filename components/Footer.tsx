@@ -37,7 +37,7 @@ export default function Footer() {
                         <span className="footer-wordmark">{BUSINESS.name}</span>
                         <p className="footer-tagline">
                             {t.rich("tagline", {
-                                admin: (c) => <a href="/finest-touch" style={{ textDecoration: "none", color: "inherit" }}>{c}</a>,
+                                admin: (c) => <a href="/finest-touch" className="footer-admin">{c}</a>,
                             })}
                         </p>
                     </div>

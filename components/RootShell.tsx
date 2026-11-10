@@ -15,6 +15,8 @@ const inter = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
+  // Only the admin tree uses this face now, so it is not preloaded on public pages.
+  preload: false,
 });
 
 const playfair = Playfair_Display({
@@ -22,11 +24,13 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   style: ["normal", "italic"],
   display: "swap",
+  preload: false,
 });
 
 // The <html> document both root layouts share: the public [locale] tree and
 // the (admin) tree. Only lang differs between them.
-export default function RootShell({ lang, children }: { lang: string; children: React.ReactNode }) {
+// className lets the public tree add its own face and token scope to <body>.
+export default function RootShell({ lang, className = "", children }: { lang: string; className?: string; children: React.ReactNode }) {
   return (
     // No scroll-smooth class here: Lenis owns scrolling and the two conflict.
     <html lang={lang} suppressHydrationWarning>
@@ -37,7 +41,7 @@ export default function RootShell({ lang, children }: { lang: string; children: 
         </noscript>
         <JsonLd lang={lang} />
       </head>
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>
+      <body className={`${inter.variable} ${playfair.variable} antialiased ${className}`}>
         {/* Messages come from i18n/request.ts. The admin tree falls back to BM. */}
         <NextIntlClientProvider locale={lang}>
         <ThemeProvider

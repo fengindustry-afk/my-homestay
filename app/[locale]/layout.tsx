@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
+import { Epilogue } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import RootShell from "@/components/RootShell";
 import { routing } from "@/i18n/routing";
 import { GOOGLE_SITE_VERIFICATION, SITE_URL } from "@/lib/site";
+
+// The public pages' one face. The admin tree keeps the faces RootShell loads.
+const epilogue = Epilogue({
+  variable: "--font-epilogue",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
@@ -40,5 +48,5 @@ export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  return <RootShell lang={locale}>{children}</RootShell>;
+  return <RootShell lang={locale} className={`${epilogue.variable} site`}>{children}</RootShell>;
 }

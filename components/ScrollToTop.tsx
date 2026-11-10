@@ -19,7 +19,7 @@ export default function ScrollToTop() {
             aria-label={t("scrollTop")}
             id="scroll-to-top-btn"
         >
-            <svg
+            <svg aria-hidden="true"
                 width="20"
                 height="20"
                 viewBox="0 0 24 24"

@@ -28,19 +28,21 @@ export default function GallerySection() {
     const t = useTranslations("Gallery");
     return (
         <section id="gallery" className="section">
-            <div className="wrap gallery-head" data-reveal>
-                <div>
-                    <p className="section-tag">{t("eyebrow")}</p>
-                    <h2 className="section-title gallery-title">
-                        <span className="title-italic">{t("title")}</span>
-                    </h2>
+            <div className="wrap" data-reveal>
+                <div className="split-head">
+                    <div>
+                        <p className="section-tag">{t("eyebrow")}</p>
+                        <h2 className="section-title">
+                            <span className="title-italic">{t("title")}</span>
+                        </h2>
+                    </div>
+                    <p className="section-description">
+                        {t("intro")}
+                    </p>
                 </div>
-                <p className="section-description">
-                    {t("intro")}
-                </p>
             </div>
 
-            {/* Full bleed. On phones it scrolls sideways, so it is a focusable,
+            {/* On phones it scrolls sideways, so it is a focusable,
                 labelled region the keyboard can reach. */}
             <div
                 className="gallery-strip"
@@ -51,14 +53,16 @@ export default function GallerySection() {
             >
                 {images.map((img, i) => (
                     <figure key={img.src} className="gallery-item" id={`gallery-item-${i}`}>
-                        <Image
-                            src={img.src}
-                            alt={t(`${img.key}.alt`)}
-                            fill
-                            // Sources are 4:5 crops, so the tile width sets the download size.
-                            sizes="(max-width: 768px) 78vw, 30vw"
-                            quality={85}
-                        />
+                        <div className="gallery-media">
+                            <Image
+                                src={img.src}
+                                alt={t(`${img.key}.alt`)}
+                                fill
+                                // The first tile is two columns wide from tablet up.
+                                sizes={i === 0 ? "(max-width: 768px) 78vw, 50vw" : "(max-width: 768px) 78vw, 25vw"}
+                                quality={85}
+                            />
+                        </div>
                         <figcaption className="gallery-caption">{t(`${img.key}.caption`)}</figcaption>
                     </figure>
                 ))}

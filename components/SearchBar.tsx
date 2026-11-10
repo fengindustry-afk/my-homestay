@@ -50,7 +50,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     };
 
     return (
-        <div className="mx-auto max-w-6xl">
+        <div>
             <div className="search-bar">
                 <div className="search-bar-field">
                     <label htmlFor="search-checkin" className="search-bar-label">{t("checkIn")}</label>
@@ -127,7 +127,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                 </button>
             </div>
             {dateError && (
-                <p role="alert" className="mt-3 text-center text-sm" style={{ color: "var(--accent)" }}>
+                <p role="alert" className="search-error">
                     {dateError}
                 </p>
             )}
