@@ -6,6 +6,7 @@ import { eachDayOfInterval, format, addDays, isWeekend, areIntervalsOverlapping,
 import BookingCalendar from "./BookingCalendar";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { BLOCKING_STATUSES } from "@/lib/booking";
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -26,7 +27,6 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
     const t = useTranslations("Booking");
     const [phone, setPhone] = useState("");
     const [name, setName] = useState("");
-    const [icNumber, setIcNumber] = useState("");
     const [checkInTime, setCheckInTime] = useState("15:00");
     const [checkOutTime, setCheckOutTime] = useState("12:00");
     const [loading, setLoading] = useState(false);
@@ -407,9 +407,9 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
             const { data, error } = await supabase
                 .from("bookings")
-                .select("check_in, check_out, unit_name")
+                .select("check_in, check_out, check_in_time, check_out_time, unit_name")
                 .eq("room_id", room.id)
-                .eq("payment_status", "paid");
+                .in("payment_status", [...BLOCKING_STATUSES]);
 
             if (error) {
                 console.error("Error fetching bookings for units:", error);
@@ -492,8 +492,12 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
     if (!render || !room) return null;
 
-    const handlePay = async (e: React.FormEvent) => {
+    const handleSendBooking = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!checkIn || !checkOut) {
+            setError(t("selectDatesFirst") || t("errBooking"));
+            return;
+        }
 
         setLoading(true);
         setError("");
@@ -508,19 +512,18 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                 ? `${selectedPackage} + ${addonsList.join(', ')}`
                 : (selectedPackage || "Basic Package");
 
-            const checkInFormatted = format(checkIn!, "yyyy-MM-dd");
-            const checkOutFormatted = format(checkOut!, "yyyy-MM-dd");
+            const checkInFormatted = format(checkIn, "yyyy-MM-dd");
+            const checkOutFormatted = format(checkOut, "yyyy-MM-dd");
+            const locale = (typeof window !== "undefined" ? window.location.pathname.split("/")[1] : "ms") || "ms";
 
-            const res = await fetch("/api/checkout", {
+            const res = await fetch("/api/booking-create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     listingId: room.id,
-                    price: totalPrice,
                     title: room.title,
                     guestPhone: phone,
                     guestName: name,
-                    icNumber: icNumber,
                     checkIn: checkInFormatted,
                     checkOut: checkOutFormatted,
                     checkInTime,
@@ -528,20 +531,37 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     unitName: selectedUnit || null,
                     packageName: fullPackageName,
                     unitsCount: unitsCount,
+                    ...(isHomestay2 ? { addOns } : {}),
                 }),
             });
 
             const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url;
+            if (data.id) {
+                const payload = {
+                    id: data.id,
+                    roomTitle: room.title,
+                    unitName: selectedUnit || null,
+                    guestName: name,
+                    guestPhone: phone,
+                    checkIn: checkInFormatted,
+                    checkOut: checkOutFormatted,
+                    checkInTime,
+                    checkOutTime,
+                    packageName: fullPackageName,
+                    unitsCount: unitsCount,
+                    totalPrice: data.totalPrice ?? totalPrice,
+                    locale,
+                };
+                sessionStorage.setItem("booking_sent", JSON.stringify(payload));
+                window.location.href = `/${locale}/booking-sent`;
             } else {
-                const detail = data.detail || (typeof data.error === 'string' ? data.error : null);
-                console.error("Payment init failed:", detail);
-                setError(t("errPayment"));
+                const detail = data.detail || (typeof data.error === "string" ? data.error : null);
+                console.error("Booking create failed:", detail);
+                setError(t("errBooking"));
             }
         } catch (err) {
-            console.error("handlePay error:", err);
-            setError(t("errNetwork"));
+            console.error("handleSendBooking error:", err);
+            setError(t("errBooking"));
         } finally {
             setLoading(false);
         }
@@ -883,7 +903,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 <h3 className="font-display text-2xl font-normal text-[var(--primary)]">{t("guestInfo")}</h3>
                             </div>
 
-                            <form onSubmit={handlePay} className="grid md:grid-cols-2 gap-6">
+                            <form onSubmit={handleSendBooking} className="grid md:grid-cols-2 gap-6">
                                 <div className="group">
                                     <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("fullName")}</label>
                                     <input
@@ -893,18 +913,6 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
                                         placeholder={t("namePlaceholder")}
-                                    />
-                                </div>
-
-                                <div className="group">
-                                    <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-[var(--primary)] transition-colors group-focus-within:text-[var(--accent)]">{t("ic")}</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full rounded-[var(--radius-sm)] border border-[var(--border-strong)] bg-[var(--surface)] px-5 py-3.5 text-[var(--primary)] outline-none transition-all focus:border-[var(--primary)] focus:bg-[var(--surface-raised)]"
-                                        placeholder="000000000000"
-                                        value={icNumber}
-                                        onChange={(e) => setIcNumber(e.target.value)}
                                     />
                                 </div>
 
@@ -950,6 +958,18 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                 </div>
 
                                 <div className="md:col-span-2">
+                                    <div className="mb-5 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-4">
+                                        <h4 className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--primary)]">{t("termsTitle")}</h4>
+                                        <ul className="list-disc space-y-1 pl-5 text-xs text-[var(--text-muted)]">
+                                            <li>{t("tc1")}</li>
+                                            <li>{t("tc2")}</li>
+                                            <li>{t("tc3")}</li>
+                                            <li>{t("tc4")}</li>
+                                            <li>{t("tc5")}</li>
+                                            <li>{t("tc6")}</li>
+                                        </ul>
+                                    </div>
+
                                     {error && (
                                         <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-100">
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -973,7 +993,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                                                 </>
                                             ) : (
                                                 <>
-                                                    <span>{t("pay")}</span>
+                                                    <span>{t("sendBooking")}</span>
                                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                                                 </>
                                             )}

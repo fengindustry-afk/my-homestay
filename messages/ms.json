@@ -4,11 +4,26 @@
     "description": "Kompleks homestay di Morib, Selangor untuk percutian keluarga, perhimpunan dan majlis. Kolam peribadi dan muat sehingga 120 tetamu.",
     "keywords": "homestay Morib, homestay Banting, homestay Selangor, homestay kolam peribadi, homestay keluarga, dewan majlis Banting, homestay murah, homestay promo, homestay viral, homestay paling best, homestay paling cantik malaysia, homestay murah, homestay cantik Dan murah, homestay murah dan lawa, homestay mewah Dan murah, promo homestay ramadhan, promo homestay cuti sekolah, homestay kuala langat, hotel, homestay macam hotel"
   },
-  "Lang": { "label": "Bahasa", "ms": "BM", "en": "EN" },
-  "Common": { "whatsappChat": "Berbual dengan kami di WhatsApp", "scrollTop": "Kembali ke atas" },
+  "Lang": {
+    "label": "Bahasa",
+    "ms": "BM",
+    "en": "EN"
+  },
+  "Common": {
+    "whatsappChat": "Berbual dengan kami di WhatsApp",
+    "scrollTop": "Kembali ke atas"
+  },
   "Nav": {
-    "home": "Utama", "about": "Tentang", "rooms": "Homestay", "amenities": "Kemudahan", "gallery": "Galeri", "contact": "Hubungi",
-    "mainNav": "Navigasi utama", "book": "Tempah Sekarang", "closeMenu": "Tutup menu navigasi", "openMenu": "Buka menu navigasi"
+    "home": "Utama",
+    "about": "Tentang",
+    "rooms": "Homestay",
+    "amenities": "Kemudahan",
+    "gallery": "Galeri",
+    "contact": "Hubungi",
+    "mainNav": "Navigasi utama",
+    "book": "Tempah Sekarang",
+    "closeMenu": "Tutup menu navigasi",
+    "openMenu": "Buka menu navigasi"
   },
   "Hero": {
     "eyebrow": "Morib, Selangor",
@@ -17,7 +32,9 @@
     "lede": "Kompleks berhampiran Pantai Morib untuk percutian keluarga, perhimpunan dan majlis. Sejam dari Kuala Lumpur, jauh dari kesibukan harian.",
     "viewRooms": "Lihat Homestay",
     "whatsapp": "WhatsApp Kami",
-    "trust1": "Mesra Muslim", "trust2": "Kolam peribadi", "trust3": "Sehingga 120 tetamu",
+    "trust1": "Mesra Muslim",
+    "trust2": "Kolam peribadi",
+    "trust3": "Sehingga 120 tetamu",
     "photoAlt": "Kawasan kolam renang di Indah Morib Homestay, Selangor"
   },
   "About": {
@@ -30,10 +47,15 @@
     "promise2": "Khidmat tetamu 24/7",
     "promise3": "Lokasi strategik berhampiran tarikan utama",
     "more": "Ketahui lagi",
-    "statRooms": "Bilik Unik", "statGuests": "Tetamu Gembira", "statRating": "Purata Penilaian", "statYears": "Tahun Pengalaman",
+    "statRooms": "Bilik Unik",
+    "statGuests": "Tetamu Gembira",
+    "statRating": "Purata Penilaian",
+    "statYears": "Tahun Pengalaman",
     "recognitions": "Pengiktirafan & Piawaian",
     "interiorAlt": "Bahagian dalam unit homestay di Indah Morib",
-    "badgeTcc": "Patuh TCC", "badgeTccSub": "Disahkan 2026", "badgeMuslim": "Mesra Muslim",
+    "badgeTcc": "Patuh TCC",
+    "badgeTccSub": "Disahkan 2026",
+    "badgeMuslim": "Mesra Muslim",
     "viewCert": "Lihat pensijilan {name}",
     "certTitle": "Sijil Pematuhan",
     "closeCert": "Tutup sijil",
@@ -64,43 +86,93 @@
     "book": "Tempah"
   },
   "Search": {
-    "checkIn": "Daftar Masuk", "checkOut": "Daftar Keluar", "guests": "Tetamu", "type": "Jenis Homestay", "search": "Cari",
+    "checkIn": "Daftar Masuk",
+    "checkOut": "Daftar Keluar",
+    "guests": "Tetamu",
+    "type": "Jenis Homestay",
+    "search": "Cari",
     "dateError": "Tarikh daftar keluar mesti selepas tarikh daftar masuk.",
     "guestCount": "{count} Tetamu",
-    "typeAll": "Semua Jenis", "typeBungalow": "Unit Banglo", "typeStudio": "Unit Studio", "typeFamily": "Bilik Keluarga",
-    "typeHoliday": "Rumah Percutian", "typeTiny": "Rumah Mini", "typeHall": "Dewan Majlis"
+    "typeAll": "Semua Jenis",
+    "typeBungalow": "Unit Banglo",
+    "typeStudio": "Unit Studio",
+    "typeFamily": "Bilik Keluarga",
+    "typeHoliday": "Rumah Percutian",
+    "typeTiny": "Rumah Mini",
+    "typeHall": "Dewan Majlis"
   },
   "Amenities": {
     "eyebrow": "Kemudahan",
     "title1": "Semua yang anda perlukan,",
     "title2": "sudah tersedia",
     "intro": "Perkara kecil yang menentukan sama ada penginapan itu selesa atau sekadar cukup.",
-    "pools": { "title": "Kolam Renang", "desc": "Beberapa kolam di dalam kompleks, sebahagiannya berbumbung untuk privasi" },
-    "wifi": { "title": "Wi-Fi Percuma", "desc": "Internet berkelajuan tinggi di seluruh premis" },
-    "tv": { "title": "Smart TV", "desc": "Smart TV 55 inci dengan Netflix dan aplikasi strim" },
-    "security": { "title": "Keselamatan 24/7", "desc": "Kawalan keselamatan sepanjang masa dengan pemantauan CCTV" },
-    "aircon": { "title": "Penghawa Dingin", "desc": "Kawalan suhu sendiri di setiap bilik" },
-    "parking": { "title": "Tempat Letak Kereta", "desc": "Parkir peribadi percuma untuk setiap tetamu" },
-    "breakfast": { "title": "Sarapan Disediakan", "desc": "Sarapan tempatan dan kontinental percuma setiap hari" },
-    "lock": { "title": "Kunci Digital", "desc": "Masuk tanpa kunci dengan sistem kunci digital yang selamat" }
+    "pools": {
+      "title": "Kolam Renang",
+      "desc": "Beberapa kolam di dalam kompleks, sebahagiannya berbumbung untuk privasi"
+    },
+    "wifi": {
+      "title": "Wi-Fi Percuma",
+      "desc": "Internet berkelajuan tinggi di seluruh premis"
+    },
+    "tv": {
+      "title": "Smart TV",
+      "desc": "Smart TV 55 inci dengan Netflix dan aplikasi strim"
+    },
+    "security": {
+      "title": "Keselamatan 24/7",
+      "desc": "Kawalan keselamatan sepanjang masa dengan pemantauan CCTV"
+    },
+    "aircon": {
+      "title": "Penghawa Dingin",
+      "desc": "Kawalan suhu sendiri di setiap bilik"
+    },
+    "parking": {
+      "title": "Tempat Letak Kereta",
+      "desc": "Parkir peribadi percuma untuk setiap tetamu"
+    },
+    "breakfast": {
+      "title": "Sarapan Disediakan",
+      "desc": "Sarapan tempatan dan kontinental percuma setiap hari"
+    },
+    "lock": {
+      "title": "Kunci Digital",
+      "desc": "Masuk tanpa kunci dengan sistem kunci digital yang selamat"
+    }
   },
   "Gallery": {
     "eyebrow": "Galeri",
     "title": "Sekilas Indah Morib",
     "intro": "Kawasan, dewan dan kolam. Dirakam seadanya.",
     "regionLabel": "Foto Indah Morib",
-    "units": { "alt": "Bahagian dalam unit homestay di Indah Morib", "caption": "Unit" },
-    "dewan": { "alt": "Dewan serbaguna di Indah Morib", "caption": "Dewan" },
-    "family": { "alt": "Dewan yang disediakan untuk majlis keluarga", "caption": "Hari keluarga" },
-    "weddings": { "alt": "Majlis perkahwinan di kompleks ini", "caption": "Perkahwinan" },
-    "pools": { "alt": "Kawasan kolam peribadi di homestay", "caption": "Kolam" }
+    "units": {
+      "alt": "Bahagian dalam unit homestay di Indah Morib",
+      "caption": "Unit"
+    },
+    "dewan": {
+      "alt": "Dewan serbaguna di Indah Morib",
+      "caption": "Dewan"
+    },
+    "family": {
+      "alt": "Dewan yang disediakan untuk majlis keluarga",
+      "caption": "Hari keluarga"
+    },
+    "weddings": {
+      "alt": "Majlis perkahwinan di kompleks ini",
+      "caption": "Perkahwinan"
+    },
+    "pools": {
+      "alt": "Kawasan kolam peribadi di homestay",
+      "caption": "Kolam"
+    }
   },
   "Testimonials": {
     "eyebrow": "Testimoni",
     "title": "Apa kata <em>tetamu</em> kami",
     "intro": "Ulasan asal daripada keluarga dan syarikat yang pernah menempah kompleks ini.",
     "stars": "{count} daripada 5 bintang",
-    "roleBusiness": "Lawatan Kerja", "roleFamilyDay": "Hari Keluarga", "roleRetreat": "Percutian Keluarga"
+    "roleBusiness": "Lawatan Kerja",
+    "roleFamilyDay": "Hari Keluarga",
+    "roleRetreat": "Percutian Keluarga"
   },
   "Faq": {
     "eyebrow": "Soalan Lazim",
@@ -180,8 +252,11 @@
     "title1": "Tempah penginapan anda",
     "title2": "dan biar kami uruskan selebihnya",
     "lede": "Hubungi kami terus untuk harga semasa, pakej kumpulan besar dan tempahan majlis.",
-    "whatsapp": "WhatsApp kami", "emailUs": "E-mel kami",
-    "phone": "Telefon", "email": "E-mel", "location": "Lokasi"
+    "whatsapp": "WhatsApp kami",
+    "emailUs": "E-mel kami",
+    "phone": "Telefon",
+    "email": "E-mel",
+    "location": "Lokasi"
   },
   "Footer": {
     "homePath": "/",
@@ -198,8 +273,10 @@
     "book": "Tempah homestay ini",
     "ask": "Tanya soalan",
     "check": "Semak kekosongan",
-    "galleryEyebrow": "Galeri", "galleryTitle": "Lihat di dalam",
-    "includedEyebrow": "Termasuk", "includedTitle": "Apa yang anda dapat",
+    "galleryEyebrow": "Galeri",
+    "galleryTitle": "Lihat di dalam",
+    "includedEyebrow": "Termasuk",
+    "includedTitle": "Apa yang anda dapat",
     "closing": "Sedia untuk menempah <em>{title}</em>?",
     "upToGuests": "Sehingga {count} tetamu"
   },
@@ -218,7 +295,8 @@
     "actionRequired": "Tindakan Diperlukan",
     "actionBody": "Anda perlu menghantar butiran tempahan melalui WhatsApp untuk mendapatkan akses homestay.",
     "sendWa": "Hantar Butiran Tempahan ke WhatsApp",
-    "checkIn": "Daftar Masuk", "checkOut": "Daftar Keluar",
+    "checkIn": "Daftar Masuk",
+    "checkOut": "Daftar Keluar",
     "backHome": "Kembali ke Utama",
     "failed": "Pembayaran Gagal",
     "failedBody": "Transaksi dibatalkan atau tidak berjaya. Slot tempahan telah dilepaskan. Sila cuba lagi.",
@@ -228,21 +306,42 @@
   "Booking": {
     "viewDetail": "Lihat Butiran",
     "noDescription": "Butiran bilik akan ditambah tidak lama lagi.",
-    "amenities": "Kemudahan", "basePrice": "Harga Asas", "nights": "Malam", "total": "Jumlah Bayaran", "auto": "Dikira automatik",
-    "discountApplied": "Diskaun Digunakan!", "original": "Jumlah Asal:", "discountAmount": "Jumlah Diskaun:", "youPay": "Anda Bayar:",
+    "amenities": "Kemudahan",
+    "basePrice": "Harga Asas",
+    "nights": "Malam",
+    "total": "Jumlah Bayaran",
+    "auto": "Dikira automatik",
+    "discountApplied": "Diskaun Digunakan!",
+    "original": "Jumlah Asal:",
+    "discountAmount": "Jumlah Diskaun:",
+    "youPay": "Anda Bayar:",
     "selectDates": "Pilih Tarikh Penginapan",
     "checkFor": "Semak kekosongan untuk {name}",
     "thisHomestay": "homestay ini",
-    "selectPackage": "Pilih Pakej", "choosePackage": "Pilih pakej untuk penginapan anda",
-    "chooseUnit": "Pilih Unit", "chooseUnitIn": "Pilih unit pilihan anda di {title}",
+    "selectPackage": "Pilih Pakej",
+    "choosePackage": "Pilih pakej untuk penginapan anda",
+    "chooseUnit": "Pilih Unit",
+    "chooseUnitIn": "Pilih unit pilihan anda di {title}",
     "unitsSelected": "{count} Unit Dipilih",
     "perNight": "/ malam",
-    "addOns": "Pilih Tambahan", "addOnsSub": "Lengkapkan penginapan anda",
-    "bbq": "Tempat Barbeku", "cradle": "Buaian Bayi", "karaoke": "Set Karaoke", "karaokeRate": "RM25/jam atau RM150/hari",
-    "none": "Tiada", "perHour": "Sejam", "perDay": "Sehari", "hours": "Bilangan jam:", "days": "Bilangan hari:",
-    "guestInfo": "Maklumat Tetamu", "fullName": "Nama Penuh", "namePlaceholder": "Masukkan nama anda",
-    "ic": "No. Kad Pengenalan", "whatsapp": "No. WhatsApp",
-    "checkInTime": "Masa Daftar Masuk", "checkOutTime": "Masa Daftar Keluar",
+    "addOns": "Pilih Tambahan",
+    "addOnsSub": "Lengkapkan penginapan anda",
+    "bbq": "Tempat Barbeku",
+    "cradle": "Buaian Bayi",
+    "karaoke": "Set Karaoke",
+    "karaokeRate": "RM25/jam atau RM150/hari",
+    "none": "Tiada",
+    "perHour": "Sejam",
+    "perDay": "Sehari",
+    "hours": "Bilangan jam:",
+    "days": "Bilangan hari:",
+    "guestInfo": "Maklumat Tetamu",
+    "fullName": "Nama Penuh",
+    "namePlaceholder": "Masukkan nama anda",
+    "ic": "No. Kad Pengenalan",
+    "whatsapp": "No. WhatsApp",
+    "checkInTime": "Masa Daftar Masuk",
+    "checkOutTime": "Masa Daftar Keluar",
     "earliestCheckIn": "Daftar masuk paling awal {time}",
     "checkOutHall": "Masa daftar keluar bergantung pada pakej yang dipilih.",
     "lateCheckOut": "Caj tambahan RM{rate}/jam selepas 12:00 PM",
@@ -250,17 +349,46 @@
     "pay": "Teruskan Pembayaran",
     "notified": "Anda akan dimaklumkan melalui WhatsApp.",
     "secure": "Pembayaran selamat melalui Billplz • Tiada caj tersembunyi",
-    "partner": "Rakan Rasmi", "verified": "Disahkan Selamat",
-    "clickClose": "Klik di mana-mana untuk tutup", "closeZoom": "Tutup paparan besar", "zoomAlt": "Paparan besar",
+    "partner": "Rakan Rasmi",
+    "verified": "Disahkan Selamat",
+    "clickClose": "Klik di mana-mana untuk tutup",
+    "closeZoom": "Tutup paparan besar",
+    "zoomAlt": "Paparan besar",
     "errPayment": "Pembayaran tidak dapat dimulakan. Sila cuba lagi, atau WhatsApp kami untuk mengesahkan tempahan anda.",
-    "errNetwork": "Ralat tidak dijangka berlaku. Sila semak sambungan internet anda."
+    "errNetwork": "Ralat tidak dijangka berlaku. Sila semak sambungan internet anda.",
+    "sendBooking": "Hantar Tempahan ke WhatsApp",
+    "errBooking": "Tempahan tidak dapat disimpan. Sila cuba lagi, atau WhatsApp kami.",
+    "termsTitle": "Syarat & Terma Tempahan",
+    "tc1": "Tempahan adalah tahanan 24 jam, bukan pengesahan, sehingga deposit dibayar.",
+    "tc2": "Tahanan yang tidak dibayar dalam 24 jam luput secara automatik.",
+    "tc3": "Deposit ditetapkan oleh staf; butiran dihantar melalui WhatsApp.",
+    "tc4": "Batal sebelum deposit: percuma, beritahu kami di WhatsApp.",
+    "tc5": "Ubah/batal selepas deposit: dasar staf terpakai, bayaran balik secara manual.",
+    "tc6": "Maklumat tetamu disimpan dalam Supabase dan dikongsi kepada pemilik melalui Excel OneDrive."
   },
   "Calendar": {
-    "prev": "Bulan sebelumnya", "next": "Bulan seterusnya",
+    "prev": "Bulan sebelumnya",
+    "next": "Bulan seterusnya",
     "weekdays": "IS,SE,RA,KH,JU,SA,AH",
-    "booked": "telah ditempah", "past": "sudah berlalu",
-    "selectedCheckIn": "dipilih, daftar masuk", "selectedCheckOut": "dipilih, daftar keluar", "selected": "dipilih",
-    "availableOff": "tersedia, diskaun {pct}%", "available": "tersedia",
-    "legendAvailable": "Tersedia", "legendDiscount": "Diskaun", "legendBooked": "Tidak tersedia", "legendSelected": "Dipilih"
+    "booked": "telah ditempah",
+    "past": "sudah berlalu",
+    "selectedCheckIn": "dipilih, daftar masuk",
+    "selectedCheckOut": "dipilih, daftar keluar",
+    "selected": "dipilih",
+    "availableOff": "tersedia, diskaun {pct}%",
+    "available": "tersedia",
+    "legendAvailable": "Tersedia",
+    "legendDiscount": "Diskaun",
+    "legendBooked": "Tidak tersedia",
+    "legendSelected": "Dipilih"
+  },
+  "BookingSent": {
+    "title": "Tempahan Direkod!",
+    "body": "Tempahan anda telah direkod sebagai tahanan 24 jam. Hantar butiran di bawah ke WhatsApp kami untuk pengesahan deposit.",
+    "titleGeneric": "Tempahan Direkod",
+    "bodyGeneric": "Tempahan anda telah direkod. Sila WhatsApp kami dengan butiran tempahan anda.",
+    "holdNote": "Tahanan luput dalam 24 jam jika tiada deposit.",
+    "backHome": "Kembali ke Laman Utama",
+    "sendWa": "Hantar Butiran Tempahan ke WhatsApp"
   }
 }
