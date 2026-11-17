@@ -36,7 +36,7 @@
 **Files:**
 - Create: `lib/booking.ts`
 - Create: `scripts/booking.test.mjs`
-- Modify: `package.json:10` → `"test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seo.test.mjs scripts/booking.test.mjs scripts/excel-sync.test.mjs scripts/whatsapp.test.mjs scripts/token-crypto.test.mjs"`
+- Modify: `package.json:10` → `"test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seo.test.mjs scripts/booking.test.mjs"` (later tasks append their own test file as it lands; final script lists all five)
 
 **Interfaces:**
 - Consumes: none.
@@ -88,7 +88,7 @@ test('isHoldActive: junk input is inactive', () => {
 });
 ```
 
-- [ ] **Step 2: Run, expect FAIL** — `npm test -- scripts/booking.test.mjs` (module not found).
+- [ ] **Step 2: Run, expect FAIL** — `node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/booking.test.mjs` (module not found).
 - [ ] **Step 3: Implement `lib/booking.ts`** with the five exports above; age comparison at exactly 24h is active (`>=`), over it expired.
 - [ ] **Step 4: Run, expect PASS.**
 - [ ] **Step 5: Commit** — `git add lib/booking.ts scripts/booking.test.mjs package.json && git commit -m "feat: shared booking status helpers (blocking/tentative/hold-expiry)"`.
@@ -110,6 +110,7 @@ test('isHoldActive: junk input is inactive', () => {
 **Files:**
 - Create: `lib/whatsapp.ts`
 - Create: `scripts/whatsapp.test.mjs`
+- Modify: `package.json:10` → append `scripts/whatsapp.test.mjs` to the `"test"` script
 
 **Interfaces:**
 - Consumes: `BUSINESS`, `waLink` from `lib/site.ts` (do not import new things from elsewhere).
@@ -182,6 +183,7 @@ Malaysia label line "Tempahan Baru — Menunggu Deposit" for ms head. No emoji.
 **Files:**
 - Create: `lib/token-crypto.ts`
 - Create: `scripts/token-crypto.test.mjs`
+- Modify: `package.json:10` → append `scripts/token-crypto.test.mjs` to the `"test"` script
 
 **Interfaces:**
 - Consumes: env `SYNC_TOKEN_ENCRYPTION_KEY` (64-char hex = 32 bytes). If missing/invalid → throw `TOKEN_CRYPTO_MISCONFIGURED` (caller maps to 500).
@@ -303,6 +305,7 @@ test('sha256 is stable', () => {
 **Files:**
 - Create: `lib/excel-sync.ts`
 - Create: `scripts/excel-sync.test.mjs`
+- Modify: `package.json:10` → append `scripts/excel-sync.test.mjs` to the `"test"` script
 
 **Interfaces:**
 - Consumes: `sha256` from `lib/token-crypto.ts` (Task 4).
