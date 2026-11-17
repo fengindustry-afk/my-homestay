@@ -7,6 +7,7 @@ import SearchBar from "./SearchBar";
 import BookingModal from "./BookingModal";
 import { supabase } from "@/lib/supabaseClient";
 import { WA_DEFAULT_MESSAGE, waLink } from "@/lib/site";
+import { BLOCKING_STATUSES } from "@/lib/booking";
 
 export interface Room {
     id: number;
@@ -78,7 +79,7 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
         supabase
             .from("bookings")
             .select("room_id, unit_name")
-            .eq("payment_status", "paid")
+            .in("payment_status", [...BLOCKING_STATUSES])
             .lt("check_in", checkOutDate)
             .gt("check_out", checkInDate)
             .then(({ data, error }) => {

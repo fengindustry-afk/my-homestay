@@ -2486,3 +2486,11 @@ html:not(.light) .testimonial-card.is-feature {
     transition: none;
   }
 }
+
+/* Tentative (pending hold) calendar day */
+.calendar-tentative {
+  background: rgba(245,158,11,.18);
+  border: 1px dashed rgba(245,158,11,.7);
+  border-radius: 9999px;
+}
+

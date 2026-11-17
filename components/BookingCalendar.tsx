@@ -20,6 +20,7 @@ import {
 import { ms as msLocale, enGB } from "date-fns/locale";
 import { useLocale, useTranslations } from "next-intl";
 import { supabase } from "@/lib/supabaseClient";
+import { BLOCKING_STATUSES, TENTATIVE_STATUS, isHoldActive } from "@/lib/booking";
 
 interface BookingCalendarProps {
     roomId: number;
@@ -36,6 +37,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     const [checkIn, setCheckIn] = useState<Date | null>(null);
     const [checkOut, setCheckOut] = useState<Date | null>(null);
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
+    const [tentativeDates, setTentativeDates] = useState<Date[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Roving tabindex: one Tab stop for both months, arrow keys move between days.
@@ -81,9 +83,9 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
             setLoading(true);
             const { data, error } = await supabase
                 .from("bookings")
-                .select("check_in, check_out, unit_name, units_count")
+                .select("check_in, check_out, unit_name, units_count, payment_status, created_at")
                 .eq("room_id", roomId)
-                .eq("payment_status", "paid");
+                .in("payment_status", [...BLOCKING_STATUSES, TENTATIVE_STATUS]);
 
             if (error) {
                 console.error("Error fetching bookings:", error);
@@ -92,59 +94,62 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
             }
 
             const requestedUnits = unitName ? unitName.split(", ").map(u => u.trim()) : [];
-            const allBookedDays: Date[] = [];
 
-            if (requestedUnits.length > 0) {
-                data?.forEach((booking: any) => {
-                    const bookingUnits = booking.unit_name ? booking.unit_name.split(", ").map((u: string) => u.trim()) : [];
-                    const hasOverlap = requestedUnits.some(ru => bookingUnits.includes(ru));
-                    if (hasOverlap) {
+            const computeDays = (rows: any[]) => {
+                const allDays: Date[] = [];
+                if (requestedUnits.length > 0) {
+                    rows.forEach((booking) => {
+                        const bookingUnits = booking.unit_name ? booking.unit_name.split(", ").map((u: string) => u.trim()) : [];
+                        const hasOverlap = requestedUnits.some(ru => bookingUnits.includes(ru));
+                        if (hasOverlap) {
+                            const start = parseISO(booking.check_in);
+                            const end = parseISO(booking.check_out);
+                            const days = eachDayOfInterval({ start, end });
+                            if (days.length > 1) days.pop();
+                            allDays.push(...days);
+                        }
+                    });
+                } else {
+                    const countByDay: { [key: string]: number } = {};
+                    rows.forEach((booking) => {
                         const start = parseISO(booking.check_in);
                         const end = parseISO(booking.check_out);
                         const days = eachDayOfInterval({ start, end });
-                        if (days.length > 1) {
-                            days.pop();
-                        }
-                        allBookedDays.push(...days);
-                    }
-                });
-            } else {
-                // When no unit is selected, count bookings per day
-                const bookingsCountByDay: { [key: string]: number } = {};
-
-                data?.forEach((booking: any) => {
-                    const start = parseISO(booking.check_in);
-                    const end = parseISO(booking.check_out);
-                    const days = eachDayOfInterval({ start, end });
-                    if (days.length > 1) {
-                        days.pop();
-                    }
-
-                    days.forEach(d => {
-                        const key = format(d, 'yyyy-MM-dd');
-                        // Use units_count if available, otherwise assume 1 unit for the booking
-                        const count = Number(booking.units_count || (booking.unit_name ? booking.unit_name.split(',').length : 1));
-                        bookingsCountByDay[key] = (bookingsCountByDay[key] || 0) + count;
+                        if (days.length > 1) days.pop();
+                        days.forEach(d => {
+                            const key = format(d, 'yyyy-MM-dd');
+                            const count = Number(booking.units_count || (booking.unit_name ? booking.unit_name.split(',').length : 1));
+                            countByDay[key] = (countByDay[key] || 0) + count;
+                        });
                     });
-                });
+                    Object.keys(countByDay).forEach(key => {
+                        if (countByDay[key] >= totalUnits) allDays.push(parseISO(key));
+                    });
+                }
+                return allDays;
+            };
 
-                // Mark as booked only if total booked units >= totalUnits
-                Object.keys(bookingsCountByDay).forEach(key => {
-                    if (bookingsCountByDay[key] >= totalUnits) {
-                        allBookedDays.push(parseISO(key));
-                    }
-                });
-            }
+            const blockingRows = (data || []).filter((b: any) => BLOCKING_STATUSES.includes(b.payment_status));
+            const pendingRows = (data || []).filter((b: any) => b.payment_status === TENTATIVE_STATUS && isHoldActive(b.created_at));
 
-            setBookedDates(allBookedDays);
+            const blocked = computeDays(blockingRows);
+            const tentative = computeDays(pendingRows);
+            const blockedKeys = new Set(blocked.map(d => format(d, 'yyyy-MM-dd')));
+            const tentativeOnly = tentative.filter(d => !blockedKeys.has(format(d, 'yyyy-MM-dd')));
+
+            setBookedDates(blocked);
+            setTentativeDates(tentativeOnly);
             setLoading(false);
         }
 
         fetchBookings();
     }, [roomId, unitName, totalUnits]);
 
+    const isDateBooked = (day: Date) => bookedDates.some(bookedDate => isSameDay(day, bookedDate));
+    const isDateTentative = (day: Date) => tentativeDates.some(d => isSameDay(day, d));
+
     const handleDateClick = (day: Date) => {
-        if (isDateBooked(day) || isPast(day) && !isSameDay(day, new Date())) return;
+        if (isDateBooked(day) || (isPast(day) && !isSameDay(day, new Date()))) return;
 
         if (!checkIn || (checkIn && checkOut)) {
             setCheckIn(day);
@@ -168,10 +173,6 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 }
             }
         }
-    };
-
-    const isDateBooked = (day: Date) => {
-        return bookedDates.some(bookedDate => isSameDay(day, bookedDate));
     };
 
     const isDateSelected = (day: Date) => {
@@ -247,6 +248,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 const cloneDay = day;
                 const isSelected = isDateSelected(cloneDay);
                 const isBooked = isDateBooked(cloneDay);
+                const isTentative = isDateTentative(cloneDay) && !isBooked;
                 const isCurrentMonth = isSameMonth(cloneDay, monthStart);
                 const isPastDay = isPast(cloneDay) && !isSameDay(cloneDay, new Date());
                 const isCheckIn = checkIn && isSameDay(cloneDay, checkIn);
@@ -260,12 +262,13 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                     <button
                         type="button"
                         key={cloneDay.toString()}
-                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group disabled:cursor-not-allowed aria-disabled:cursor-not-allowed`}
+                        className={`relative flex items-center justify-center h-10 w-full cursor-pointer group disabled:cursor-not-allowed aria-disabled:cursor-not-allowed ${isTentative && isCurrentMonth && !isSelected ? "calendar-tentative" : ""}`}
                         onClick={() => { if (!isCurrentMonth) return; setFocusDay(cloneDay); handleDateClick(cloneDay); }}
                         disabled={!isCurrentMonth}
                         aria-disabled={isCurrentMonth && (isBooked || isPastDay) ? true : undefined}
                         tabIndex={isCurrentMonth && isSameDay(cloneDay, tabDay) ? 0 : -1}
                         data-day={isCurrentMonth ? dateKey : undefined}
+                        data-tentative={isCurrentMonth && isTentative ? "true" : undefined}
                         aria-hidden={!isCurrentMonth || undefined}
                         aria-pressed={isCurrentMonth ? isSelected : undefined}
                         aria-label={`${format(cloneDay, "EEEE, d MMMM yyyy", { locale: dfLocale })}, ${
@@ -274,6 +277,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                             : isCheckIn ? t("selectedCheckIn")
                             : isCheckOut ? t("selectedCheckOut")
                             : isSelected ? t("selected")
+                            : isTentative ? t("tentative")
                             : discount ? t("availableOff", { pct: discount.percentage })
                             : t("available")}`}
                     >
@@ -288,13 +292,13 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
               ${isBooked ? "bg-gray-100 text-gray-300 cursor-not-allowed line-through" : ""}
               ${isPastDay ? "text-gray-200 cursor-not-allowed" : ""}
               ${isSelected && isCurrentMonth ? "bg-[var(--accent)] text-[var(--accent-contrast)] scale-110" : `${isBooked || isPastDay ? "" : "hover:bg-[var(--surface)] "}text-[var(--primary)]`}
-              ${discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
+              ${discount && !isBooked && !isTentative && !isSelected && isCurrentMonth && !isPastDay ? "border border-green-400 bg-green-50" : ""}
             `}>
                             {format(cloneDay, "d")}
                         </span>
 
                         {/* Discount Badge */}
-                        {discount && !isBooked && !isSelected && isCurrentMonth && !isPastDay && (
+                        {discount && !isBooked && !isTentative && !isSelected && isCurrentMonth && !isPastDay && (
                             <span className="absolute -top-1 -right-0 z-20 scale-[0.6] origin-top-right">
                                 <span className="block bg-green-500 text-white px-1.5 py-0.5 rounded-md font-black text-[10px] shadow-sm animate-pulse">
                                     -{discount.percentage}%
@@ -304,7 +308,7 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
 
                         {/* Dot indicator for available (dark blue/black as per image) */}
                         {!isBooked && !isSelected && isCurrentMonth && !isPastDay && (
-                            <span className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : 'bg-[var(--primary)]'} opacity-20`} />
+                            <span className={`absolute bottom-1 h-1 w-1 rounded-full ${discount ? 'bg-green-500' : isTentative ? 'bg-amber-500' : 'bg-[var(--primary)]'} opacity-20`} />
                         )}
                     </button>
                 );
@@ -350,6 +354,10 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-md bg-green-500 text-white px-1 text-[8px] flex items-center justify-center font-bold">PROMO</div>
                     <span>{t("legendDiscount")}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full calendar-tentative" />
+                    <span>{t("legendTentative")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-gray-200" />

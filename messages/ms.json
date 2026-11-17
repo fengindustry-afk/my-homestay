@@ -380,7 +380,9 @@
     "legendAvailable": "Tersedia",
     "legendDiscount": "Diskaun",
     "legendBooked": "Tidak tersedia",
-    "legendSelected": "Dipilih"
+    "legendSelected": "Dipilih",
+    "legendTentative": "Tempahan menunggu deposit — masih boleh ditempah",
+    "tentative": "menunggu deposit, masih boleh ditempah"
   },
   "BookingSent": {
     "title": "Tempahan Direkod!",

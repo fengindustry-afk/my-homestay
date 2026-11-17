@@ -380,7 +380,9 @@
     "legendAvailable": "Available",
     "legendDiscount": "Discounted",
     "legendBooked": "Not available",
-    "legendSelected": "Selected"
+    "legendSelected": "Selected",
+    "legendTentative": "Awaiting deposit — still bookable",
+    "tentative": "awaiting deposit, still bookable"
   },
   "BookingSent": {
     "title": "Booking Recorded!",
