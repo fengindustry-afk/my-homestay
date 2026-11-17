@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { BLOCKING_STATUSES, TENTATIVE_STATUS, isBlockingStatus, isHoldActive, HOLD_HOURS } from '../lib/booking.ts';
+import { BLOCKING_STATUSES, isBlockingStatus, isHoldActive, HOLD_HOURS } from '../lib/booking.ts';
 
 test('blocking statuses are paid and confirmed', () => {
   assert.deepEqual(BLOCKING_STATUSES, ['paid', 'confirmed']);

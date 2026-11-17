@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import type { RoomSummary, BookingRow } from "./types";
 import { eachDayOfInterval, format } from "date-fns";
 
@@ -134,6 +135,67 @@ export function BookingsPanel() {
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [txMonth, setTxMonth] = useState(new Date().getMonth());
   const [txYear, setTxYear] = useState(new Date().getFullYear());
+  type SyncResult = {
+    pushed?: number;
+    pulled?: number;
+    conflicts?: number;
+    warnings?: Array<{ row?: number; reason?: string; id?: unknown } | string>;
+    errors?: Array<{ bookingId?: number; step?: string; reason?: string } | string>;
+    error?: string;
+  };
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [msStatus, setMsStatus] = useState<{ connected: boolean; account_upn?: string } | null>(null);
+  const [msLoading, setMsLoading] = useState(false);
+
+  const refreshMicrosoftStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/microsoft/status', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      setMsStatus(data);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    void refreshMicrosoftStatus();
+  }, []);
+
+  const handleSyncExcel = async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch('/api/admin/sync-excel', { method: 'POST' });
+      const data = await res.json().catch(() => ({ error: 'invalid_response' }));
+      setSyncResult(data);
+      if (res.ok) {
+        try {
+          const refresh = await fetch('/api/bookings');
+          const rd = await refresh.json();
+          if (refresh.ok) setBookings(rd.bookings || []);
+        } catch {
+          // ignore
+        }
+      }
+    } catch (e: any) {
+      setSyncResult({ error: e?.message || 'sync_failed' });
+    } finally {
+      setSyncing(false);
+      void refreshMicrosoftStatus();
+    }
+  };
+
+  const handleDisconnectMicrosoft = async () => {
+    setMsLoading(true);
+    try {
+      await fetch('/api/admin/microsoft/disconnect', { method: 'POST' });
+      await refreshMicrosoftStatus();
+    } finally {
+      setMsLoading(false);
+    }
+  };
 
   // Load discounts from database on mount
   useEffect(() => {
@@ -743,9 +805,9 @@ export function BookingsPanel() {
   const bookingsByDay = useMemo(() => {
     const map: Record<string, BookingRow[]> = {};
 
-    // Show 'paid' and 'pending' bookings on the calendar
-    // 'pending' will be visually dimmed
-    bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'pending').forEach((b) => {
+    // Show paid/confirmed/pending bookings on the calendar
+    // pending will be visually dimmed; cancelled excluded
+    bookings.filter(b => b.payment_status === 'paid' || b.payment_status === 'confirmed' || b.payment_status === 'pending').forEach((b) => {
       if (!b.check_in || !b.check_out) return;
       const start = new Date(b.check_in);
       const end = new Date(b.check_out);
@@ -826,6 +888,58 @@ export function BookingsPanel() {
             →
           </button>
         </div>
+      </div>
+
+      <div className="mb-4 flex flex-col gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface)] p-3">
+        <div className="flex flex-wrap items-center gap-2 justify-between">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-1 font-semibold border ${msStatus?.connected ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+              {msStatus?.connected ? `Microsoft: Connected${msStatus.account_upn ? ` (${msStatus.account_upn})` : ''}` : 'Microsoft: Not connected'}
+            </span>
+            {msStatus?.connected ? (
+              <button type="button" onClick={handleDisconnectMicrosoft} disabled={msLoading} className="rounded-full border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--surface-elevated)] disabled:opacity-60">
+                {msLoading ? 'Disconnecting…' : 'Disconnect'}
+              </button>
+            ) : (
+              <Link href="/api/auth/graph" className="rounded-full border border-[var(--border-subtle)] px-3 py-1.5 text-xs font-semibold hover:bg-[var(--surface-elevated)]">
+                Connect
+              </Link>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={handleSyncExcel}
+            disabled={syncing}
+            className="rounded-full bg-[var(--primary)] px-4 py-2 text-xs font-bold text-white hover:opacity-90 disabled:opacity-60"
+          >
+            {syncing ? 'Syncing… / Menyegerak…' : 'Sync Excel'}
+          </button>
+        </div>
+        {syncResult && (
+          <div className="text-xs space-y-1">
+            {syncResult.error ? (
+              <p className="text-red-600 font-medium">Sync error: {String(syncResult.error)}</p>
+            ) : (
+              <p className="text-[var(--text-strong)] font-medium">
+                Mendorong {syncResult.pushed ?? 0}, menarik {syncResult.pulled ?? 0}, konflik {syncResult.conflicts ?? 0}
+              </p>
+            )}
+            {Array.isArray(syncResult.warnings) && syncResult.warnings.length > 0 && (
+              <ul className="text-amber-700 list-disc pl-4">
+                {syncResult.warnings.map((w, i) => (
+                  <li key={i}>{typeof w === 'string' ? w : `row ${w.row ?? '?'}: ${w.reason ?? JSON.stringify(w)}`}</li>
+                ))}
+              </ul>
+            )}
+            {Array.isArray(syncResult.errors) && syncResult.errors.length > 0 && (
+              <ul className="text-red-700 list-disc pl-4">
+                {syncResult.errors.map((e, i) => (
+                  <li key={i}>{typeof e === 'string' ? e : `${e.step ?? 'error'}${e.bookingId ? ` #${e.bookingId}` : ''}: ${e.reason ?? JSON.stringify(e)}`}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2.1fr)_minmax(0,1.4fr)]">
@@ -1422,8 +1536,10 @@ export function BookingsPanel() {
                     value={form.payment_status}
                     onChange={(e) => handleChange("payment_status", e.target.value)}
                   >
-                    <option value="paid">Paid</option>
                     <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="paid">Paid</option>
+                    <option value="cancelled">Cancelled / Batal</option>
                   </select>
                 </label>
                 <label className="flex flex-col gap-1.5">
@@ -1557,7 +1673,9 @@ export function BookingsPanel() {
                         onChange={(e) => handleStatusChange(b.id, e.target.value)}
                       >
                         <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
                         <option value="paid">Paid</option>
+                        <option value="cancelled">Cancelled</option>
                       </select>
                       <div className="flex gap-2">
                         <button
@@ -1683,7 +1801,7 @@ export function BookingsPanel() {
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">Status</p>
-                <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${selectedBookingDetail.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${(selectedBookingDetail.payment_status === 'paid' || selectedBookingDetail.payment_status === 'confirmed') ? 'bg-green-100 text-green-700' : selectedBookingDetail.payment_status === 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
                   {selectedBookingDetail.payment_status}
                 </span>
               </div>

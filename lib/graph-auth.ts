@@ -74,7 +74,7 @@ export async function getValidAccessToken(): Promise<Ok | Err> {
     return { error: 'microsoft_token_refresh_failed' };
   }
 
-  const json = await res.json() as any;
+  const json = await res.json() as { access_token?: string; refresh_token?: string; expires_in?: number };
   const accessToken = String(json.access_token || '');
   if (!accessToken) {
     await deleteCredentials();
