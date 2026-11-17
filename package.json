@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seo.test.mjs scripts/booking.test.mjs"
+    "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seo.test.mjs scripts/booking.test.mjs scripts/whatsapp.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
