@@ -26,8 +26,8 @@
 1. Guest opens `/booking-sent` directly/reload after close — no sessionStorage, no PII leak → Task 6 fallback test.
 2. Excel row without ID or with colon characters — must surface as warning, never crash or corrupt rows → Task 8 label/row-mapper test.
 3. Pending older than 24h still greying the calendar as "tentative" → Task 1 age-helper test, applied in Tasks 5 and 7.
-4. Graph token refresh rotation (new refresh token returned on refresh) — dropping it = permanent auth death → Task 7 roundtrip/refresh test + reconnect path.
-5. Double-tap on confirm button creates two holds for same guest → Task 5 disables CTA while in flight (checked in Task 11 build/smoke).
+4. Graph token refresh rotation (new refresh token returned on refresh) — dropping it = permanent auth death → Task 9 persists both tokens (see getValidAccessToken); reconnect path specified there. Guard is code-level here (no unit test exists for refresh); ledger treats as review lens.
+5. Double-tap on confirm button creates two holds for same guest → Task 6 disables CTA while in flight (checked in Task 11 build/smoke).
 
 ---
 
