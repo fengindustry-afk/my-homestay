@@ -19,7 +19,6 @@ import {
 } from "date-fns";
 import { ms as msLocale, enGB } from "date-fns/locale";
 import { useLocale, useTranslations } from "next-intl";
-import { supabase } from "@/lib/supabaseClient";
 import { BLOCKING_STATUSES, TENTATIVE_STATUS, isHoldActive } from "@/lib/booking";
 
 interface BookingCalendarProps {
@@ -81,11 +80,15 @@ export default function BookingCalendar({ roomId, unitName, totalUnits = 1, disc
     useEffect(() => {
         async function fetchBookings() {
             setLoading(true);
-            const { data, error } = await supabase
-                .from("bookings")
-                .select("check_in, check_out, unit_name, units_count, payment_status, created_at")
-                .eq("room_id", roomId)
-                .in("payment_status", [...BLOCKING_STATUSES, TENTATIVE_STATUS]);
+            let data: any[] | null = null;
+            let error: unknown = null;
+            try {
+                const res = await fetch(`/api/availability?roomId=${roomId}`);
+                if (!res.ok) throw new Error(`availability ${res.status}`);
+                data = (await res.json()).bookings;
+            } catch (e) {
+                error = e;
+            }
 
             if (error) {
                 console.error("Error fetching bookings:", error);

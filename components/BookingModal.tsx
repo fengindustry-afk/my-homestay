@@ -4,7 +4,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { eachDayOfInterval, format, addDays, isWeekend, areIntervalsOverlapping, parseISO } from "date-fns";
 
 import BookingCalendar from "./BookingCalendar";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { routing } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { BLOCKING_STATUSES } from "@/lib/booking";
 
@@ -25,6 +26,7 @@ interface BookingModalProps {
 
 export default function BookingModal({ isOpen, onClose, room }: BookingModalProps) {
     const t = useTranslations("Booking");
+    const locale = useLocale();
     const [phone, setPhone] = useState("");
     const [name, setName] = useState("");
     const [checkInTime, setCheckInTime] = useState("15:00");
@@ -405,11 +407,15 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
             // If we only have checkIn, we check for units unavailable for at least one night starting then
             const checkOutToUse = checkOut || addDays(checkIn, 1);
 
-            const { data, error } = await supabase
-                .from("bookings")
-                .select("check_in, check_out, check_in_time, check_out_time, unit_name")
-                .eq("room_id", room.id)
-                .in("payment_status", [...BLOCKING_STATUSES]);
+            let data: any[] | null = null;
+            let error: unknown = null;
+            try {
+                const res = await fetch(`/api/availability?roomId=${room.id}`);
+                if (!res.ok) throw new Error(`availability ${res.status}`);
+                data = ((await res.json()).bookings ?? []).filter((b: any) => BLOCKING_STATUSES.includes(b.payment_status));
+            } catch (e) {
+                error = e;
+            }
 
             if (error) {
                 console.error("Error fetching bookings for units:", error);
@@ -514,7 +520,6 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
             const checkInFormatted = format(checkIn, "yyyy-MM-dd");
             const checkOutFormatted = format(checkOut, "yyyy-MM-dd");
-            const locale = (typeof window !== "undefined" ? window.location.pathname.split("/")[1] : "ms") || "ms";
 
             const res = await fetch("/api/booking-create", {
                 method: "POST",
@@ -553,7 +558,8 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
                     locale,
                 };
                 sessionStorage.setItem("booking_sent", JSON.stringify(payload));
-                window.location.href = `/${locale}/booking-sent`;
+                // as-needed prefix: default locale (ms) has no /ms segment
+                window.location.href = `${locale === routing.defaultLocale ? "" : `/${locale}`}/booking-sent`;
             } else {
                 const detail = data.detail || (typeof data.error === "string" ? data.error : null);
                 console.error("Booking create failed:", detail);
@@ -979,7 +985,7 @@ export default function BookingModal({ isOpen, onClose, room }: BookingModalProp
 
                                     <button
                                         type="submit"
-                                        disabled={loading}
+                                        disabled={loading || (isMultiUnitRoom && !selectedUnit)}
                                         className="relative group w-full overflow-hidden rounded-full bg-[var(--primary)] py-4 text-sm font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-[var(--foreground)] hover:shadow-2xl hover:-translate-y-1 disabled:opacity-70 disabled:translate-y-0"
                                     >
                                         <div className="relative z-10 flex items-center justify-center gap-3">

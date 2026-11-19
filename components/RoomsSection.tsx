@@ -76,22 +76,26 @@ export default function RoomsSection({ initialRooms, filterCriteria, onSearch, o
     useEffect(() => {
         if (!checkInDate || !checkOutDate) return;
         let active = true;
-        supabase
-            .from("bookings")
-            .select("room_id, unit_name")
-            .in("payment_status", [...BLOCKING_STATUSES])
-            .lt("check_in", checkOutDate)
-            .gt("check_out", checkInDate)
-            .then(({ data, error }) => {
+        const params = new URLSearchParams({ from: checkInDate, to: checkOutDate });
+        fetch(`/api/availability?${params}`)
+            .then((res) => {
+                if (!res.ok) throw new Error(`availability ${res.status}`);
+                return res.json();
+            })
+            .then(({ bookings }) => {
                 if (!active) return;
-                if (error) {
-                    console.error("Availability check failed:", error.message);
-                    setBookedRoomIds(new Set());
-                    return;
-                }
                 setBookedRoomIds(
-                    new Set((data ?? []).filter((b) => !b.unit_name).map((b) => b.room_id as number))
+                    new Set(
+                        (bookings ?? [])
+                            .filter((b: any) => BLOCKING_STATUSES.includes(b.payment_status) && !b.unit_name)
+                            .map((b: any) => b.room_id as number)
+                    )
                 );
+            })
+            .catch((err: Error) => {
+                if (!active) return;
+                console.error("Availability check failed:", err.message);
+                setBookedRoomIds(new Set());
             });
         return () => {
             active = false;

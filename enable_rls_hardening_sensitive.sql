@@ -67,16 +67,8 @@ ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.bookings FROM anon;
 REVOKE INSERT, UPDATE, DELETE ON public.bookings FROM authenticated;
 
--- anon can SELECT only these non-PII columns (never guest_name /
--- guest_email / ic_number / total_price / amount_paid / billplz_id /
--- admin_notes).
-GRANT SELECT (room_id, unit_name, units_count,
-              check_in, check_out, check_in_time, check_out_time,
-              payment_status) ON public.bookings TO anon;
-
-CREATE POLICY "Anon reads paid booking availability" ON public.bookings
-  FOR SELECT TO anon
-  USING (payment_status = 'paid');
+-- anon gets NO access to bookings. Public availability is served by
+-- /api/availability (service_role). See revoke_anon_bookings.sql.
 
 -- Admin/staff (authenticated session) can read every booking.
 CREATE POLICY "Staff read all bookings" ON public.bookings

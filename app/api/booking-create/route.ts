@@ -41,6 +41,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid room selected" }, { status: 400 });
     }
 
+    // Multi-unit rooms (same titles as BookingModal isMultiUnitRoom) must name a unit.
+    // shortcut: title match duplicates the modal list, move to a DB column when one exists.
+    if (/homestay (2|4|6)/i.test(roomRes.data.title) && !unitName) {
+      return NextResponse.json({ error: "Unit is required for this homestay" }, { status: 400 });
+    }
+
     // 1b. Check for exact Time-Based Overlaps
     const { data: overlappingBookings } = await supabase
       .from('bookings')
